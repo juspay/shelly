@@ -158,7 +158,8 @@ async function analyzeError(error, history) {
   try {
     const result = await neurolink.generate({
       input: { text: prompt },
-      provider: 'google-ai', // Or any other provider
+      provider: "googlevertex",
+      model: "gemini-2.5-flash",
     });
     return result.content;
   } catch (e) {
@@ -178,7 +179,8 @@ async function suggestAndRunCorrection(command, error, history) {
   try {
     const result = await neurolink.generate({
       input: { text: prompt },
-      provider: 'google-ai',
+      provider: "googlevertex",
+      model: "gemini-2.5-flash",
     });
     const correctedCommand = result.content.trim();
     const { confirm } = await inquirer.prompt([
