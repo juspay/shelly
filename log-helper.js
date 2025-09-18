@@ -240,10 +240,8 @@ async function getLastCommandFromShellHistory() {
       const historyContent = fs.readFileSync(zshHistoryPath, 'utf-8');
       const lines = historyContent.split('\n').filter(Boolean);
       
-      // The last line is the current command (`log-helper`), so we get the one before it.
       if (lines.length >= 2) {
         const previousLine = lines[lines.length - 2];
-        // zsh history format: `: 1624527482:0;command`
         const commandMatch = previousLine.match(/;(.*)/);
         if (commandMatch && commandMatch[1]) {
           return commandMatch[1];
