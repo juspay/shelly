@@ -1,3 +1,3 @@
-const { generateError } = require('./deep-test/src/app/core/services/error-service.js');
+import { generateError } from './deep-test/src/app/core/services/error-service.js';
 
 generateError();
