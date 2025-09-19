@@ -1,4 +1,4 @@
-# Log Helper
+# Shelly
 
 `log-helper` is a command-line tool that helps you debug failing commands by analyzing their error output. It uses AI to provide suggestions and solutions.
 
