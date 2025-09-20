@@ -13,7 +13,7 @@
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/Harshita-Rupani29/Log-Helper_agent.git
+    git clone https://github.com/Harshita-Rupani29/Shelly.git
     ```
 2.  Navigate to the project directory:
     ```bash
