@@ -5,6 +5,13 @@ import { extractCodeFromStacktrace } from './fileService.js';
 export async function analyzeError(output, history, exitCode) {
   const neurolink = new NeuroLink();
   const codeSnippet = extractCodeFromStacktrace(output);
+  
+  const MAX_OUTPUT_LENGTH = 8000; // Max length for the output
+  if (output.length > MAX_OUTPUT_LENGTH) {
+    const halfLength = Math.floor(MAX_OUTPUT_LENGTH / 2);
+    output = `${output.substring(0, halfLength)}... (truncated) ...${output.substring(output.length - halfLength)}`;
+  }
+
   const prompt = exitCode === 0
     ? `The following command executed successfully with exit code 0. Please analyze the output and provide any relevant insights or suggestions for improvement.
     Output:

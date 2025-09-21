@@ -1,21 +1,44 @@
-import { spawn } from 'child_process';
+import pty from 'node-pty';
+import os from 'os';
 
 export function runCommand(command) {
   return new Promise((resolve) => {
-    const child = spawn(command, { shell: true, stdio: 'pipe' });
-    let stdout = '';
-    let stderr = '';
-    child.stdout.on('data', (data) => {
-      stdout += data.toString();
+    const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
+    const term = pty.spawn(shell, ['-c', command], {
+      name: 'xterm-color',
+      cols: 80,
+      rows: 30,
+      cwd: process.cwd(),
+      env: process.env
     });
-    child.stderr.on('data', (data) => {
-      stderr += data.toString();
+
+    let output = '';
+    let resolved = false;
+
+    // Capture all output from the pseudo-terminal
+    term.on('data', (data) => {
+      output += data;
     });
-    child.on('close', (code) => {
-      if (code !== 0 && !stderr) {
-        resolve({ stdout: '', stderr: stdout, code });
-      } else {
-        resolve({ stdout, stderr, code });
+
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        term.kill('SIGTERM');
+        // When timing out, we assume the output contains the error
+        resolve({ stdout: '', stderr: output, code: 1, timedOut: true });
+      }
+    }, 15000); // 15-second timeout
+
+    // Handle process exit
+    term.on('exit', (code) => {
+      if (!resolved) {
+        clearTimeout(timeout);
+        resolved = true;
+        if (code === 0) {
+          resolve({ stdout: output, stderr: '', code: 0 });
+        } else {
+          resolve({ stdout: '', stderr: output, code });
+        }
       }
     });
   });
