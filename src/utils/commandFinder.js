@@ -1,0 +1,27 @@
+import fs from 'fs';
+import path from 'path';
+
+export function getAvailableCommands() {
+  const paths = process.env.PATH.split(path.delimiter);
+  const commands = new Set();
+  for (const dir of paths) {
+    if (!fs.existsSync(dir)) continue;
+    try {
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        const filePath = path.join(dir, file);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.isFile() && (stat.mode & 0o111) !== 0) {
+            commands.add(file);
+          }
+        } catch (e) {
+          // ignore stat errors
+        }
+      }
+    } catch (e) {
+      // ignore readdir errors
+    }
+  }
+  return Array.from(commands);
+}
