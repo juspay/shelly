@@ -22,13 +22,13 @@ class Shell {
   }
 
   getLastCommand(excludePattern = null) {
-    const debug = process.env.LOG_HELPER_DEBUG === 'true';
-    
+    const debug = process.env.SHELLY_DEBUG === 'true';
+
     // First, try to get the most recent command from current shell session
     if (debug) {
       console.log('Trying to get current shell command...');
     }
-    
+
     const currentCommand = getCurrentShellCommand(debug);
     if (currentCommand) {
       if (debug) {
@@ -36,14 +36,14 @@ class Shell {
       }
       return currentCommand;
     }
-    
+
     // Fallback to reading from history file
     if (debug) {
       console.log('Falling back to history file...');
     }
-    
+
     const historyPath = this.getHistoryFilePath();
-    
+
     if (!fs.existsSync(historyPath)) {
       return null;
     }
@@ -51,7 +51,7 @@ class Shell {
     try {
       const content = fs.readFileSync(historyPath, 'utf-8');
       const commands = this.parseHistory(content);
-      
+
       if (commands.length === 0) {
         return null;
       }
@@ -61,31 +61,35 @@ class Shell {
         console.log(`Last 10 commands:`, commands.slice(-10));
       }
 
-      // More precise filtering - only exclude exact matches or commands that start with log-helper
+      // More precise filtering - only exclude exact matches or commands that start with the shelly
       for (let i = commands.length - 1; i >= 0; i--) {
         const cmd = commands[i].trim();
-        
+
         if (debug) {
           console.log(`Checking command at index ${i}: "${cmd}"`);
         }
-        
+
         // Skip empty commands
         if (!cmd) {
           continue;
         }
 
         // Be more precise about what we exclude
-        const isLogHelper = cmd === 'log-helper' || 
-                           cmd.startsWith('log-helper ') ||
-                           cmd.startsWith('./src/main.js') ||
-                           cmd.includes('LOG_HELPER_DEBUG=true') ||
-                           cmd.startsWith('LOG_HELPER_DEBUG=true');
+        const isLogHelper =
+          cmd === 'shelly' ||
+          cmd.startsWith('shelly ') ||
+          cmd.startsWith('./src/main.js') ||
+          cmd.includes('SHELLY_DEBUG=true') ||
+          cmd.startsWith('SHELLY_DEBUG=true');
 
         if (debug) {
-          console.log(`Command "${cmd}" is log-helper: ${isLogHelper}`);
+          console.log(`Command "${cmd}" is shelly: ${isLogHelper}`);
         }
 
-        if (!isLogHelper && (!excludePattern || !cmd.includes(excludePattern))) {
+        if (
+          !isLogHelper &&
+          (!excludePattern || !cmd.includes(excludePattern))
+        ) {
           if (debug) {
             console.log(`Selected command: "${cmd}"`);
           }
@@ -149,9 +153,10 @@ class BashShell extends Shell {
   }
 
   parseHistory(content) {
-    return content.split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => line.trim());
+    return content
+      .split('\n')
+      .filter((line) => line.trim() !== '')
+      .map((line) => line.trim());
   }
 }
 
@@ -191,9 +196,10 @@ class TcshShell extends Shell {
   }
 
   parseHistory(content) {
-    return content.split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => line.trim());
+    return content
+      .split('\n')
+      .filter((line) => line.trim() !== '')
+      .map((line) => line.trim());
   }
 }
 
@@ -205,25 +211,33 @@ class PowerShell extends Shell {
 
   getHistoryFilePath() {
     const appData = process.env.APPDATA || os.homedir();
-    return path.join(appData, 'Microsoft', 'Windows', 'PowerShell', 'PSReadLine', 'ConsoleHost_history.txt');
+    return path.join(
+      appData,
+      'Microsoft',
+      'Windows',
+      'PowerShell',
+      'PSReadLine',
+      'ConsoleHost_history.txt'
+    );
   }
 
   parseHistory(content) {
-    return content.split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => line.trim());
+    return content
+      .split('\n')
+      .filter((line) => line.trim() !== '')
+      .map((line) => line.trim());
   }
 }
 
 // Shell factory
 const SHELL_CLASSES = {
-  'zsh': ZshShell,
-  'bash': BashShell,
-  'fish': FishShell,
-  'tcsh': TcshShell,
-  'csh': TcshShell, // csh uses same history format as tcsh
-  'pwsh': PowerShell,
-  'powershell': PowerShell,
+  zsh: ZshShell,
+  bash: BashShell,
+  fish: FishShell,
+  tcsh: TcshShell,
+  csh: TcshShell, // csh uses same history format as tcsh
+  pwsh: PowerShell,
+  powershell: PowerShell,
 };
 
 function createShell(shellName) {
@@ -248,8 +262,7 @@ export async function detectShell(debug = false) {
     if (shell) {
       return shell;
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (debug) {
       console.error('Error walking process tree:', error);
     }
@@ -261,8 +274,7 @@ export async function detectShell(debug = false) {
     if (shell) {
       return shell;
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (debug) {
       console.error('Error detecting shell using ps:', error);
     }
@@ -287,7 +299,9 @@ export async function detectShell(debug = false) {
 async function walkProcessTree(pid, debug = false, depth = 0, maxDepth = 10) {
   if (depth > maxDepth) {
     if (debug) {
-      console.log(`Reached maximum depth (${maxDepth}) in process tree traversal`);
+      console.log(
+        `Reached maximum depth (${maxDepth}) in process tree traversal`
+      );
     }
     return null;
   }
@@ -295,27 +309,33 @@ async function walkProcessTree(pid, debug = false, depth = 0, maxDepth = 10) {
   try {
     // Get process information
     const processes = await psTreeAsync(pid);
-    
+
     if (debug && processes.length > 0) {
-      console.log(`Process tree at depth ${depth}:`, processes.map(p => ({ pid: p.PID, command: p.COMMAND })));
+      console.log(
+        `Process tree at depth ${depth}:`,
+        processes.map((p) => ({ pid: p.PID, command: p.COMMAND }))
+      );
     }
 
     // Check if any of the processes in the tree are known shells
     for (const proc of processes) {
-      // FIX: Add a check for proc.COMMAND before calling toLowerCase()
       if (!proc.COMMAND) {
         if (debug) {
-          console.log(`Skipping process with PID ${proc.PID} due to undefined COMMAND`);
+          console.log(
+            `Skipping process with PID ${proc.PID} due to undefined COMMAND`
+          );
         }
         continue; // Skip to the next process
       }
       const command = proc.COMMAND.toLowerCase();
       const knownShells = Object.keys(SHELL_CLASSES);
-      
+
       for (const shellName of knownShells) {
         if (command.includes(shellName)) {
           if (debug) {
-            console.log(`Found PREV shell "${shellName}" in process tree at depth ${depth}`);
+            console.log(
+              `Found PREV shell "${shellName}" in process tree at depth ${depth}`
+            );
           }
           return createShell(shellName);
         }
@@ -326,7 +346,12 @@ async function walkProcessTree(pid, debug = false, depth = 0, maxDepth = 10) {
     if (processes.length > 0) {
       const parentPid = processes[0].PPID;
       if (parentPid && parentPid !== '0' && parentPid !== pid.toString()) {
-        return await walkProcessTree(parseInt(parentPid), debug, depth + 1, maxDepth);
+        return await walkProcessTree(
+          parseInt(parentPid),
+          debug,
+          depth + 1,
+          maxDepth
+        );
       }
     }
   } catch (error) {
@@ -340,10 +365,10 @@ async function walkProcessTree(pid, debug = false, depth = 0, maxDepth = 10) {
 
 // Try to get the most recent command from the current shell session
 function getCurrentShellCommand(debug = false) {
-  // Skip the real-time history methods for now since they don't work reliably with execSync
-  // The fallback to history file is actually working well and is more reliable
   if (debug) {
-    console.log('Skipping real-time history methods, using fallback to history file for reliability');
+    console.log(
+      'Skipping real-time history methods, using fallback to history file for reliability'
+    );
   }
   return null;
 }
@@ -354,14 +379,17 @@ async function detectShellUsingPs(debug = false) {
     let pid = process.ppid; // Start from Node's parent
     let depth = 0;
 
-    while (pid && depth < 10) { // Prevent infinite loops
+    while (pid && depth < 10) {
+      // Prevent infinite loops
       if (debug) {
         console.log(`Checking PID ${pid} at depth ${depth}`);
       }
 
       // Get process command
-      const comm = execSync(`ps -p ${pid} -o comm=`, { encoding: 'utf8' }).toString().trim();
-      
+      const comm = execSync(`ps -p ${pid} -o comm=`, { encoding: 'utf8' })
+        .toString()
+        .trim();
+
       if (debug) {
         console.log(`Process ${pid} command: ${comm}`);
       }
@@ -371,14 +399,18 @@ async function detectShellUsingPs(debug = false) {
       for (const shellName of knownShells) {
         if (comm === shellName || comm.endsWith(`/${shellName}`)) {
           if (debug) {
-            console.log(`Found shell "${shellName}" using ps command at depth ${depth}`);
+            console.log(
+              `Found shell "${shellName}" using ps command at depth ${depth}`
+            );
           }
           return createShell(shellName);
         }
       }
 
       // Get the parent of the current pid
-      const ppid = execSync(`ps -p ${pid} -o ppid=`, { encoding: 'utf8' }).toString().trim();
+      const ppid = execSync(`ps -p ${pid} -o ppid=`, { encoding: 'utf8' })
+        .toString()
+        .trim();
       if (ppid === '' || ppid === pid.toString() || ppid === '1') break;
 
       pid = parseInt(ppid, 10);
@@ -400,7 +432,7 @@ async function detectShellUsingPs(debug = false) {
 // Main function to get the last command from shell history
 export async function getLastCommandFromShell(debug = false) {
   const shell = await detectShell(debug);
-  
+
   if (!shell) {
     if (debug) {
       console.log('No shell detected, cannot retrieve command history');

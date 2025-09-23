@@ -2,9 +2,16 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runCommand } from './services/commandService.js';
-import { appendCommandToHistory, getCommandHistory, getLastCommandFromShellHistory } from './services/historyService.js';
+import {
+  appendCommandToHistory,
+  getCommandHistory,
+  getLastCommandFromShellHistory,
+} from './services/historyService.js';
 import { loadRules } from './services/ruleService.js';
-import { analyzeError, suggestCorrections } from './services/analysisService.js';
+import {
+  analyzeError,
+  suggestCorrections,
+} from './services/analysisService.js';
 import { promptForManualError } from './services/uiService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,26 +19,26 @@ const __dirname = path.dirname(__filename);
 
 function generateShellAlias() {
   const scriptPath = path.resolve(__filename);
-  
+
   // Generate a POSIX-compatible function that works across multiple shells
   return `log_helper() {
     # Get the last command using history or fc depending on shell capabilities
     if command -v fc >/dev/null 2>&1; then
         if [ -n "\$ZSH_VERSION" ]; then
-            # Zsh: get the most recent non-log-helper command
+            # Zsh: get the most recent non-shelly command
             last_command=\$(fc -ln -2 2>/dev/null | tail -n1 | sed 's/^[[:space:]]*//')
         elif [ -n "\$BASH_VERSION" ]; then
-            # Bash: get the command before log-helper
+            # Bash: get the command before shelly
             last_command=\$(fc -ln -2 2>/dev/null | head -n1 | sed 's/^[[:space:]]*//')
         else
             # Other shells: try to get previous command
             last_command=\$(fc -ln -1 2>/dev/null | sed 's/^[[:space:]]*//')
-            if [ "\$last_command" = "log_helper" ] || [ "\$last_command" = "log-helper" ]; then
+            if [ "\$last_command" = "shelly" ] || [ "\$last_command" = "shelly" ]; then
                 last_command=\$(fc -ln -2 2>/dev/null | head -n1 | sed 's/^[[:space:]]*//')
             fi
         fi
     else
-        echo "This shell does not support the fc command required for log-helper."
+        echo "This shell does not support the fc command required for shelly."
         return 1
     fi
     
@@ -41,49 +48,53 @@ function generateShellAlias() {
         return 1
     fi
     
-    # Prevent analyzing log-helper itself
+    # Prevent analyzing shelly itself
     case "\$last_command" in
-        *log-helper*|*log_helper*|*LOG_HELPER_DEBUG*)
-            echo "log-helper cannot analyze itself. Please run another command first."
+        *shelly*|*SHELLY_DEBUG*)
+            echo "shelly cannot analyze itself. Please run another command first."
             return 1
             ;;
     esac
     
-    # Call the actual log-helper script with the last command
+    # Call the actual shelly script with the last command
     node "${scriptPath}" "\$last_command"
 }
 
-# Create both function names for compatibility
-log-helper() { log_helper "\$@"; }`;
+# Create shelly function
+shelly() { log_helper "\$@"; }`;
 }
 
 async function main() {
   try {
     const userArgs = process.argv.slice(2);
-    
+
     // Handle --alias flag
     if (userArgs.length === 1 && userArgs[0] === '--alias') {
       console.log(generateShellAlias());
       return;
     }
-    
+
     const rules = await loadRules();
-    
+
     if (userArgs.length === 0) {
       const lastCommand = await getLastCommandFromShellHistory();
 
-      // --- START OF PROPOSED FIX ---
       // Prevent the script from analyzing its own invocation
-      if (lastCommand && (lastCommand.includes('./src/main.js') || lastCommand.includes('log-helper'))) {
-        console.log('The log-helper script cannot analyze its own invocation.');
-        console.log('Please run log-helper with a command to analyze, or run another command first.');
+      if (
+        lastCommand &&
+        (lastCommand.includes('./src/main.js') ||
+          lastCommand.includes('shelly'))
+      ) {
+        console.log('The shelly script cannot analyze its own invocation.');
+        console.log(
+          'Please run shelly with a command to analyze, or run another command first.'
+        );
         return; // Exit gracefully
       }
-      // --- END OF PROPOSED FIX ---
 
       if (!lastCommand) {
         console.log('Could not determine the last command from history.');
-        console.log('Usage: log-helper <command>');
+        console.log('Usage: shelly <command>');
         return;
       }
       console.log(`Analyzing previous command: "${lastCommand}"`);
@@ -101,8 +112,11 @@ async function main() {
       console.log('\n--- Neurolink Analysis ---');
       console.log(analysis);
       console.log('--------------------------\n');
-      if (output.toLowerCase().includes('command not found') || analysis.toLowerCase().includes("command not found")) {
-          await suggestCorrections(lastCommand);
+      if (
+        output.toLowerCase().includes('command not found') ||
+        analysis.toLowerCase().includes('command not found')
+      ) {
+        await suggestCorrections(lastCommand);
       }
       if (code === 0) {
         console.log(`The last command "${lastCommand}" ran successfully.`);
@@ -130,7 +144,10 @@ async function main() {
     console.log('\n--- Neurolink Analysis ---');
     console.log(analysis);
     console.log('--------------------------\n');
-    if (output.toLowerCase().includes('command not found') || (analysis && analysis.toLowerCase().includes("command not found"))) {
+    if (
+      output.toLowerCase().includes('command not found') ||
+      (analysis && analysis.toLowerCase().includes('command not found'))
+    ) {
       await suggestCorrections(command);
     }
     if (code === 0) {
