@@ -1,0 +1,86 @@
+# Memory Bank
+
+> Knowledge base and resources for {{projectName}}
+
+## Overview
+
+This directory contains reusable resources, code snippets, templates, and documentation to accelerate development and maintain consistency across the {{projectName}} project.
+
+## Structure
+
+```
+memory-bank/
+├── resources/          # Shared resources and assets
+├── snippets/          # Code snippets and examples
+├── templates/         # Template files for common patterns
+└── README.md         # This file
+```
+
+## Resources
+
+The `resources/` directory contains:
+- Configuration files
+- Data files
+- Reference materials
+- External documentation links
+
+## Snippets
+
+The `snippets/` directory contains:
+- Common code patterns
+- Utility functions
+- API examples
+- Testing helpers
+
+## Templates
+
+The `templates/` directory contains:
+- File templates
+- Project structure templates
+- Documentation templates
+- Configuration templates
+
+## Usage
+
+### Adding New Resources
+
+1. Choose the appropriate subdirectory
+2. Follow the naming convention: `category-name.ext`
+3. Include documentation comments
+4. Update relevant index files
+
+### Code Snippets
+
+```javascript
+// Example: Using a snippet from memory-bank
+const { helperFunction } = require('./memory-bank/snippets/helpers');
+
+const result = helperFunction(data);
+```
+
+### Templates
+
+```bash
+# Copy a template
+cp memory-bank/templates/component.template.js src/components/new-component.js
+```
+
+## Guidelines
+
+- Keep resources organized and well-documented
+- Use clear, descriptive names
+- Include usage examples
+- Maintain backward compatibility
+- Regular cleanup of outdated resources
+
+## Contributing
+
+When adding to the memory bank:
+
+1. Ensure the resource is reusable
+2. Add proper documentation
+3. Include examples
+4. Test thoroughly
+5. Update this README if needed
+
+For more information, see [CONTRIBUTING.md](../CONTRIBUTING.md).

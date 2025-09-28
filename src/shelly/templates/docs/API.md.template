@@ -1,0 +1,98 @@
+# API Documentation
+
+> API reference for {{projectName}}
+
+## Overview
+
+This document provides comprehensive API documentation for {{projectName}}.
+
+## Base URL
+
+```
+https://api.{{repoName}}.com/v1
+```
+
+## Authentication
+
+All API requests require authentication using API keys.
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://api.{{repoName}}.com/v1/endpoint
+```
+
+## Endpoints
+
+### GET /status
+
+Health check endpoint.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "version": "{{version}}",
+  "timestamp": "2023-01-01T00:00:00Z"
+}
+```
+
+### {{apiDescription}}
+
+Main API endpoint for {{repoName}} functionality.
+
+**Parameters:**
+- `param1` (string): Description of parameter
+- `param2` (number): Description of parameter
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "Operation completed successfully"
+}
+```
+
+## Error Handling
+
+All errors return a consistent format:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "details": {}
+  }
+}
+```
+
+## Rate Limiting
+
+API calls are limited to 1000 requests per hour per API key.
+
+## Examples
+
+### JavaScript/Node.js
+
+```javascript
+const {{moduleName}} = require('{{packageName}}');
+
+// Example usage
+const result = await {{moduleName}}.method();
+console.log(result);
+```
+
+### Python
+
+```python
+import {{repoName}}
+
+# Example usage
+result = {{repoName}}.method()
+print(result)
+```
+
+## Support
+
+For API support, contact: {{contactEmail}}

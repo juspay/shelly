@@ -8,10 +8,12 @@
   },
   "scripts": {
     "start": "node src/main.js",
+    "test": "node --test src/tests/*.test.js",
+    "build": "tsc",
     "prepublishOnly": "npm run lint",
     "semantic-release": "semantic-release",
-    "lint": "eslint src/ --ext .js",
-    "lint:fix": "eslint src/ --ext .js --fix",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",
@@ -28,7 +30,8 @@
     "ai",
     "command-correction",
     "terminal",
-    "productivity"
+    "productivity",
+    "typescript"
   ],
   "author": {
     "name": "Juspay Technologies",
@@ -59,17 +62,28 @@
   },
   "type": "module",
   "devDependencies": {
-    "semantic-release": "^22.0.0",
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^11.0.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^9.0.0",
     "@semantic-release/npm": "^11.0.0",
     "@semantic-release/release-notes-generator": "^12.0.0",
+    "@types/node": "^24.5.2",
     "eslint": "^8.57.0",
-    "prettier": "^3.0.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.5"
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.0.0",
+    "semantic-release": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@juspay/neurolink": "^7.40.1",
+    "inquirer": "^12.9.6",
+    "node-pty": "^1.0.0",
+    "ps-tree": "^1.2.0"
   },
   "prettier": {
     "tabWidth": 2,
@@ -86,11 +100,5 @@
     "*.{json,md}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "@juspay/neurolink": "^7.40.1",
-    "inquirer": "^12.9.6",
-    "node-pty": "^1.0.0",
-    "ps-tree": "^1.2.0"
   }
 }

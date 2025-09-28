@@ -1,0 +1,119 @@
+# Progress: {{projectName}}
+
+## 1. Current Status
+
+### Overall Completion
+- **Phase**: {{currentPhase}}
+- **Progress**: {{completionPercentage}}%
+- **Last Milestone**: {{lastMilestone}}
+- **Next Milestone**: {{nextMilestone}}
+
+### Feature Status
+{{#features}}
+- **{{feature}}**: {{status}}
+  - Implementation: {{implementation}}%
+  - Testing: {{testing}}%
+  - Documentation: {{documentation}}%
+{{/features}}
+
+## 2. What Works
+
+### Completed Features
+{{#completedFeatures}}
+- **{{feature}}**: {{description}}
+  - Quality: {{quality}}
+  - Performance: {{performance}}
+  - Test Coverage: {{coverage}}%
+{{/completedFeatures}}
+
+### Stable Components
+{{#stableComponents}}
+- {{component}}: {{status}} ({{lastChanged}})
+{{/stableComponents}}
+
+## 3. What's Left to Build
+
+### Pending Features
+{{#pendingFeatures}}
+- **{{feature}}**: {{priority}}
+  - Effort: {{effort}}
+  - Dependencies: {{dependencies}}
+  - Definition of Done: {{definitionOfDone}}
+{{/pendingFeatures}}
+
+### Technical Debt
+{{#technicalDebt}}
+- **{{item}}**: {{impact}}
+  - Priority: {{priority}}
+  - Effort: {{effort}}
+{{/technicalDebt}}
+
+## 4. Known Issues
+
+### Critical Issues
+{{#criticalIssues}}
+- **{{issue}}**: {{impact}}
+  - Workaround: {{workaround}}
+  - Fix Plan: {{fixPlan}}
+  - ETA: {{eta}}
+{{/criticalIssues}}
+
+### Non-Critical Issues
+{{#nonCriticalIssues}}
+- {{issue}}: {{description}} ({{priority}})
+{{/nonCriticalIssues}}
+
+## 5. Decision Evolution
+
+### Key Decisions Made
+{{#decisionsTimeline}}
+- **{{date}}**: {{decision}}
+  - Context: {{context}}
+  - Outcome: {{outcome}}
+  - Lessons: {{lessons}}
+{{/decisionsTimeline}}
+
+### Pivots & Course Corrections
+{{#pivots}}
+- **{{date}}**: {{from}} → {{to}}
+  - Reason: {{reason}}
+  - Impact: {{impact}}
+{{/pivots}}
+
+## 6. Quality Metrics
+
+### Code Quality
+- **Lines of Code**: {{loc}}
+- **Test Coverage**: {{testCoverage}}%
+- **Code Complexity**: {{complexity}}
+- **Documentation Coverage**: {{docCoverage}}%
+
+### Performance Metrics
+{{#performanceMetrics}}
+- {{metric}}: {{value}} (Target: {{target}})
+{{/performanceMetrics}}
+
+### User Metrics
+{{#userMetrics}}
+- {{metric}}: {{value}} ({{trend}})
+{{/userMetrics}}
+
+## 7. Risks & Blockers
+
+### Current Risks
+{{#risks}}
+- **{{risk}}**: {{probability}} / {{impact}}
+  - Mitigation: {{mitigation}}
+  - Owner: {{owner}}
+{{/risks}}
+
+### Active Blockers
+{{#blockers}}
+- **{{blocker}}**: {{impact}}
+  - Blocked Since: {{since}}
+  - Resolution Plan: {{plan}}
+{{/blockers}}
+
+---
+*Last Updated: {{lastUpdated}}*
+*Next Review: {{nextReview}}*
