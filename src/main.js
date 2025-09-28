@@ -19,6 +19,7 @@ const __dirname = path.dirname(__filename);
 
 function generateShellAlias() {
   const scriptPath = path.resolve(__filename);
+  const cliPath = path.resolve(__dirname, 'shelly', 'cli.js');
 
   // Generate a POSIX-compatible function that works across multiple shells
   return `log_helper() {
@@ -60,8 +61,16 @@ function generateShellAlias() {
     node "${scriptPath}" "\$last_command"
 }
 
-# Create shelly function
-shelly() { log_helper "\$@"; }`;
+# Create shelly function that handles both CLI commands and error analysis
+shelly() {
+    # If arguments are provided, use the CLI tool
+    if [ \$# -gt 0 ]; then
+        node "${cliPath}" "\$@"
+    else
+        # No arguments, run error analysis on last command
+        log_helper
+    fi
+}`;
 }
 
 async function main() {
