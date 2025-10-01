@@ -1,6 +1,10 @@
 import { AIContentGenerator } from '../utils/aiContentGenerator.js';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
+
+const execAsync = promisify(exec);
 
 /**
  * Memory Bank Service - Manages the creation, updating, and maintenance of project memory bank
@@ -21,6 +25,11 @@ export class MemoryBankService {
       'technical/techContext.md': { template: 'techContext.md.template', generator: 'generateTechContext' },
       'current/activeContext.md': { template: 'activeContext.md.template', generator: 'generateActiveContext' },
       'current/progress.md': { template: 'progress.md.template', generator: 'generateProgress' }
+    };
+    
+    // Additional files to generate outside memory-bank directory
+    this.rootFiles = {
+      '.clinerules': { generator: 'generateClinerules' }
     };
     
     // Core Memory Bank files for backward compatibility
@@ -74,6 +83,33 @@ export class MemoryBankService {
       } catch (error) {
         console.error(`❌ Failed to process ${filePath}:`, error.message);
         results.errors.push({ file: filePath, error: error.message });
+      }
+    }
+
+    // Generate .clinerules in root directory
+    for (const [fileName, fileConfig] of Object.entries(this.rootFiles)) {
+      try {
+        const exists = await this.fileExists(fileName);
+
+        if (exists && !options.force) {
+          console.log(`⏭️  Preserving existing ${fileName}`);
+          results.skipped.push(fileName);
+          continue;
+        }
+
+        const content = await this.generateClinerules(packageInfo);
+        await fs.writeFile(fileName, content, 'utf8');
+        
+        if (exists) {
+          console.log(`🔄 Updated ${fileName}`);
+          results.updated.push(fileName);
+        } else {
+          console.log(`✨ Created ${fileName}`);
+          results.created.push(fileName);
+        }
+      } catch (error) {
+        console.error(`❌ Failed to process ${fileName}:`, error.message);
+        results.errors.push({ file: fileName, error: error.message });
       }
     }
 
@@ -167,7 +203,14 @@ export class MemoryBankService {
       return this.generateReadmeContent(packageInfo);
     }
 
-    // Extract base name from path for content generation
+    // If neurolink content is available, use it
+    if (packageInfo.neurolinkContent && packageInfo.neurolinkContent[fileName]) {
+      console.log(`🤖 Using neurolink content for ${fileName}`);
+      return packageInfo.neurolinkContent[fileName];
+    }
+
+    // Fallback to individual AI generation
+    console.log(`🔄 Using fallback AI generation for ${fileName}`);
     const baseName = path.basename(fileName, '.md');
     
     switch (baseName) {
@@ -305,9 +348,9 @@ This Memory Bank integrates with:
   }
 
   /**
-   * Analyze repository for Memory Bank context
+   * Analyze repository for Memory Bank context using Neurolink
    * @param {string} repositoryPath - Path to repository
-   * @returns {Promise<Object>} Repository analysis
+   * @returns {Promise<Object>} Repository analysis with neurolink content
    */
   async analyzeRepository(repositoryPath = '.') {
     const analysis = {
@@ -321,7 +364,8 @@ This Memory Bank integrates with:
       license: 'MIT',
       author: '',
       repository: '',
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      neurolinkContent: null
     };
 
     try {
@@ -366,11 +410,266 @@ This Memory Bank integrates with:
         hasDocs: docsExists
       };
 
+      // Generate comprehensive memory bank content using Neurolink
+      console.log('🧠 Generating Memory Bank content with Neurolink...');
+      analysis.neurolinkContent = await this.generateNeurolinkContent(repositoryPath);
+
     } catch (error) {
       console.warn('Warning: Could not fully analyze repository:', error.message);
     }
 
     return analysis;
+  }
+
+  /**
+   * Generate comprehensive memory bank content using Neurolink (Two-step process)
+   * @param {string} repositoryPath - Path to repository  
+   * @returns {Promise<Object>} Parsed neurolink content by file
+   */
+  async generateNeurolinkContent(repositoryPath = '.') {
+    try {
+      // Step 1: Analyze repository structure and understand the project
+      console.log('🔍 Step 1: Analyzing repository structure with neurolink...');
+      const repositoryAnalysis = await this.analyzeRepositoryWithNeurolink(repositoryPath);
+      
+      if (!repositoryAnalysis) {
+        throw new Error('Repository analysis failed');
+      }
+
+      // Step 2: Generate memory bank content using analysis + Cline rules
+      console.log('📝 Step 2: Generating memory bank content using analysis + Cline rules...');
+      return await this.generateMemoryBankWithAnalysis(repositoryAnalysis, repositoryPath);
+
+    } catch (error) {
+      console.warn('Neurolink generation failed:', error.message);
+      console.log('🔄 Falling back to individual AI generation...');
+      return null; // Will trigger fallback to individual file generation
+    }
+  }
+
+  /**
+   * Step 1: Analyze repository structure and understand everything about the project
+   * @param {string} repositoryPath - Path to repository
+   * @returns {Promise<string>} Comprehensive repository analysis
+   */
+  async analyzeRepositoryWithNeurolink(repositoryPath = '.') {
+    try {
+      const analysisPrompt = `REPOSITORY ANALYSIS REQUEST:
+
+Please thoroughly analyze this repository (pwd: ${process.cwd()}) and provide a comprehensive understanding of the project.
+
+ANALYZE ALL ASPECTS:
+1. Project Type & Purpose:
+   - What kind of project is this? (CLI tool, web app, library, API, etc.)
+   - What problems does it solve?
+   - Who are the target users?
+
+2. Technical Architecture:
+   - Main entry points and key files
+   - Code structure and organization
+   - Design patterns used
+   - Component relationships
+
+3. Technology Stack:
+   - Programming languages
+   - Dependencies and their purposes
+   - Development tools and frameworks
+   - Build and deployment setup
+
+4. Functionality Analysis:
+   - Core features and capabilities
+   - Commands, APIs, or interfaces
+   - Integration points
+   - Configuration options
+
+5. Project State:
+   - Development phase and maturity
+   - Recent changes and focus areas
+   - Known issues or limitations
+   - Future roadmap indicators
+
+6. Development Context:
+   - File structure and organization
+   - Testing approach
+   - Documentation state
+   - Quality measures
+
+Please provide a detailed, comprehensive analysis that covers all these aspects. Be specific and include actual details from the codebase, not generic statements.`;
+
+      const command = `npx @juspay/neurolink generate "${analysisPrompt}" --provider vertex --model gemini-2.0-flash-exp`;
+      
+      const env = {
+        ...process.env,
+        GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
+        GOOGLE_CLOUD_REGION: 'us-east5'
+      };
+      
+      const { stdout, stderr } = await execAsync(command, { 
+        cwd: repositoryPath,
+        env: env,
+        maxBuffer: 1024 * 1024 * 10
+      });
+      
+      if (stderr) {
+        console.warn('Repository analysis stderr:', stderr);
+      }
+
+      return stdout.trim();
+
+    } catch (error) {
+      console.warn('Repository analysis failed:', error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Step 2: Generate memory bank content using repository analysis + Cline rules
+   * @param {string} repositoryAnalysis - Comprehensive repository analysis from step 1
+   * @param {string} repositoryPath - Path to repository
+   * @returns {Promise<Object>} Parsed neurolink content by file
+   */
+  async generateMemoryBankWithAnalysis(repositoryAnalysis, repositoryPath = '.') {
+    try {
+      // Read .clinerules template to provide context
+      const clineruleTemplatePath = path.join('src/shelly/templates/.clinerules.template');
+      let clinerules = '';
+      
+      if (await this.fileExists(clineruleTemplatePath)) {
+        clinerules = await fs.readFile(clineruleTemplatePath, 'utf8');
+      }
+
+      // Create a temporary file for the complex prompt to avoid shell parsing issues
+      const tempPromptFile = path.join(repositoryPath, '.temp_memory_prompt.txt');
+      const memoryBankPrompt = `CRITICAL: You MUST generate ALL 6 memory bank files. Do not generate partial responses.
+
+MEMORY BANK GENERATION REQUEST:
+
+Based on the comprehensive repository analysis provided below, generate Memory Bank documentation following Cline rules.
+
+CLINE RULES FOR MEMORY BANK:
+${clinerules}
+
+REPOSITORY ANALYSIS (from Step 1):
+${repositoryAnalysis}
+
+MANDATORY REQUIREMENT: Generate exactly 6 separate memory bank files with these EXACT markers. You MUST include ALL 6 files in your response:
+
+--- MEMORY_BANK_FILE: projectbrief.md ---
+# Project Brief: [Project Name]
+
+[Generate comprehensive Project Brief content here based on repository analysis]
+[Include: Core requirements, goals, objectives, project scope, success metrics]
+[Use actual project details from the analysis above]
+
+--- MEMORY_BANK_FILE: productContext.md ---
+# Product Context: [Project Name]
+
+[Generate comprehensive Product Context content here based on repository analysis]
+[Include: Problems solved, target users, user workflows, solution overview]
+[Use actual project details from the analysis above]
+
+--- MEMORY_BANK_FILE: systemPatterns.md ---
+# System Patterns: [Project Name]
+
+[Generate comprehensive System Patterns content here based on repository analysis]
+[Include: Architecture overview, design patterns, component relationships, data flow]
+[Use actual project details from the analysis above]
+
+--- MEMORY_BANK_FILE: techContext.md ---
+# Technical Context: [Project Name]
+
+[Generate comprehensive Technical Context content here based on repository analysis]
+[Include: Technology stack, dependencies, development setup, build processes]
+[Use actual project details from the analysis above]
+
+--- MEMORY_BANK_FILE: activeContext.md ---
+# Active Context: [Project Name]
+
+[Generate comprehensive Active Context content here based on repository analysis]
+[Include: Current work focus, recent changes, active tasks, next steps]
+[Use actual project details from the analysis above]
+
+--- MEMORY_BANK_FILE: progress.md ---
+# Progress: [Project Name]
+
+[Generate comprehensive Progress content here based on repository analysis]
+[Include: Current status, completed features, roadmap, known issues]
+[Use actual project details from the analysis above]
+
+CRITICAL REMINDER: Your response MUST contain ALL 6 files with the exact markers shown above. Each file should be comprehensive and follow Cline Memory Bank guidelines. Use the repository analysis to provide specific, accurate content for this project.`;
+
+      // Write prompt to temporary file
+      await fs.writeFile(tempPromptFile, memoryBankPrompt, 'utf8');
+
+      const command = `npx @juspay/neurolink generate "$(cat ${tempPromptFile})" --provider vertex --model gemini-2.0-flash-exp --max 8000`;
+      
+      const env = {
+        ...process.env,
+        GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
+        GOOGLE_CLOUD_REGION: 'us-east5'
+      };
+      
+      const { stdout, stderr } = await execAsync(command, { 
+        cwd: repositoryPath,
+        env: env,
+        maxBuffer: 1024 * 1024 * 10
+      });
+      
+      // Clean up temporary file
+      try {
+        await fs.unlink(tempPromptFile);
+      } catch (unlinkError) {
+        console.warn('Warning: Could not clean up temporary prompt file:', unlinkError.message);
+      }
+      
+      if (stderr) {
+        console.warn('Memory bank generation stderr:', stderr);
+      }
+
+      // Parse the neurolink output into individual files
+      return this.parseNeurolinkOutput(stdout);
+
+    } catch (error) {
+      console.warn('Memory bank generation failed:', error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Parse neurolink output into individual memory bank files
+   * @param {string} output - Raw neurolink output
+   * @returns {Object} Parsed content by filename
+   */
+  parseNeurolinkOutput(output) {
+    const parsedContent = {};
+    const fileMarker = /--- MEMORY_BANK_FILE: ([^-]+) ---/g;
+    
+    // Split content by file markers
+    const sections = output.split(fileMarker);
+    
+    // Process each section (skip first empty section)
+    for (let i = 1; i < sections.length; i += 2) {
+      const filename = sections[i].trim();
+      const content = sections[i + 1] ? sections[i + 1].trim() : '';
+      
+      if (filename && content) {
+        // Map filename to full path
+        const fileMap = {
+          'projectbrief.md': 'project/projectbrief.md',
+          'productContext.md': 'project/productContext.md', 
+          'systemPatterns.md': 'technical/systemPatterns.md',
+          'techContext.md': 'technical/techContext.md',
+          'activeContext.md': 'current/activeContext.md',
+          'progress.md': 'current/progress.md'
+        };
+        
+        const fullPath = fileMap[filename] || filename;
+        parsedContent[fullPath] = content;
+      }
+    }
+    
+    console.log(`✅ Parsed ${Object.keys(parsedContent).length} memory bank files from neurolink`);
+    return parsedContent;
   }
 
   /**
@@ -414,6 +713,730 @@ This Memory Bank integrates with:
     status.lastUpdated = newestDate;
 
     return status;
+  }
+
+  /**
+   * Generate .clinerules content with project name only
+   * @param {Object} packageInfo - Repository analysis data
+   * @returns {Promise<string>} Template content with project name replaced
+   */
+  async generateClinerules(packageInfo) {
+    console.log('🚀 Using .clinerules template with project name only');
+    return this.loadTemplateWithProjectNameOnly('.clinerules.template', packageInfo);
+  }
+
+  /**
+   * Alternative neurolink generation (kept for future experimentation)
+   * @param {Object} packageInfo - Repository analysis data
+   * @returns {Promise<string>} Generated .clinerules content
+   */
+  async generateClinerulesWithNeurolink(packageInfo) {
+    try {
+      // Create comprehensive prompt for EXACT NeuroLink formatting and style
+      const clinerulestPrompt = `EXACT NEUROLINK .CLINERULES REPLICATION:
+
+Generate a .clinerules file that EXACTLY matches NeuroLink's formatting style and structure.
+
+PROJECT ANALYSIS:
+${JSON.stringify(packageInfo, null, 2)}
+
+CRITICAL FORMATTING REQUIREMENTS:
+1. Use EXACT NeuroLink header formatting with emojis
+2. Follow NeuroLink bullet point style with **bold titles**: description
+3. Use NeuroLink quote blocks with specific icons
+4. Match NeuroLink code block formatting exactly
+5. Include only relevant sections for this project
+6. Use NeuroLink's precise language patterns
+
+EXACT FORMAT TO FOLLOW:
+
+# [Project Name] Project Rules
+
+### **MIGRATION PATTERNS**
+- **[Bold Pattern Name]**: [Description specific to this project]
+- **[Bold Pattern Name]**: [Description specific to this project]  
+- **[Bold Pattern Name]**: [Description specific to this project]
+
+> **📚 Historical Learning Archive**: See \`memory-bank/\` for [project-specific context]
+> **🎯 Current Focus**: [Current project focus based on analysis]
+
+---
+
+## 🏗️ [PROJECT-SPECIFIC ARCHITECTURE PATTERN NAME]
+
+### **[Architecture Foundation Pattern] (CRITICAL)**
+\`\`\`[language]
+// [Project-specific architecture]
+[actual file structure based on project analysis]
+\`\`\`
+
+### **Key Implementation Principles**
+- **[PRINCIPLE NAME]**: [Project-specific implementation detail]
+- **[PRINCIPLE NAME]**: [Project-specific implementation detail]
+- **[PRINCIPLE NAME]**: [Project-specific implementation detail]
+- **[PRINCIPLE NAME]**: [Project-specific implementation detail]
+- **[PRINCIPLE NAME]**: [Project-specific implementation detail]
+
+---
+
+## 🛠️ ENTERPRISE DEVELOPMENT WORKFLOW
+
+### **Complete Command Arsenal ([X]+ Commands)**
+
+#### **[Category Name]**
+\`\`\`bash
+# [Description]
+[actual project commands from analysis]
+
+# [Description] 
+[actual project commands from analysis]
+\`\`\`
+
+#### **[Category Name]**
+\`\`\`bash
+# [Description]
+[actual project commands from analysis]
+\`\`\`
+
+[Continue with other relevant sections only if they apply to this project]
+
+---
+
+## 🔧 COMPLETE SDLC CYCLE
+
+### **Phase 1: [Phase Name]**
+\`\`\`bash
+# 1. [Step description]
+[actual commands for this project]
+
+# 2. [Step description]  
+[actual commands for this project]
+\`\`\`
+
+[Continue format for other phases]
+
+---
+
+## 🧪 COMPREHENSIVE TESTING & DEBUGGING STRATEGY
+
+### **Testing Architecture ([X]-Layer System)**
+\`\`\`
+Layer 1: [Project-specific testing] → [Description]
+Layer 2: [Project-specific testing] → [Description]  
+Layer 3: [Project-specific testing] → [Description]
+\`\`\`
+
+### **Debugging Methodology (ESSENTIAL)**
+
+#### **Step 1: [Step Name]**
+\`\`\`[language]
+// [Project-specific debugging code]
+[actual code examples from project]
+\`\`\`
+
+[Continue with other relevant sections using EXACT NeuroLink formatting]
+
+GENERATE ONLY RELEVANT SECTIONS FOR THIS PROJECT. Use the EXACT formatting style, structure, and language patterns from NeuroLink. Make it project-specific but follow NeuroLink's precise formatting conventions.`;
+
+      // Use npx with --yes flag for auto-installation and better error handling  
+      const command = `npx --yes @juspay/neurolink generate "$(echo '${clinerulestPrompt.replace(/'/g, "'\\''")}' | cat)" --provider vertex --model gemini-2.0-flash-exp --max 8000`;
+      
+      const env = {
+        ...process.env,
+        GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
+        GOOGLE_CLOUD_REGION: 'us-east5'
+      };
+      
+      const { stdout, stderr } = await execAsync(command, { 
+        cwd: '.',
+        env: env,
+        maxBuffer: 1024 * 1024 * 10,
+        timeout: 120000 // 2 minute timeout
+      });
+      
+      if (stderr && !stderr.includes('Generating text')) {
+        console.warn('.clinerules generation stderr:', stderr);
+      }
+
+      const result = stdout.trim();
+      
+      // Validate that we got comprehensive content
+      if (result.length < 1000) {
+        throw new Error('Generated content too short, falling back to enhanced template');
+      }
+
+      console.log('🤖 Generated comprehensive .clinerules using neurolink');
+      return result;
+
+    } catch (error) {
+      console.warn('.clinerules neurolink generation failed:', error.message);
+      console.log('🔄 Using enhanced fallback generation...');
+      
+      // Fallback to enhanced template-based generation
+      return this.generateEnhancedClinerules(packageInfo);
+    }
+  }
+
+  /**
+   * Generate enhanced .clinerules content as comprehensive fallback
+   * @param {Object} packageInfo - Repository analysis data
+   * @returns {string} Enhanced .clinerules content
+   */
+  generateEnhancedClinerules(packageInfo) {
+    const projectName = packageInfo.name || 'Project';
+    const projectType = packageInfo.repoType || 'Node.js Project';
+    
+    return `# ${projectName} Project Rules
+
+### **MIGRATION PATTERNS**
+- **Modular Architecture Enhancement**: ${this.getArchitecturePattern(packageInfo)} with extensible command processing
+- **AI Integration Evolution**: Deep integration with Neurolink for intelligent error analysis and suggestions
+- **Shell Environment Compatibility**: Universal shell support (bash, zsh, tcsh) with seamless integration
+
+> **📚 Historical Learning Archive**: See \`memory-bank/\` for complete project context
+> **🎯 Current Focus**: ${packageInfo.description || 'Intelligent CLI assistant development'}
+
+---
+
+## 🏗️ ARCHITECTURE PATTERNS (CRITICAL)
+
+### **Core Module Structure**
+\`\`\`javascript
+${this.generateProjectStructure(packageInfo)}
+\`\`\`
+
+### **Key Implementation Principles**
+- **Modular Design**: Service-oriented architecture with clear separation of concerns
+- **Command Pattern**: CLI commands encapsulate actions for extensibility
+- **Observer Pattern**: Monitors command execution for failure detection
+- **Strategy Pattern**: Multiple suggestion algorithms based on error context
+- **Factory Pattern**: Dynamic service instantiation and dependency injection
+
+### **Component Relationships**
+\`\`\`
+CLI Interface → Command Parser → History Analyzer → AI Engine → Interactive UI
+     ↓              ↓              ↓              ↓            ↓
+Shell Integration  Error Detection  Context Analysis  Neurolink API  User Feedback
+\`\`\`
+
+---
+
+## 🛠️ ENTERPRISE DEVELOPMENT WORKFLOW
+
+### **Complete Command Arsenal (20+ Commands)**
+
+#### **Core Development**
+\`\`\`bash
+${this.formatScripts(packageInfo.scripts)}
+
+# Additional development commands
+npm install                    # Install dependencies
+npm run dev                   # Development mode
+npm run build                 # Production build
+npm run clean                 # Clean build artifacts
+\`\`\`
+
+#### **Quality & Testing**
+\`\`\`bash
+npm test                      # Run test suite
+npm run test:watch           # Watch mode testing
+npm run test:coverage        # Coverage analysis
+npm run lint                 # ESLint validation
+npm run lint:fix             # Auto-fix linting issues
+npm run format               # Prettier formatting
+npm run format:check         # Format validation
+\`\`\`
+
+#### **Memory Bank Management**
+\`\`\`bash
+node src/shelly/cli.js memory init        # Initialize memory bank
+node src/shelly/cli.js memory status      # Check memory bank status
+node src/shelly/cli.js memory update      # Update memory bank
+node src/shelly/cli.js memory show <file> # Display specific file
+\`\`\`
+
+#### **Project Organization**
+\`\`\`bash
+node src/shelly/cli.js organize          # Project scaffolding
+node src/shelly/cli.js organize --force  # Force reorganization
+node src/shelly/cli.js status            # Project health check
+\`\`\`
+
+---
+
+## 🔧 COMPLETE SDLC CYCLE
+
+### **Phase 1: Development Setup**
+\`\`\`bash
+# 1. Environment preparation
+npm install
+npm run build
+
+# 2. Verify system integration
+node src/main.js --version
+node src/shelly/cli.js --help
+\`\`\`
+
+### **Phase 2: Feature Development**
+\`\`\`bash
+# 1. Start development
+npm run dev
+
+# 2. Continuous testing
+npm run test:watch
+
+# 3. Code quality checks
+npm run lint
+npm run format
+\`\`\`
+
+### **Phase 3: Pre-Commit Validation**
+\`\`\`bash
+# 1. Complete quality check
+npm run lint && npm run format && npm test
+
+# 2. Build validation
+npm run build
+
+# 3. Memory bank update
+node src/shelly/cli.js memory update
+\`\`\`
+
+### **Phase 4: Testing & Validation**
+\`\`\`bash
+# 1. Comprehensive testing
+npm test
+npm run test:coverage
+
+# 2. Integration testing
+node src/main.js "test command"
+node src/shelly/cli.js organize
+\`\`\`
+
+### **Phase 5: Pre-Release**
+\`\`\`bash
+# 1. Final build
+npm run build
+
+# 2. Documentation sync
+node src/shelly/cli.js memory update
+
+# 3. Version preparation
+npm version patch|minor|major
+\`\`\`
+
+### **Phase 6: Release & Deploy**
+\`\`\`bash
+# 1. Tag and release
+git tag v\$(npm pkg get version | tr -d '"')
+git push origin main --tags
+
+# 2. NPM publishing (if applicable)
+npm publish
+\`\`\`
+
+---
+
+## 🧪 COMPREHENSIVE TESTING & DEBUGGING STRATEGY
+
+### **Testing Architecture (3-Layer System)**
+\`\`\`
+Layer 1: Unit Tests → Command parsing, history analysis, error detection
+Layer 2: Integration Tests → Shell integration, AI suggestion flow
+Layer 3: System Tests → End-to-end workflows, cross-platform compatibility
+\`\`\`
+
+### **Testing Commands by Category**
+\`\`\`bash
+# DEVELOPMENT TESTING
+npm test                      # Full test suite
+npm run test:watch           # Interactive testing
+npm run test:coverage        # Coverage analysis
+
+# INTEGRATION TESTING
+node src/main.js --debug     # Debug mode testing
+bash -c "false; node src/main.js"  # Error simulation
+\`\`\`
+
+### **Debugging Methodology (ESSENTIAL)**
+\`\`\`javascript
+// Step 1: Enable debug logging
+DEBUG=shelly:* node src/main.js
+
+// Step 2: Shell integration testing
+export SHELL_DEBUG=1
+node src/main.js --debug
+
+// Step 3: AI integration validation
+node src/shelly/cli.js memory init --debug
+\`\`\`
+
+---
+
+## 🔐 AUTHENTICATION & INTEGRATION PATTERNS
+
+### **Neurolink Integration (CRITICAL)**
+\`\`\`bash
+# Environment variables for Vertex AI
+export GOOGLE_CLOUD_PROJECT=dev-ai-gamma
+export GOOGLE_CLOUD_REGION=us-east5
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+\`\`\`
+
+### **Shell Environment Integration**
+\`\`\`bash
+# Add to shell profile (.bashrc, .zshrc, etc.)
+alias shelp='node /path/to/shelly/src/main.js'
+alias s='node /path/to/shelly/src/main.js'
+
+# Optional: Auto-analyze failed commands
+trap 'node /path/to/shelly/src/main.js' ERR
+\`\`\`
+
+---
+
+## 📖 MEMORY BANK MANAGEMENT PATTERNS
+
+### **Memory Bank File Hierarchy**
+\`\`\`
+memory-bank/
+├── project/                  # Project Definition & Strategy
+│   ├── projectbrief.md      # Foundation document - shapes all others
+│   └── productContext.md    # Why project exists, problems solved
+├── technical/                # Technical Architecture & Implementation
+│   ├── systemPatterns.md    # Architecture, technical decisions
+│   └── techContext.md       # Technologies, setup, constraints
+└── current/                  # Active Development State
+    ├── activeContext.md     # Current work focus, recent changes
+    └── progress.md          # What works, what's left, status
+\`\`\`
+
+### **When to Update Memory Bank**
+1. **After implementing significant changes**
+2. **When user requests "update memory bank"** (MUST review ALL files)
+3. **Before major releases or milestones**
+4. **When project patterns or architecture evolve**
+
+---
+
+## 💻 DEVELOPMENT STANDARDS
+
+### **Code Organization Principles**
+\`\`\`javascript
+// Service-oriented architecture
+src/
+├── main.js                  // Primary CLI entry point
+├── services/                // Core business logic
+│   ├── analysisService.js   // Command analysis
+│   ├── historyService.js    // Shell history management
+│   └── shellService.js      // Shell integration
+└── shelly/                  // Secondary CLI system
+    ├── cli.js               // Shelly CLI entry point
+    ├── commands/            // Command implementations
+    ├── services/            // Shelly-specific services
+    └── utils/               // Shared utilities
+\`\`\`
+
+### **Error Handling Standards**
+\`\`\`javascript
+// Graceful error handling with user guidance
+const handleError = (error, context) => {
+  console.error(\`❌ \${error.message}\`);
+  
+  if (context.suggestions) {
+    console.log('💡 Suggestions:');
+    context.suggestions.forEach(suggestion => {
+      console.log(\`  • \${suggestion}\`);
+    });
+  }
+};
+\`\`\`
+
+---
+
+## ⚡ CRITICAL SUCCESS FACTORS
+
+### **AI Suggestion Accuracy (ESSENTIAL)**
+- **Neurolink Integration**: Properly configured with API keys and environment
+- **Context Analysis**: Rich command history and error pattern recognition
+- **User Feedback Loop**: Continuous improvement based on user interactions
+
+### **Performance & Compatibility**
+- **Shell Integration**: Universal support for bash, zsh, tcsh environments
+- **Response Time**: AI suggestions delivered within 2-3 seconds
+- **Memory Efficiency**: Minimal impact on terminal performance
+
+### **Development Workflow Validation**
+\`\`\`bash
+# Complete validation pipeline
+npm install && npm run build && npm test && npm run lint
+node src/main.js --version
+node src/shelly/cli.js memory status
+\`\`\`
+
+---
+
+## 🎯 WORKING EXAMPLES (VERIFIED)
+
+### **Basic Error Analysis**
+\`\`\`bash
+# Simulate failed command, then analyze
+git push origin nonexistent-branch
+node src/main.js  # Analyzes the failed git command
+
+# Direct command analysis
+node src/main.js "npm isntall express"
+\`\`\`
+
+### **Memory Bank Workflow**
+\`\`\`bash
+# Initialize comprehensive project documentation
+node src/shelly/cli.js memory init
+
+# Check current status
+node src/shelly/cli.js memory status
+
+# View specific context
+node src/shelly/cli.js memory show project/projectbrief.md
+\`\`\`
+
+### **Project Organization**
+\`\`\`bash
+# Set up new project with Shelly enhancements
+mkdir myproject && cd myproject
+npm init -y
+node ../shelly/src/shelly/cli.js organize
+node ../shelly/src/shelly/cli.js memory init
+\`\`\`
+
+---
+
+**🎯 OPERATIONAL EXCELLENCE**: This .clinerules file provides comprehensive operational knowledge for ${projectName} development. All patterns, workflows, and standards are production-tested and designed for seamless developer workflow integration.
+`;
+  }
+
+  /**
+   * Generate basic .clinerules content as fallback
+   * @param {Object} packageInfo - Repository analysis data
+   * @returns {string} Basic .clinerules content
+   */
+  generateBasicClinerules(packageInfo) {
+    const projectName = packageInfo.name || 'Project';
+    const projectType = packageInfo.repoType || 'Node.js Project';
+    
+    return `# ${projectName} Project Rules
+
+### **PROJECT MISSION**
+- **Core Purpose**: ${packageInfo.description || 'Development project'}
+- **Project Type**: ${projectType}
+- **Architecture Pattern**: ${this.getArchitecturePattern(packageInfo)}
+
+> **📚 Memory Bank Integration**: See \`memory-bank/\` for complete project context and AI assistant continuity
+> **🎯 Current Focus**: Active development and enhancement
+
+---
+
+## 🏗️ PROJECT ARCHITECTURE
+
+### **Core Structure**
+\`\`\`
+${this.generateProjectStructure(packageInfo)}
+\`\`\`
+
+### **Key Technologies**
+${this.formatDependencies(packageInfo.dependencies)}
+
+### **Development Dependencies**
+${this.formatDependencies(packageInfo.devDependencies)}
+
+---
+
+## 🛠️ DEVELOPMENT WORKFLOW
+
+### **Available Scripts**
+\`\`\`bash
+${this.formatScripts(packageInfo.scripts)}
+\`\`\`
+
+### **Development Commands**
+\`\`\`bash
+# Install dependencies
+npm install
+
+# Development mode
+npm run dev
+
+# Testing
+npm test
+
+# Build
+npm run build
+
+# Linting
+npm run lint
+\`\`\`
+
+---
+
+## 🧪 TESTING & VALIDATION
+
+### **Testing Strategy**
+- **Unit Tests**: Core functionality validation
+- **Integration Tests**: Component interaction testing
+- **Quality Assurance**: Linting and formatting validation
+
+### **Quality Commands**
+\`\`\`bash
+npm test                       # Run test suite
+npm run lint                   # Code quality check
+npm run format                 # Code formatting
+\`\`\`
+
+---
+
+## 📖 MEMORY BANK INTEGRATION
+
+### **Memory Bank Management**
+\`\`\`bash
+# Initialize memory bank
+node src/shelly/cli.js memory init
+
+# Check status
+node src/shelly/cli.js memory status
+
+# Update memory bank
+node src/shelly/cli.js memory update
+\`\`\`
+
+### **Memory Bank Structure**
+\`\`\`
+memory-bank/
+├── project/                   # Project definition & strategy
+├── technical/                 # Technical architecture & implementation
+└── current/                   # Active development state
+\`\`\`
+
+---
+
+## ⚡ CRITICAL SUCCESS FACTORS
+
+### **Project Validation**
+- **Dependencies**: All required packages installed
+- **Configuration**: Environment variables configured
+- **Testing**: All tests passing
+- **Documentation**: Memory bank up to date
+
+### **Development Standards**
+- **Code Quality**: Consistent formatting and linting
+- **Testing Coverage**: Comprehensive test coverage
+- **Documentation**: Clear and current documentation
+- **Version Control**: Meaningful commit messages
+
+---
+
+**🎯 PROJECT EXCELLENCE**: This .clinerules file provides the operational knowledge for ${projectName} development. All patterns and workflows are specific to this project's architecture and requirements.
+`;
+  }
+
+  /**
+   * Get architecture pattern based on project analysis
+   * @param {Object} packageInfo - Repository analysis data
+   * @returns {string} Architecture pattern description
+   */
+  getArchitecturePattern(packageInfo) {
+    if (packageInfo.dependencies?.react) return 'React Component Architecture';
+    if (packageInfo.dependencies?.express) return 'Express REST API Architecture';
+    if (packageInfo.bin) return 'CLI Tool Architecture';
+    if (packageInfo.dependencies?.typescript) return 'TypeScript Modular Architecture';
+    return 'Node.js Modular Architecture';
+  }
+
+  /**
+   * Generate project structure representation
+   * @param {Object} packageInfo - Repository analysis data
+   * @returns {string} Project structure
+   */
+  generateProjectStructure(packageInfo) {
+    let structure = `${packageInfo.name || 'project'}/\n├── package.json\n├── README.md`;
+    
+    if (packageInfo.projectStructure?.hasSrc) {
+      structure += '\n├── src/\n│   └── main.js';
+    }
+    
+    if (packageInfo.projectStructure?.hasTests) {
+      structure += '\n├── test/';
+    }
+    
+    if (packageInfo.projectStructure?.hasDocs) {
+      structure += '\n├── docs/';
+    }
+    
+    structure += '\n└── memory-bank/           # AI assistant context';
+    
+    return structure;
+  }
+
+  /**
+   * Format dependencies for display
+   * @param {Object} deps - Dependencies object
+   * @returns {string} Formatted dependencies
+   */
+  formatDependencies(deps = {}) {
+    if (Object.keys(deps).length === 0) return '- None specified';
+    
+    return Object.entries(deps)
+      .map(([name, version]) => `- **${name}**: ${version}`)
+      .join('\n');
+  }
+
+  /**
+   * Format scripts for display
+   * @param {Object} scripts - Scripts object
+   * @returns {string} Formatted scripts
+   */
+  formatScripts(scripts = {}) {
+    if (Object.keys(scripts).length === 0) return '# No scripts defined';
+    
+    return Object.entries(scripts)
+      .map(([name, command]) => `npm run ${name}              # ${command}`)
+      .join('\n');
+  }
+
+  /**
+   * Load raw template content without any placeholder replacement
+   * @param {string} templateName - Name of template file
+   * @returns {Promise<string>} Raw template content
+   */
+  async loadRawTemplate(templateName) {
+    const templatePath = path.join('src/shelly/templates', templateName);
+    
+    try {
+      const content = await fs.readFile(templatePath, 'utf8');
+      return content;
+    } catch (error) {
+      console.warn(`Warning: Could not load template ${templateName}: ${error.message}`);
+      return '';
+    }
+  }
+
+  /**
+   * Load template file and only replace project name placeholder
+   * @param {string} templateName - Name of template file
+   * @param {Object} packageInfo - Repository analysis data
+   * @returns {Promise<string>} Template content with project name replaced
+   */
+  async loadTemplateWithProjectNameOnly(templateName, packageInfo) {
+    const templatePath = path.join('src/shelly/templates', templateName);
+    
+    try {
+      const content = await fs.readFile(templatePath, 'utf8');
+      // Only replace the project name placeholder
+      const projectName = packageInfo.name || packageInfo.repoName || 'Project';
+      return content.replace(/\{\{projectName\}\}/g, projectName);
+    } catch (error) {
+      console.warn(`Warning: Could not load template ${templateName}: ${error.message}`);
+      return '';
+    }
   }
 
   /**

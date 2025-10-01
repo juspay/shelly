@@ -38,6 +38,7 @@ async function setupCLI() {
     .description('Organize repository structure and enhance project files')
     .option('-f, --force', 'overwrite existing files without prompting')
     .option('-u, --update', 'only add missing files, preserve existing ones')
+    .option('-m, --move', 'move misplaced files to their correct directories')
     .option('-d, --directory <path>', 'target directory (defaults to current directory)')
     .action(async (options) => {
       try {
@@ -65,6 +66,7 @@ async function setupCLI() {
         const organizeCommand = new OrganizeCommand({
           force: options.force,
           update: options.update,
+          move: options.move,
           cwd: targetDirectory
         });
 

@@ -1,4 +1,4 @@
-# {{projectName}} Project Rules
+# @juspay/shelly Project Rules
 
 ### **MIGRATION PATTERNS**
 - **Modular Architecture Enhancement**: {{repoType}} with extensible command processing
@@ -14,7 +14,7 @@
 
 ### **Core Module Structure**
 ```javascript
-{{projectName}}/
+@juspay/shelly/
 ├── package.json
 ├── README.md
 ├── src/                     # [Customize based on your project structure]
@@ -85,7 +85,7 @@ git pull                    # Pull from remote
 ```bash
 # 1. Clone and setup
 git clone [your-repo-url]
-cd {{projectName}}
+cd @juspay/shelly
 npm install
 
 # 2. Environment setup

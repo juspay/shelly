@@ -2,11 +2,11 @@ import { generateText } from '@juspay/neurolink';
 
 export class AIContentGenerator {
   constructor() {
-    // Configure neurolink with Google AI provider
     this.generateOptions = {
-      provider: "googlevertex",
-      apiKey: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      model: "gemini-2.5-flash",
+      provider: "googlevertex", 
+      model: "gemini-2.0-flash-exp", 
+      project: "dev-ai-gamma",
+      region: "us-east5"
     };
   }
 
