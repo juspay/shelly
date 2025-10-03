@@ -63,8 +63,22 @@
   },
   "project_context": {
     "name": "@juspay/shelly",
-    "description": "An intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity.",
-    "language": "{{repoType}}",
-    "framework": "auto-detect"
+    "description": "AI-powered development assistant combining error analysis, repository organization, and Memory Bank for enhanced AI-assisted development workflows. Features include multi-shell command analysis, GitHub integration, project scaffolding, and persistent AI context management.",
+    "language": "javascript",
+    "framework": "node.js",
+    "key_features": [
+      "error-analysis",
+      "repository-organization", 
+      "memory-bank",
+      "ai-integration",
+      "shell-compatibility",
+      "github-integration"
+    ],
+    "architecture": {
+      "cli_tools": ["main.js", "src/shelly/cli.js"],
+      "core_services": ["analysisService", "historyService", "memoryBankService"],
+      "ai_integration": ["@juspay/neurolink", "Google AI services"],
+      "shell_support": ["bash", "zsh", "tcsh"]
+    }
   }
 }

@@ -1,29 +1,122 @@
 # Contributing to Shelly
 
-Thank you for your interest in contributing to Shelly ! We welcome contributions from the community and are pleased to have you help make this project better.
+Thank you for your interest in contributing to Shelly! We welcome contributions from the community to help enhance our AI-powered development assistant platform.
+
+Shelly combines **Error Analysis**, **Repository Organization**, and **Memory Bank** features to create a comprehensive development workflow enhancement tool. Whether you're interested in improving AI integration, shell compatibility, or developer experience, there's a place for your contribution.
 
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
+- [Shelly Architecture Overview](#shelly-architecture-overview)
 - [Development Setup](#development-setup)
+- [Feature Areas](#feature-areas)
 - [Making Changes](#making-changes)
+- [Testing Guidelines](#testing-guidelines)
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [Issue Guidelines](#issue-guidelines)
 - [Commit Message Guidelines](#commit-message-guidelines)
+- [Release Process](#release-process)
 
 ## Code of Conduct
 
-This project adheres to the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). By participating, you are expected to uphold this code.
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code and help us maintain a welcoming, inclusive community.
 
 ## Getting Started
 
 1. Fork the repository on GitHub
 2. Clone your fork locally
 3. Set up the development environment
-4. Make your changes
-5. Test your changes
-6. Submit a pull request
+4. Understand Shelly's architecture (see below)
+5. Choose a feature area to contribute to
+6. Make your changes
+7. Test your changes thoroughly
+8. Submit a pull request
+
+## Shelly Architecture Overview
+
+Shelly uses a **dual CLI architecture** with three main feature areas:
+
+### 🔍 **Error Analysis** (`src/main.js`)
+- **Purpose**: Analyzes failed shell commands and provides AI-powered suggestions
+- **Key Services**: `analysisService.js`, `historyService.js`, `shellService.js`
+- **Shell Support**: bash, zsh, tcsh compatibility
+- **AI Integration**: Neurolink and Google AI services
+
+### 🏗️ **Repository Organization** (`src/shelly/cli.js`)
+- **Purpose**: Project scaffolding, GitHub integration, and file organization
+- **Key Components**: `commands/organize.js`, template system, GitHub integration
+- **Features**: `shelly organize`, `shelly status`, `shelly init`
+
+### 🧠 **Memory Bank** (`src/shelly/commands/memory.js`)
+- **Purpose**: AI context management and documentation generation
+- **Key Services**: `memoryBankService.js`, `aiContentGenerator.js`
+- **Features**: `shelly memory init`, `shelly memory update`, persistent context
+
+### Component Flow
+```
+Error Analysis: Shell History → Analysis Service → AI Integration → User Interface
+Repository Org: Project Analysis → Template System → GitHub Integration → File Organization
+Memory Bank: Project Context → AI Content Generator → Structured Documentation
+```
+
+## Feature Areas
+
+Choose an area that matches your interests and expertise:
+
+### 🔍 **Error Analysis Contributions**
+- **Good for**: AI/ML enthusiasts, shell scripting experts, CLI tool developers
+- **Skills needed**: JavaScript, shell scripting, AI/prompt engineering
+- **Example contributions**:
+  - Improve command analysis accuracy
+  - Add support for new shells (fish, PowerShell)
+  - Enhance AI prompt engineering
+  - Add new error pattern recognition
+
+### 🏗️ **Repository Organization Contributions**  
+- **Good for**: DevOps engineers, project template enthusiasts, GitHub automation experts
+- **Skills needed**: JavaScript, GitHub API, project scaffolding, file system operations
+- **Example contributions**:
+  - Add new project templates
+  - Improve GitHub integration
+  - Enhance file organization intelligence
+  - Add support for new project types
+
+### 🧠 **Memory Bank Contributions**
+- **Good for**: Documentation enthusiasts, AI context management, developer experience
+- **Skills needed**: JavaScript, AI content generation, documentation systems
+- **Example contributions**:
+  - Improve AI-generated documentation
+  - Add new Memory Bank templates
+  - Enhance context tracking
+  - Improve integration with AI assistants
+
+### 🤖 **AI Integration Contributions**
+- **Good for**: AI/ML engineers, API integration specialists
+- **Skills needed**: JavaScript, AI APIs, prompt engineering
+- **Example contributions**:
+  - Add new AI provider support
+  - Improve prompt engineering
+  - Enhance error analysis accuracy
+  - Add new AI-powered features
+
+### 🐚 **Shell Integration Contributions**
+- **Good for**: System administrators, shell experts, cross-platform developers
+- **Skills needed**: Shell scripting, cross-platform development
+- **Example contributions**:
+  - Improve shell compatibility
+  - Add new shell support
+  - Enhance command history parsing
+  - Cross-platform compatibility improvements
+
+### 📚 **Documentation & UX Contributions**
+- **Good for**: Technical writers, UX designers, developer advocates
+- **Skills needed**: Documentation, user experience design
+- **Example contributions**:
+  - Improve documentation
+  - Enhance CLI user experience
+  - Add examples and tutorials
+  - User interface improvements
 
 ## Development Setup
 

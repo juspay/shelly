@@ -4,28 +4,31 @@
 
 ## Overview
 
-This document outlines the single commit policy for the shelly repository to ensure a clean, readable, and maintainable git history.
+This document outlines the single commit policy for the Shelly repository to ensure a clean, readable, and maintainable git history for our AI-powered development assistant platform.
 
 ## Policy Statement
 
-All pull requests to the main branch must be merged using **squash and merge** to maintain a single commit per feature/fix.
+All pull requests to the main branch must be merged using **squash and merge** to maintain a single commit per feature/fix, enabling clear tracking of enhancements to Error Analysis, Repository Organization, Memory Bank, and other core features.
 
-## Benefits
+## Benefits for Shelly Development
 
-### Clean History
-- Each feature/fix becomes a single commit
-- Easy to identify what each commit does
-- Simple to revert if needed
+### Clean History for AI-Powered Features
+- Each Error Analysis enhancement becomes a single commit
+- Repository Organization improvements are easily tracked
+- Memory Bank updates maintain clear progression
+- AI integration changes are isolated and revertible
 
-### Better Tracking
-- Clear correlation between issues and commits
-- Easier code archaeology
-- Simplified release notes generation
+### Better Feature Tracking
+- Clear correlation between issues and Shelly feature areas
+- Easier debugging of Error Analysis regressions
+- Simplified Memory Bank evolution tracking
+- Professional commit history for open source adoption
 
-### Improved Reviews
-- Focus on the complete change set
-- No intermediate "fix typo" or "WIP" commits
-- Professional commit history
+### Improved Reviews for Complex AI Features
+- Focus on complete Error Analysis algorithm changes
+- Repository Organization enhancements reviewed holistically
+- Memory Bank system changes evaluated as complete units
+- AI integration updates assessed comprehensively
 
 ## Implementation
 

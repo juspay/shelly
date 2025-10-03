@@ -1,14 +1,29 @@
 # Shelly
 
-A powerful CLI tool that analyzes your failed commands and provides intelligent suggestions to fix them using AI-powered analysis.
+An intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity with advanced repository organization and AI-assisted development features.
 
 ## Features
 
-- 🔍 **Smart Error Analysis**: Uses AI to analyze command failures and suggest fixes
-- 🐚 **Multi-Shell Support**: Works with bash, zsh etc.
-- 🚀 **Real-time History Access**: Reliably gets the last command from your shell
-- 🎯 **Command Suggestions**: Suggests similar commands when you mistype
-- 🌐 **Cross-Platform**
+### 🔍 Core Error Analysis
+- **Smart Error Analysis**: Uses AI to analyze command failures and suggest fixes
+- **Multi-Shell Support**: Works with bash, zsh, tcsh
+- **Real-time History Access**: Reliably gets the last command from your shell
+- **Command Suggestions**: Suggests similar commands when you mistype
+- **Cross-Platform**: macOS and Linux support
+
+### 🏗️ Repository Organization
+- **AI-Powered Scaffolding**: Complete project structure generation
+- **GitHub Integration**: Automated templates, workflows, and issue templates
+- **Package Enhancement**: Automatic @juspay/ prefix and metadata optimization
+- **File Organization**: Smart file placement and cleanup with `--move` option
+- **Configuration Setup**: ESLint, Prettier, Commitlint, and more
+
+### 🧠 Memory Bank System
+- **AI Context Management**: Persistent project context for AI assistants
+- **Organized Documentation**: Structured project knowledge base
+- **Neurolink Integration**: Advanced AI content generation
+- **Development Continuity**: Seamless context across development sessions
+- **Team Collaboration**: Shared project understanding
 
 ## Getting Started
 
@@ -37,7 +52,14 @@ git clone https://github.com/juspay/shelly.git
 
 ## Usage
 
-### Basic Usage
+> **Important:** Shelly uses a dual CLI architecture with two distinct usage modes:
+> 
+> 1. **Error Analysis Mode:** `shelly` (no arguments) - Analyzes the last failed command from your shell history
+> 2. **Repository Management Mode:** `shelly <command>` - Uses specific commands like `organize`, `memory`, `init`, `status`
+> 
+> These are handled by different internal systems, so the commands work differently.
+
+### 🔍 Error Analysis (Core Feature)
 
 After setup, simply run `shelly` after any failed command:
 
@@ -61,7 +83,63 @@ Did you mean one of these?
 - gcc
 ```
 
-### Advanced Usage
+### 🏗️ Repository Organization
+
+Transform any project into a publication-ready repository:
+
+```bash
+# Organize current project with full scaffolding
+shelly organize
+
+# Force overwrite existing files
+shelly organize --force
+
+# Only add missing files, preserve existing ones
+shelly organize --update
+
+# Move misplaced files to correct directories
+shelly organize --move
+
+# Organize a specific directory
+shelly organize --directory /path/to/project
+
+# Check repository organization status
+shelly status
+
+# Initialize a brand new project
+shelly init my-new-project
+shelly init my-project --template typescript --directory ~/projects
+```
+
+### 🧠 Memory Bank Management
+
+Create and maintain AI-assisted development context:
+
+```bash
+# Initialize Memory Bank for the current project
+shelly memory init
+
+# Force reinitialize existing Memory Bank
+shelly memory init --force
+
+# Check Memory Bank status and files
+shelly memory status
+
+# List all Memory Bank files with details
+shelly memory list
+
+# View specific Memory Bank file content
+shelly memory show projectbrief.md
+shelly memory show current/activeContext.md
+
+# Update all Memory Bank files with latest project state
+shelly memory update
+
+# Update only a specific file
+shelly memory update --file progress.md
+```
+
+### 🔧 Advanced Error Analysis Options
 
 #### Debug Mode
 
@@ -119,17 +197,37 @@ SHELL_OVERRIDE=bash shelly
 
 ## Features in Detail
 
-### Error Analysis
+### 🔍 Error Analysis
 
 - **AI Analysis**: Intelligent error interpretation and suggestions using NeuroLink
 - **Command Correction**: Suggests likely intended commands for typos
 - **History Context**: Uses command history for better analysis
+- **Pattern Recognition**: Learns from common error patterns and user corrections
 
-### Shell Integration
+### 🏗️ Repository Organization
+
+- **Smart Scaffolding**: Creates complete project structure with industry best practices
+- **GitHub Templates**: Automated issue templates, PR templates, and workflow setup
+- **Configuration Management**: ESLint, Prettier, Commitlint, and semantic-release setup
+- **Package Optimization**: Enhances package.json with @juspay/ scoping and metadata
+- **File Classification**: Intelligent file organization with `--move` option
+- **Project Templates**: Support for different project types (React, TypeScript, CLI tools)
+
+### 🧠 Memory Bank System
+
+- **Project Context**: Maintains comprehensive project understanding for AI assistants
+- **Structured Documentation**: Organized into project, technical, and current state files
+- **AI Integration**: Seamless integration with Cline and other AI development tools
+- **Neurolink Content**: Advanced AI-generated documentation using Google Vertex AI
+- **Development Continuity**: Preserves context across development sessions and team changes
+- **Knowledge Management**: Central repository for project decisions and evolution
+
+### 🐚 Shell Integration
 
 - **Multi-shell Support**: Native support for bash, zsh, and tcsh
 - **History Access**: Retrieves commands from shell history or live session
 - **Process Tree Analysis**: Intelligently detects your current shell
+- **Alias Generation**: Automatic shell integration setup
 
 ## Troubleshooting
 

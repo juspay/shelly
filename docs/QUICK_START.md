@@ -1,22 +1,39 @@
 # Shelly Quick Start Guide
 
-Welcome to Shelly! This guide will get you up and running with AI-powered command analysis in just a few minutes.
+Welcome to Shelly! This comprehensive guide will get you up and running with AI-powered command analysis, repository organization, and Memory Bank management in just a few minutes.
+
+## 🚀 What is Shelly?
+
+Shelly is a multi-purpose AI-powered CLI tool that provides:
+- **🔍 Error Analysis**: Intelligent debugging for failed commands
+- **🏗️ Repository Organization**: Complete project scaffolding and enhancement
+- **🧠 Memory Bank**: AI-assisted development context management
 
 ## 1. Installation
+
+### Option A: Global Installation (Recommended)
 
 Install Shelly globally using npm:
 
 ```bash
-npm install -g shelly
+npm install -g @juspay/shelly
 ```
 
-## 2. Configure Shell Integration
+### Option B: Local Development Setup
 
-Shelly needs to integrate with your shell to access command history. The setup varies by shell type:
+For contributing or local development:
+
+```bash
+git clone https://github.com/juspay/shelly.git
+cd shelly
+npm install
+```
+
+## 2. Configure Shell Integration (For Error Analysis)
+
+Shelly needs shell integration to access command history for error analysis:
 
 ### For Bash Users
-
-**One-time setup:**
 
 ```bash
 echo 'eval "$(shelly --alias)"' >> ~/.bashrc
@@ -25,64 +42,149 @@ source ~/.bashrc
 
 ### For Zsh Users
 
-**One-time setup:**
-
 ```bash
 echo 'eval "$(shelly --alias)"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-### For Fish Users
+### For Tcsh/Csh Users
 
-**One-time setup:**
+```bash
+echo 'alias shelly "node /path/to/shelly/src/main.js"' >> ~/.tcshrc
+source ~/.tcshrc
+```
+
+### For Fish Users
 
 ```bash
 echo 'shelly --alias | source' >> ~/.config/fish/config.fish
 source ~/.config/fish/config.fish
 ```
 
-### For Other Shells
+## 3. Set Up AI Integration
 
-For advanced shell configurations or troubleshooting, see the [Complete Setup Guide](SETUP.md).
-
-## 3. Set Up Google AI API Key (Free Option)
-
-Shelly uses Google's AI services for analysis. Instead of using the paid Google Cloud Vertex AI service, you can use the free Google AI API.
-
-### Get Your Free API Key
+### Option A: Google AI API (Free, Recommended)
 
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Sign in with your Google account
 3. Click "Create API Key"
-4. Copy the generated API key
-
-### Set the Environment Variable
-
-Add the following line to your shell's configuration file (`~/.bashrc`, `~/.zshrc`, etc.), replacing `YOUR_API_KEY_HERE` with the API key you copied:
+4. Add to your shell configuration:
 
 ```bash
 export GOOGLE_AI_API_KEY="YOUR_API_KEY_HERE"
 ```
 
-After adding this line, **restart your terminal** or source the configuration file for the changes to take effect:
+### Option B: Google Cloud Vertex AI (Enterprise)
+
+For advanced AI features and Neurolink integration:
 
 ```bash
-# For Zsh
-source ~/.zshrc
-
-# For Bash
-source ~/.bashrc
+export GOOGLE_CLOUD_PROJECT="your-project-id"
+export GOOGLE_CLOUD_REGION="us-east5"
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
 ```
 
-## 4. Usage
+Restart your terminal after setting environment variables.
 
-You're all set! After a command fails, simply run:
+## 4. Understanding Shelly's Two Modes
+
+> **Important:** Shelly uses a dual CLI architecture with two distinct usage modes:
+> 
+> 1. **Error Analysis Mode:** `shelly` (no arguments) - Analyzes the last failed command from your shell history
+> 2. **Repository Management Mode:** `shelly <command>` - Uses specific commands like `organize`, `memory`, `init`, `status`
+> 
+> **These are completely different tools with different purposes!**
+
+## 5. Quick Feature Tour
+
+### 🔍 Error Analysis Mode
+
+Run `shelly` with **no arguments** after any failed command:
 
 ```bash
-shelly
+$ grp "pattern" file.txt
+grp: command not found
+
+$ shelly
+# No arguments - this analyzes the previous command
+Analyzing previous command: "grp "pattern" file.txt"
+Maybe you meant: grep "pattern" file.txt
 ```
 
-Shelly will analyze the error and provide you with suggestions.
+**Important:** Do NOT pass the command as an argument for error analysis. Just run `shelly` by itself.
+
+### 🏗️ Repository Organization
+
+Transform any project into a publication-ready repository:
+
+```bash
+# Organize current project
+shelly organize
+
+# Check organization status
+shelly status
+
+# Create a new organized project
+shelly init my-new-project
+```
+
+### 🧠 Memory Bank Setup
+
+Create AI-assisted development context:
+
+```bash
+# Initialize Memory Bank
+shelly memory init
+
+# Check status
+shelly memory status
+
+# View project context
+shelly memory show projectbrief.md
+```
+
+## 5. Common Workflows
+
+### New Project Setup
+
+```bash
+# Create and organize a new project
+mkdir my-project && cd my-project
+npm init -y
+shelly organize
+shelly memory init
+
+# Check everything is set up
+shelly status
+```
+
+### Existing Project Enhancement
+
+```bash
+# Navigate to your project
+cd existing-project
+
+# Organize and enhance
+shelly organize --update  # Preserve existing files
+shelly memory init
+
+# Move misplaced files (optional)
+shelly organize --move
+```
+
+### Daily Development
+
+```bash
+# After any failed command
+some-failed-command
+shelly  # Get AI analysis
+
+# Update project context regularly
+shelly memory update
+
+# Check repository health
+shelly status
+```
 
 ## Troubleshooting
 

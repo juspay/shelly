@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest an idea for @juspay/shelly
+description: Suggest a new feature for Shelly AI-powered development assistant
 title: "[FEATURE] "
 labels: ["enhancement"]
 assignees: []
@@ -7,78 +7,207 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to suggest a new feature for @juspay/shelly!
+        ## ✨ Shelly Feature Request
         
+        Thanks for taking the time to suggest a new feature for Shelly! Your ideas help us enhance our AI-powered development assistant.
+        
+        Please describe how this feature would improve Error Analysis, Repository Organization, Memory Bank, or other aspects of the development workflow.
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Feature Area
+      description: Which Shelly feature area would this enhancement target?
+      options:
+        - "🔍 Error Analysis (command analysis, shell integration, AI suggestions)"
+        - "🏗️ Repository Organization (project scaffolding, GitHub integration, file organization)"
+        - "🧠 Memory Bank (AI context management, documentation generation)"
+        - "🔧 CLI Interface (command parsing, user experience, new commands)"
+        - "🤖 AI Integration (new AI providers, improved analysis)"
+        - "📱 Platform Support (new shells, operating systems)"
+        - "🔌 Extensibility (plugins, integrations, APIs)"
+        - "📚 Documentation (guides, examples, help)"
+        - "🔨 Developer Experience (setup, configuration, debugging)"
+        - "Other/Cross-cutting"
+    validations:
+      required: true
+
   - type: textarea
     id: problem
     attributes:
-      label: Is your feature request related to a problem?
-      description: A clear and concise description of what the problem is.
-      placeholder: Ex. I'm always frustrated when [...]
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: "Example: I'm always frustrated when debugging shell errors because..."
     validations:
       required: true
+
+  - type: textarea
+    id: current-workflow
+    attributes:
+      label: Current Workflow
+      description: How do you currently handle this situation or what workaround do you use?
+      placeholder: "Currently I have to manually search Stack Overflow, check documentation..."
+    validations:
+      required: false
       
   - type: textarea
     id: solution
     attributes:
-      label: Describe the solution you'd like
-      description: A clear and concise description of what you want to happen.
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: "I would like Shelly to automatically detect when..."
     validations:
       required: true
-      
+
+  - type: textarea
+    id: ideal-experience
+    attributes:
+      label: Ideal User Experience
+      description: Walk through how a user would interact with this feature step-by-step
+      placeholder: |
+        1. User runs `shelly [new-command]`
+        2. Shelly detects the condition and...
+        3. User sees helpful output like...
+        4. The workflow is completed when...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: target-users
+    attributes:
+      label: Target Users
+      description: Who would benefit from this feature? (check all that apply)
+      options:
+        - label: "Individual developers"
+        - label: "Development teams"
+        - label: "Open source maintainers"
+        - label: "Enterprise development"
+        - label: "Educational use"
+        - label: "AI-assisted development users"
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Specific Use Cases
+      description: Provide 2-3 concrete scenarios where this feature would be valuable
+      placeholder: |
+        **Scenario 1**: When working on a React project...
+        **Scenario 2**: During repository setup for a team...
+        **Scenario 3**: While debugging deployment issues...
+    validations:
+      required: true
+
   - type: textarea
     id: alternatives
     attributes:
-      label: Describe alternatives you've considered
-      description: A clear and concise description of any alternative solutions or features you've considered.
+      label: Alternatives Considered
+      description: What alternative solutions or features have you considered?
+      placeholder: "I considered using X tool, but it doesn't integrate with Shelly's Memory Bank..."
     validations:
       required: false
-      
+
   - type: textarea
-    id: use-case
+    id: existing-tools
     attributes:
-      label: Use Case
-      description: Describe the use case for this feature. Who would benefit from it and how?
+      label: Existing Tools
+      description: Are there existing tools that solve this problem? How would Shelly's approach be different or better?
+      placeholder: "Tool X exists but lacks AI integration and doesn't work with Shelly's context management..."
     validations:
-      required: true
-      
-  - type: dropdown
-    id: priority
-    attributes:
-      label: Priority
-      description: How important is this feature to you?
-      options:
-        - Low
-        - Medium
-        - High
-        - Critical
-    validations:
-      required: true
-      
+      required: false
+
   - type: textarea
     id: implementation
     attributes:
       label: Implementation Suggestions
-      description: If you have ideas on how this could be implemented, please share them here.
+      description: If you have ideas on how this could be implemented, please share them here
+      placeholder: |
+        **Technical Approach**: This could be implemented by...
+        **Integration Points**: It should work with existing...
+        **Configuration**: Users could configure it via...
     validations:
       required: false
-      
+
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Compatibility & Requirements
+      description: What are the system requirements for this feature?
+      options:
+        - label: "Should work on macOS"
+        - label: "Should work on Linux" 
+        - label: "Should work on Windows"
+        - label: "Requires bash shell support"
+        - label: "Requires zsh shell support"
+        - label: "Requires tcsh shell support"
+        - label: "Requires AI service integration"
+        - label: "Should maintain backward compatibility"
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - "Low (nice to have, no urgency)"
+        - "Medium (would improve user experience)"
+        - "High (addresses significant pain point)"
+        - "Critical (blocks important workflow)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected Impact
+      description: How would this feature improve the developer experience?
+      placeholder: |
+        **User Experience**: This would save developers time by...
+        **Adoption**: This might help increase Shelly adoption because...
+        **Ecosystem**: This fits with AI-assisted development trends by...
+    validations:
+      required: false
+
   - type: textarea
     id: acceptance-criteria
     attributes:
-      label: Acceptance Criteria
+      label: Success Criteria
       description: Define what "done" looks like for this feature
       placeholder: |
-        - [ ] Requirement 1
-        - [ ] Requirement 2
-        - [ ] Edge case handling
+        **Acceptance Criteria:**
+        - [ ] Feature works with existing Error Analysis
+        - [ ] Integrates seamlessly with Repository Organization
+        - [ ] Updates Memory Bank appropriately
+        - [ ] Includes comprehensive documentation
+        - [ ] Works across supported platforms
+        
+        **Testing Requirements:**
+        - [ ] Unit tests for new functionality
+        - [ ] Integration tests with existing features
+        - [ ] Cross-platform testing
+        
+        **Documentation Requirements:**
+        - [ ] README updates
+        - [ ] API documentation
+        - [ ] Memory Bank updates
     validations:
       required: false
-      
+
   - type: textarea
     id: additional-context
     attributes:
-      label: Additional context
-      description: Add any other context or screenshots about the feature request here.
+      label: Additional Context
+      description: Add any other context, screenshots, or mockups about the feature request here
+      placeholder: "Screenshots, related issues, community discussions, timeline requirements..."
     validations:
       required: false
+
+  - type: checkboxes
+    id: research
+    attributes:
+      label: Research Done
+      description: Have you researched this feature request?
+      options:
+        - label: "I've checked existing Shelly documentation"
+        - label: "I've searched existing issues and discussions"  
+        - label: "I've looked at similar tools and approaches"
+        - label: "I've considered how this fits with Shelly's architecture"

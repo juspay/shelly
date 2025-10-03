@@ -1,15 +1,15 @@
-site_name: @juspay/shelly
-site_description: An intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity.
+site_name: "Shelly - AI-Powered Development Assistant"
+site_description: "AI-powered development assistant combining error analysis, repository organization, and Memory Bank for enhanced AI-assisted development workflows. Features include multi-shell command analysis, GitHub integration, project scaffolding, and persistent AI context management."
 site_author: juspay-maintainers
-site_url: https://shelly.github.io/
+site_url: https://juspay.github.io/shelly/
 
 # Repository
-repo_name: shelly
+repo_name: juspay/shelly
 repo_url: https://github.com/juspay/shelly
 edit_uri: edit/main/docs/
 
 # Copyright
-copyright: Copyright &copy; 2023 - 2025 juspay-maintainers
+copyright: "Copyright &copy; 2023 - 2025 Juspay Technologies Pvt Ltd"
 
 # Configuration
 theme:
@@ -61,7 +61,7 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/juspay/shelly
     - icon: fontawesome/brands/npm
-      link: https://www.npmjs.com/package/@juspay/shelly
+      link: "https://www.npmjs.com/package/@juspay/shelly"
 
 # Extensions
 markdown_extensions:
@@ -107,25 +107,35 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started:
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quick-start.md
-    - Configuration: getting-started/configuration.md
+    - Overview: QUICK_START.md
+    - Installation: GETTING_STARTED.md
+    - Setup & Configuration: SETUP.md
+  - Features:
+    - "🔍 Error Analysis": features/error-analysis.md
+    - "🏗️ Repository Organization": features/repository-organization.md
+    - "🧠 Memory Bank": features/memory-bank.md
+    - "🤖 AI Integration": features/ai-integration.md
+    - "🐚 Shell Compatibility": features/shell-integration.md
   - User Guide:
-    - Overview: user-guide/overview.md
-    - Features: user-guide/features.md
-    - Examples: user-guide/examples.md
-  - API Reference:
-    - Overview: api/overview.md
-    - Methods: api/methods.md
-    - Types: api/types.md
+    - Command Reference: API.md
+    - Common Workflows: user-guide/workflows.md
+    - Troubleshooting: user-guide/troubleshooting.md
+    - Best Practices: user-guide/best-practices.md
+  - Memory Bank:
+    - Overview: memory-bank/README.md
+    - Project Context: memory-bank/project/
+    - Technical Docs: memory-bank/technical/
+    - Current Status: memory-bank/current/
   - Development:
-    - Contributing: development/contributing.md
+    - Contributing: CONTRIBUTING.md
+    - Code of Conduct: CODE_OF_CONDUCT.md
     - Architecture: development/architecture.md
     - Testing: development/testing.md
   - About:
-    - License: about/license.md
-    - Changelog: about/changelog.md
-    - Support: about/support.md
+    - License: LICENSE.md
+    - Changelog: CHANGELOG.md
+    - GitHub: https://github.com/juspay/shelly
+    - NPM Package: https://www.npmjs.com/package/@juspay/shelly
 
 # Extra CSS
 extra_css:

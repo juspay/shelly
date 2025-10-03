@@ -1,8 +1,62 @@
 # Global owners
 * @juspay/shelly-maintainers
 
+# Core CLI and Error Analysis
+/src/main.js @juspay/shelly-core-team
+/src/services/ @juspay/shelly-core-team
+/src/utils/ @juspay/shelly-core-team
+
+# Repository Organization Features
+/src/shelly/commands/organize.js @juspay/shelly-organize-team
+/src/shelly/templates/ @juspay/shelly-organize-team
+
+# Memory Bank System
+/src/shelly/commands/memory.js @juspay/shelly-memory-team
+/src/shelly/services/memoryBankService.js @juspay/shelly-memory-team
+/src/shelly/utils/aiContentGenerator.js @juspay/shelly-memory-team
+/memory-bank/ @juspay/shelly-memory-team
+
+# CLI Architecture
+/src/shelly/cli.js @juspay/shelly-cli-team
+
+# AI Integration
+/src/services/analysisService.js @juspay/shelly-ai-team
+/src/shelly/utils/aiContentGenerator.js @juspay/shelly-ai-team
+
+# Shell Integration
+/src/services/shellService.js @juspay/shelly-shell-team
+/src/services/historyService.js @juspay/shelly-shell-team
+
 # Documentation
 *.md @juspay/docs-team
+/docs/ @juspay/docs-team
+/memory-bank/ @juspay/docs-team @juspay/shelly-memory-team
 
-# GitHub workflows
+# GitHub workflows and templates
 /.github/ @juspay/devops-team
+/.github/workflows/ @juspay/devops-team
+/.github/ISSUE_TEMPLATE/ @juspay/community-team
+/.github/pull_request_template.md @juspay/community-team
+
+# Configuration files
+package.json @juspay/shelly-maintainers
+.eslintrc.* @juspay/devops-team
+.prettierrc @juspay/devops-team
+commitlint.config.js @juspay/devops-team
+.releaserc.json @juspay/devops-team
+
+# Templates and scaffolding
+/src/shelly/templates/ @juspay/shelly-organize-team @juspay/docs-team
+
+# Test files
+/test/ @juspay/shelly-maintainers
+**/*.test.js @juspay/shelly-maintainers
+
+# Memory Bank specific files
+/memory-bank/project/ @juspay/product-team @juspay/shelly-memory-team
+/memory-bank/technical/ @juspay/shelly-core-team @juspay/shelly-memory-team
+/memory-bank/current/ @juspay/shelly-maintainers @juspay/shelly-memory-team
+
+# Critical files requiring multiple approvals
+/.clinerules @juspay/shelly-maintainers @juspay/shelly-memory-team
+/CHANGELOG.md @juspay/shelly-maintainers @juspay/docs-team

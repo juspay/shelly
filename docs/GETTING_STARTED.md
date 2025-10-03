@@ -1,141 +1,182 @@
-# Getting Started
+# Getting Started with Shelly
 
-> Quick start guide for @juspay/shelly
+> Complete setup guide for @juspay/shelly - AI-powered CLI assistant
+
+## What is Shelly?
+
+Shelly is an intelligent CLI assistant that provides:
+- **🔍 Error Analysis**: AI-powered debugging for failed commands
+- **🏗️ Repository Organization**: Complete project scaffolding and enhancement
+- **🧠 Memory Bank**: AI-assisted development context management
+
+## Prerequisites
+
+- **Node.js** 18.x or higher
+- **npm** 8.x or higher
+- A supported shell (bash, zsh, tcsh, fish)
 
 ## Installation
 
-### Prerequisites
+### Option 1: Global Installation (Recommended)
 
-- Node.js 16.x or higher
-- npm 7.x or higher
-
-### Install @juspay/shelly
+Install Shelly globally to use it anywhere:
 
 ```bash
-npm install @juspay/shelly
+npm install -g @juspay/shelly
 ```
 
-### For Development
+### Option 2: Local Development
+
+For contributing to the project:
 
 ```bash
-git clone https://github.com/juspay/shelly
+git clone https://github.com/juspay/shelly.git
 cd shelly
 npm install
-npm run dev
 ```
 
-## Quick Start
+## Quick Setup
 
-### Basic Usage
+### 1. Configure Shell Integration
 
-```javascript
-const shelly = require('@juspay/shelly');
+Set up shell integration for error analysis:
 
-// Initialize
-const client = new shelly({
-  apiKey: 'your-api-key'
-});
-
-// Basic operation
-const result = await client.method();
-console.log(result);
+**Bash:**
+```bash
+echo 'eval "$(shelly --alias)"' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-### Configuration
-
-Create a `.env` file:
-
-```env
-API_KEY=your_api_key_here
-NODE_ENV=development
+**Zsh:**
+```bash
+echo 'eval "$(shelly --alias)"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
-### Running Tests
+**Tcsh:**
+```bash
+echo 'alias shelly "node /path/to/shelly/src/main.js"' >> ~/.tcshrc
+source ~/.tcshrc
+```
+
+### 2. Configure AI Integration (Optional)
+
+For AI-powered error analysis, set up Google AI:
 
 ```bash
-# Run all tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Run in watch mode
-npm run test:watch
+export GOOGLE_AI_API_KEY="your-api-key-here"
 ```
 
-### Development Commands
+Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+## Basic Usage
+
+### Error Analysis
+
+Run `shelly` (no arguments) after any failed command:
 
 ```bash
-# Start development server
-npm run dev
+$ grp "pattern" file.txt
+grp: command not found
 
-# Build for production
-npm run build
+$ shelly
+Analyzing previous command: "grp "pattern" file.txt"
+Maybe you meant: grep "pattern" file.txt
 
-# Run linting
-npm run lint
-
-# Format code
-npm run format
+--- Neurolink Analysis ---
+The error indicates 'grp' command not found.
+The correct command is likely 'grep'.
+--------------------------
 ```
 
-## Examples
+### Repository Organization
 
-### Example 1: Basic Setup
+Transform projects into publication-ready repositories:
 
-```javascript
-const shelly = require('@juspay/shelly');
+```bash
+# Organize current project
+shelly organize
 
-const client = new shelly({
-  apiKey: process.env.API_KEY
-});
+# Check organization status
+shelly status
 
-async function example() {
-  try {
-    const result = await client.getData();
-    console.log('Success:', result);
-  } catch (error) {
-    console.error('Error:', error.message);
-  }
-}
-
-example();
+# Create new organized project
+shelly init my-project
 ```
 
-### Example 2: Advanced Configuration
+### Memory Bank Management
 
-```javascript
-const shelly = require('@juspay/shelly');
+Create AI development context:
 
-const client = new shelly({
-  apiKey: process.env.API_KEY,
-  timeout: 5000,
-  retries: 3,
-  debug: true
-});
+```bash
+# Initialize Memory Bank
+shelly memory init
 
-// Your code here
+# Check status
+shelly memory status
+
+# View project context
+shelly memory show projectbrief.md
 ```
 
-## Next Steps
+## Understanding Shelly's Architecture
 
-- Read the [API Documentation](./API.md)
-- Check out [examples/](../examples/)
-- Join our community: opensource@juspay.in
+Shelly uses a **dual CLI architecture**:
+
+1. **Error Analysis Mode**: `shelly` (no arguments) - Analyzes shell history
+2. **Repository Management Mode**: `shelly <command>` - Project organization tools
+
+These are completely different systems with different purposes.
+
+## Common Commands
+
+```bash
+# Error Analysis
+shelly                    # Analyze last failed command
+shelly --alias           # Generate shell integration
+
+# Repository Organization
+shelly organize          # Organize current project
+shelly organize --force  # Overwrite existing files
+shelly organize --update # Add missing files only
+shelly status           # Check organization status
+shelly init <name>      # Create new project
+
+# Memory Bank
+shelly memory init      # Initialize Memory Bank
+shelly memory status    # Check Memory Bank status
+shelly memory update    # Update project context
+shelly memory show <file> # View specific file
+```
 
 ## Troubleshooting
 
-### Common Issues
+### "Could not retrieve the last command from history"
 
-**Error: API Key not found**
-- Make sure you've set your API key in the environment variables
+- Ensure shell integration is properly configured
+- Restart your terminal after setup
+- Verify your shell supports the `fc` command
 
-**Error: Connection timeout**
-- Check your network connection
-- Verify the API endpoint is accessible
+### "shelly: command not found"
 
-### Getting Help
+- Check that the global installation succeeded: `npm list -g @juspay/shelly`
+- For local development, use full paths or `node src/main.js`
+- Ensure shell configuration was reloaded
 
-- Check the [FAQ](./FAQ.md)
-- Open an [issue](https://github.com/juspay/shelly/issues)
-- Contact support: opensource@juspay.in
+### AI Analysis Not Working
+
+- Verify `GOOGLE_AI_API_KEY` environment variable is set
+- Check internet connection for API calls
+- Try debug mode: `SHELLY_DEBUG=true shelly`
+
+## Next Steps
+
+- **For detailed usage**: See [Quick Start Guide](QUICK_START.md)
+- **For development setup**: See [Complete Setup Guide](SETUP.md)
+- **For API reference**: See [API Documentation](API.md)
+
+## Getting Help
+
+- **Documentation**: [GitHub Repository](https://github.com/juspay/shelly)
+- **Issues**: [Report Issues](https://github.com/juspay/shelly/issues)
+- **Email**: opensource@juspay.in

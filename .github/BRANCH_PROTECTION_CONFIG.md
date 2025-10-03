@@ -4,37 +4,60 @@
 
 ## Overview
 
-This document outlines the recommended branch protection settings for the shelly repository to ensure code quality and security.
+This document outlines the recommended branch protection settings for the Shelly repository to ensure code quality, security, and reliable releases for our AI-powered development assistant platform.
 
 ## Main/Master Branch Protection
 
 ### Required Settings
 
 #### Require a pull request before merging
-- ✅ **Require approvals**: 2 approving reviews
+- ✅ **Require approvals**: 2 approving reviews (for critical changes to core features)
 - ✅ **Dismiss stale PR approvals when new commits are pushed**
-- ✅ **Require review from code owners**
+- ✅ **Require review from code owners** (see CODEOWNERS for feature-specific teams)
 - ✅ **Restrict pushes that create files larger than 100MB**
 
 #### Require status checks to pass before merging
 - ✅ **Require branches to be up to date before merging**
 - ✅ **Status checks that are required**:
-  - `CI / test (pull_request)`
-  - `CI / lint (pull_request)`
-  - `CI / build (pull_request)`
-  - `Dependency Review / dependency-review (pull_request)`
+  
+  **Core Quality Checks:**
+  - `Shelly CI/CD Pipeline / Code Quality & Linting (Node.js 18.x)`
+  - `Shelly CI/CD Pipeline / Code Quality & Linting (Node.js 20.x)`
+  
+  **Functional Testing:**
+  - `Shelly CI/CD Pipeline / Functional Testing (ubuntu-latest, 18.x, bash)`
+  - `Shelly CI/CD Pipeline / Functional Testing (ubuntu-latest, 20.x, bash)`
+  - `Shelly CI/CD Pipeline / Functional Testing (macos-latest, 18.x, bash)`
+  - `Shelly CI/CD Pipeline / Functional Testing (macos-latest, 20.x, bash)`
+  - `Shelly CI/CD Pipeline / Functional Testing (macos-latest, 20.x, zsh)`
+  
+  **Platform & Security:**
+  - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (ubuntu-latest, 18.x)`
+  - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (ubuntu-latest, 20.x)`
+  - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (macos-latest, 18.x)`
+  - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (macos-latest, 20.x)`
+  - `Shelly CI/CD Pipeline / Security Audit`
+  
+  **Documentation:**
+  - `Shelly CI/CD Pipeline / Documentation Validation`
+  - `Shelly Documentation Pipeline / Documentation Validation`
+  - `Shelly Documentation Pipeline / Test Documentation Examples`
+  
+  **Dependencies:**
+  - `Dependency Review / dependency-review`
 
 #### Require conversation resolution before merging
 - ✅ **Require conversation resolution before merging**
 
 #### Require signed commits
-- ✅ **Require signed commits**
+- ✅ **Require signed commits** (recommended for security)
 
 #### Require linear history
-- ✅ **Require linear history**
+- ✅ **Require linear history** (maintains clean git history)
 
 #### Require deployments to succeed before merging
-- ✅ **Required deployment environments before merge**: `staging`
+- ✅ **Required deployment environments before merge**: 
+  - `github-pages` (for documentation deployment)
 
 ### Additional Rules
 

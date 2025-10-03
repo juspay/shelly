@@ -1,6 +1,6 @@
 # 🧠 Memory Bank
 
-> **AI-Assisted Development Context for @juspay/shelly**
+> **AI-Assisted Development Context for my-project**
 
 This Memory Bank provides persistent project context for AI assistants like Cline, ensuring continuity and understanding across development sessions.
 
@@ -98,7 +98,7 @@ This Memory Bank integrates with:
 
 ---
 
-**Generated**: 2025-10-01 | **Project**: @juspay/shelly | **Tool**: Shelly Memory Bank
+**Generated**: 2025-10-01 | **Project**: my-project | **Tool**: Shelly Memory Bank
 **Last Updated**: 2025-10-01
 
 > 💡 **Tip**: Use `shelly memory show <file>` to view any Memory Bank file, or browse this directory directly.

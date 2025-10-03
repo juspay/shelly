@@ -1,10 +1,10 @@
 {
   "name": "@juspay/shelly",
   "version": "1.0.0",
-  "description": "An intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity.",
+  "description": "An intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity with advanced repository organization and AI-assisted development features.",
   "main": "src/main.js",
   "bin": {
-    "shelly": "./src/main.js"
+    "shelly": "src/main.js"
   },
   "scripts": {
     "start": "node src/main.js",
@@ -26,18 +26,24 @@
     "shell",
     "bash",
     "zsh",
+    "tcsh",
     "debugging",
     "ai",
     "command-correction",
     "terminal",
     "productivity",
-    "typescript"
+    "typescript",
+    "repository-organization",
+    "project-scaffolding",
+    "memory-bank",
+    "ai-assisted-development",
+    "github-integration",
+    "project-management",
+    "development-tools",
+    "cline-integration",
+    "neurolink"
   ],
-  "author": {
-    "name": "Juspay Technologies",
-    "email": "support@juspay.in",
-    "url": "https://juspay.io"
-  },
+  "author": "Juspay Technologies <support@juspay.in> (https://juspay.io)",
   "license": "MIT",
   "homepage": "https://github.com/juspay/Shelly#readme",
   "repository": {
@@ -81,6 +87,7 @@
   },
   "dependencies": {
     "@juspay/neurolink": "^7.40.1",
+    "commander": "^11.0.0",
     "inquirer": "^12.9.6",
     "node-pty": "^1.0.0",
     "ps-tree": "^1.2.0"
@@ -100,5 +107,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "directories": {
+    "doc": "docs"
   }
 }

@@ -4,12 +4,24 @@
 repository:
   # Repository basic settings
   name: shelly
-  description: An intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity.
-  homepage: https://shelly.github.io/
+  description: "AI-powered development assistant combining error analysis, repository organization, and Memory Bank for enhanced AI-assisted development workflows"
+  homepage: https://juspay.github.io/shelly/
   topics: 
     - javascript
     - nodejs
-    - {{repoType}}
+    - cli
+    - ai-powered
+    - error-analysis
+    - repository-organization
+    - memory-bank
+    - development-assistant
+    - shell-integration
+    - ai-assisted-development
+    - command-line-tools
+    - developer-productivity
+    - project-scaffolding
+    - github-integration
+    - documentation-generation
   
   # Repository features
   private: false
@@ -31,6 +43,7 @@ repository:
 
 # Labels configuration
 labels:
+  # Standard issue types
   - name: bug
     color: d73a4a
     description: Something isn't working
@@ -67,6 +80,32 @@ labels:
     color: ffffff
     description: This will not be worked on
     
+  # Shelly feature area labels
+  - name: error-analysis
+    color: ff6b6b
+    description: Issues related to command error analysis and AI suggestions
+    
+  - name: repository-organization
+    color: 4ecdc4
+    description: Issues related to project scaffolding and GitHub integration
+    
+  - name: memory-bank
+    color: 45b7d1
+    description: Issues related to AI context management and documentation
+    
+  - name: ai-integration
+    color: 96ceb4
+    description: Issues related to AI services and content generation
+    
+  - name: shell-integration
+    color: feca57
+    description: Issues related to bash, zsh, tcsh shell compatibility
+    
+  - name: cli-interface
+    color: ff9ff3
+    description: Issues related to command-line interface and user experience
+    
+  # Technical labels
   - name: dependencies
     color: 0366d6
     description: Pull requests that update a dependency file
@@ -78,6 +117,27 @@ labels:
   - name: performance
     color: fbca04
     description: Performance related improvements
+    
+  - name: cross-platform
+    color: 54a0ff
+    description: Issues related to macOS, Linux, Windows compatibility
+    
+  - name: testing
+    color: 5f27cd
+    description: Issues related to testing and quality assurance
+    
+  # Process labels
+  - name: automated
+    color: 00d2d3
+    description: Automated pull requests from bots
+    
+  - name: github-actions
+    color: 2f3542
+    description: Issues related to CI/CD workflows
+    
+  - name: docker
+    color: 0984e3
+    description: Issues related to Docker integration
 
 # Branch protection rules
 branches:
@@ -86,9 +146,13 @@ branches:
       required_status_checks:
         strict: true
         contexts:
-          - "CI / test"
-          - "CI / lint"
-          - "CI / build"
+          - "Shelly CI/CD Pipeline / Code Quality & Linting (Node.js 18.x)"
+          - "Shelly CI/CD Pipeline / Code Quality & Linting (Node.js 20.x)"
+          - "Shelly CI/CD Pipeline / Functional Testing (ubuntu-latest, 18.x, bash)"
+          - "Shelly CI/CD Pipeline / Functional Testing (ubuntu-latest, 20.x, bash)"
+          - "Shelly CI/CD Pipeline / Security Audit"
+          - "Shelly CI/CD Pipeline / Documentation Validation"
+          - "Dependency Review / dependency-review"
       enforce_admins: true
       required_pull_request_reviews:
         required_approving_review_count: 2
@@ -100,12 +164,32 @@ branches:
       allow_force_pushes: false
       allow_deletions: false
 
-# Teams configuration (optional)
+# Teams configuration
 teams:
   - name: "shelly-maintainers"
     permission: admin
+  - name: "shelly-core-team"
+    permission: write
+  - name: "shelly-organize-team"
+    permission: write
+  - name: "shelly-memory-team"
+    permission: write
+  - name: "shelly-ai-team"
+    permission: write
+  - name: "shelly-cli-team"
+    permission: write
+  - name: "shelly-shell-team"
+    permission: write
   - name: "shelly-contributors"
     permission: write
+  - name: "docs-team"
+    permission: write
+  - name: "devops-team"
+    permission: write
+  - name: "community-team"
+    permission: write
+  - name: "product-team"
+    permission: triage
 
 # Collaborators (optional)
 collaborators: []
