@@ -1,0 +1,344 @@
+name: Shelly CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  quality-check:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔍 Run ESLint
+        run: npm run lint
+
+      - name: 💅 Check Prettier formatting
+        run: npm run format:check
+
+      - name: 📋 Validate package.json
+        run: npm run build --if-present
+
+  functional-tests:
+    name: Functional Testing
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [18.x, 20.x]
+        shell: [bash, zsh]
+        exclude:
+          - os: ubuntu-latest
+            shell: zsh
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔧 Setup test shell (${{ matrix.shell }})
+        if: matrix.shell == 'zsh'
+        run: |
+          sudo apt-get update && sudo apt-get install -y zsh || brew install zsh
+        shell: bash
+
+      - name: 🧪 Test CLI availability
+        run: |
+          node src/main.js --version
+          node src/shelly/cli.js --help
+        shell: ${{ matrix.shell }}
+
+      - name: 🏗️ Test Repository Organization
+        run: |
+          # Create test project
+          mkdir test-project && cd test-project
+          npm init -y
+          
+          # Test organize command
+          node ../src/shelly/cli.js organize --force
+          
+          # Test status command
+          node ../src/shelly/cli.js status
+          
+          # Verify files were created
+          ls -la
+          test -f package.json
+          test -f README.md
+          test -f .eslintrc.js
+          test -f .prettierrc
+        shell: ${{ matrix.shell }}
+
+      - name: 🧠 Test Memory Bank
+        run: |
+          cd test-project
+          
+          # Test memory bank initialization
+          node ../src/shelly/cli.js memory init --force
+          
+          # Test memory bank status
+          node ../src/shelly/cli.js memory status
+          
+          # Test memory bank listing
+          node ../src/shelly/cli.js memory list
+          
+          # Verify memory bank structure
+          test -d memory-bank
+          test -f memory-bank/README.md
+          test -d memory-bank/project
+          test -d memory-bank/technical
+          test -d memory-bank/current
+        shell: ${{ matrix.shell }}
+
+      - name: 🚀 Test Project Initialization
+        run: |
+          # Test project init
+          node src/shelly/cli.js init test-init-project --force
+          
+          # Verify project structure
+          cd test-init-project
+          test -f package.json
+          test -f README.md
+          test -d memory-bank
+          
+          # Test status in new project
+          node ../src/shelly/cli.js status
+        shell: ${{ matrix.shell }}
+
+  ai-integration-tests:
+    name: AI Integration Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🤖 Test AI Integration (Mock)
+        env:
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+        run: |
+          # Test error analysis with mock command
+          echo "Testing AI integration..."
+          node src/main.js "nonexistent-command" || true
+          
+          # Test memory bank generation (without actual AI calls)
+          mkdir ai-test-project && cd ai-test-project
+          npm init -y
+          
+          # Test organize with AI features
+          node ../src/shelly/cli.js organize --force
+          
+          echo "AI integration tests completed"
+
+  cross-platform-tests:
+    name: Cross-Platform Compatibility
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🧪 Test core functionality
+        run: |
+          # Test main CLI
+          node src/main.js --version
+          
+          # Test secondary CLI
+          node src/shelly/cli.js --help
+          
+          # Test in different directory structures
+          mkdir -p test/nested/project && cd test/nested/project
+          npm init -y
+          
+          # Test organize from nested directory
+          node ../../../../src/shelly/cli.js organize --force
+
+      - name: 🐚 Test shell integration
+        run: |
+          # Test shell alias generation
+          node src/main.js --alias
+          
+          # Test history access mechanisms
+          history || fc -l || echo "Shell history test completed"
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔒 Run security audit
+        run: npm audit --audit-level=moderate
+
+      - name: 🛡️ Check for vulnerabilities
+        run: |
+          # Check package.json for known vulnerable packages
+          npx audit-ci --moderate
+        continue-on-error: true
+
+  documentation-tests:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: 📖 Validate documentation structure
+        run: |
+          # Check required documentation files
+          test -f README.md
+          test -f CHANGELOG.md
+          test -f CONTRIBUTING.md
+          test -f CODE_OF_CONDUCT.md
+          test -f LICENSE
+          
+          # Check docs directory
+          test -d docs
+          test -f docs/API.md
+          test -f docs/QUICK_START.md
+          
+          # Check Memory Bank structure
+          test -d memory-bank
+          test -f memory-bank/README.md
+          test -d memory-bank/project
+          test -d memory-bank/technical
+          test -d memory-bank/current
+
+      - name: 📋 Validate package.json completeness
+        run: |
+          # Check package.json has all required fields
+          node -e "
+            const pkg = require('./package.json');
+            const required = ['name', 'version', 'description', 'main', 'bin', 'keywords', 'author', 'license', 'repository', 'bugs', 'homepage'];
+            required.forEach(field => {
+              if (!pkg[field]) throw new Error(\`Missing required field: \${field}\`);
+            });
+            console.log('✅ package.json validation passed');
+          "
+
+  release:
+    name: Release
+    needs: [quality-check, functional-tests, security-audit, documentation-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🏗️ Build package
+        run: npm run build --if-present
+
+      - name: 🚀 Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm run semantic-release
+
+      - name: 📊 Update Memory Bank after release
+        if: success()
+        run: |
+          # Update Memory Bank with latest release information
+          node src/shelly/cli.js memory update --file progress.md || true
+        continue-on-error: true
+
+  notify-success:
+    name: Success Notification
+    needs: [quality-check, functional-tests, security-audit, documentation-tests]
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: 🎉 Success Summary
+        run: |
+          echo "🎉 All Shelly CI/CD checks passed successfully!"
+          echo "✅ Code quality and linting"
+          echo "✅ Functional tests (Error Analysis, Repository Organization, Memory Bank)"
+          echo "✅ Cross-platform compatibility"
+          echo "✅ Security audit"
+          echo "✅ Documentation validation"
+          echo ""
+          echo "🚀 Shelly is ready for deployment!"

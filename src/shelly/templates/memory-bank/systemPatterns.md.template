@@ -1,0 +1,74 @@
+# System Patterns: {{projectName}}
+
+## 1. Architecture Overview
+
+### High-Level Structure
+```
+{{architectureDiagram}}
+```
+
+### Core Components
+{{#components}}
+- **{{name}}**: {{responsibility}}
+  - Location: `{{path}}`
+  - Key Methods: {{methods}}
+{{/components}}
+
+## 2. Design Patterns
+
+### Primary Patterns in Use
+{{#patterns}}
+- **{{pattern}}**: {{usage}}
+  - Implementation: {{implementation}}
+  - Benefits: {{benefits}}
+{{/patterns}}
+
+## 3. Data Flow
+
+### Request/Response Flow
+{{#dataFlows}}
+1. **{{step}}**: {{description}}
+{{/dataFlows}}
+
+### State Management
+{{stateManagement}}
+
+## 4. Key Relationships
+
+### Component Dependencies
+{{#dependencies}}
+- {{component}} → {{dependsOn}} ({{reason}})
+{{/dependencies}}
+
+### External Integrations
+{{#integrations}}
+- **{{service}}**: {{purpose}}
+  - Interface: {{interface}}
+  - Error Handling: {{errorHandling}}
+{{/integrations}}
+
+## 5. Critical Implementation Paths
+
+### Core Workflows
+{{#workflows}}
+- **{{workflow}}**: 
+  - Entry Point: {{entryPoint}}
+  - Key Steps: {{steps}}
+  - Exit Conditions: {{exitConditions}}
+{{/workflows}}
+
+### Error Handling Strategy
+{{errorStrategy}}
+
+## 6. Performance Considerations
+
+### Optimization Patterns
+{{#optimizations}}
+- {{pattern}}: {{implementation}}
+{{/optimizations}}
+
+### Resource Management
+{{resourceManagement}}
+
+---
+*Last Updated: {{lastUpdated}}*

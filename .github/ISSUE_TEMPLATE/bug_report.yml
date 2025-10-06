@@ -1,0 +1,211 @@
+name: Bug Report
+description: Report a bug in Shelly AI-powered development assistant
+title: "[Bug]: "
+labels: ["bug", "needs triage"]
+assignees:
+  - juspay-maintainers
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Shelly Bug Report
+        
+        Thanks for taking the time to report a bug in Shelly! Your feedback helps make our AI-powered development assistant better.
+        
+        Please provide detailed information about the issue you're experiencing with Error Analysis, Repository Organization, Memory Bank, or other Shelly features.
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Shelly Feature Area
+      description: Which Shelly feature is affected by this bug?
+      options:
+        - "🔍 Error Analysis (command analysis, shell integration, AI suggestions)"
+        - "🏗️ Repository Organization (project scaffolding, GitHub integration, file organization)"
+        - "🧠 Memory Bank (AI context management, documentation generation)"
+        - "🔧 CLI Interface (command parsing, argument handling)"
+        - "🤖 AI Integration (Neurolink, Google AI services)"
+        - "🐚 Shell Integration (bash, zsh, tcsh compatibility)"
+        - "📚 Documentation (README, guides, help)"
+        - "🔨 Installation/Setup"
+        - "Other/Unknown"
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: "Example: When running `shelly organize`, the command fails with permission error..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Tell us how to reproduce this bug
+      placeholder: |
+        1. Run command: `shelly organize`
+        2. In directory: `/path/to/project`
+        3. Expected result: Project should be organized
+        4. Actual result: Error occurred
+      value: |
+        1. 
+        2. 
+        3. 
+        4. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "The command should have successfully organized the repository..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: "Instead, the command failed with an error message..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: version
+    attributes:
+      label: Shelly Version
+      description: What version of @juspay/shelly are you running?
+      options:
+        - "Latest"
+        - "1.0.0"
+        - "0.9.x"
+        - "Other (please specify in description)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - "macOS"
+        - "Ubuntu/Debian"
+        - "CentOS/RHEL"
+        - "Other Linux"
+        - "Windows (WSL)"
+        - "Windows (native)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: shell
+    attributes:
+      label: Shell Environment
+      description: What shell are you using?
+      options:
+        - "bash"
+        - "zsh"
+        - "tcsh"
+        - "csh"
+        - "fish"
+        - "PowerShell"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js Version
+      description: What version of Node.js are you running?
+      placeholder: "ex. 18.17.0"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ai-integration
+    attributes:
+      label: AI Integration Setup
+      description: Which AI services do you have configured? (check all that apply)
+      options:
+        - label: "Google AI Studio (free tier)"
+        - label: "Google Vertex AI (enterprise)"
+        - label: "Environment variables configured"
+        - label: "Not using AI features"
+
+  - type: textarea
+    id: command-context
+    attributes:
+      label: Command Context
+      description: Please provide the exact command that caused the issue and any error output
+      placeholder: |
+        Command that failed:
+        ```bash
+        shelly organize --force
+        ```
+        
+        Error output:
+        ```
+        Error: Permission denied...
+        ```
+      render: shell
+
+  - type: textarea
+    id: project-context
+    attributes:
+      label: Project Context (if relevant)
+      description: Information about your project that might be relevant
+      placeholder: |
+        - Project type: React/Node.js/CLI tool/etc.
+        - Package manager: npm/yarn/pnpm
+        - Git repository: Yes/No
+        - Memory Bank initialized: Yes/No
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: "Screenshots, related issues, workarounds you've tried, etc."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: troubleshooting
+    attributes:
+      label: Troubleshooting Checklist
+      description: Have you tried these troubleshooting steps?
+      options:
+        - label: "I've checked the documentation (README, docs/)"
+        - label: "I've searched existing issues"
+        - label: "I've tried running with debug mode (SHELLY_DEBUG=true)"
+        - label: "I've verified Shelly is up to date"
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/juspay/shelly/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

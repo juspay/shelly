@@ -29,14 +29,14 @@ export function getCommandHistory() {
 export async function getLastCommandFromShellHistory() {
   // Check if debug mode is enabled
   const debug = process.env.LOG_HELPER_DEBUG === 'true';
-  
+
   try {
     const lastCommand = await getLastCommandFromShell(debug);
-    
+
     if (debug) {
       console.log(`Retrieved last command: ${lastCommand}`);
     }
-    
+
     return lastCommand;
   } catch (error) {
     if (debug) {

@@ -1,0 +1,56 @@
+# Project Brief: {{projectName}}
+
+## 1. Core Mission
+
+{{projectName}} is {{projectDescription}}.
+
+### Primary Goals
+- {{#goals}}
+- {{.}}
+{{/goals}}
+
+## 2. Key Features
+
+### Core Functionality
+{{#features}}
+- **{{name}}**: {{description}}
+{{/features}}
+
+## 3. Target Users
+
+{{#targetUsers}}
+- **{{role}}**: {{needs}}
+{{/targetUsers}}
+
+## 4. Success Criteria
+
+{{#successCriteria}}
+- {{.}}
+{{/successCriteria}}
+
+## 5. Project Scope
+
+### In Scope
+{{#inScope}}
+- {{.}}
+{{/inScope}}
+
+### Out of Scope
+{{#outOfScope}}
+- {{.}}
+{{/outOfScope}}
+
+## 6. Technical Requirements
+
+### Technology Stack
+- **Language**: {{language}}
+- **Runtime**: {{runtime}}
+- **Key Dependencies**: {{keyDependencies}}
+
+### Quality Standards
+- Code coverage: {{coverage}}%
+- Documentation: {{docStandard}}
+- Testing: {{testingStrategy}}
+
+---
+*Last Updated: {{lastUpdated}}*

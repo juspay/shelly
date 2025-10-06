@@ -1,0 +1,94 @@
+# Technical Context: {{projectName}}
+
+## 1. Technology Stack
+
+### Core Technologies
+- **Language**: {{language}} ({{version}})
+- **Runtime**: {{runtime}} ({{runtimeVersion}})
+- **Package Manager**: {{packageManager}}
+
+### Key Dependencies
+{{#dependencies}}
+- **{{name}}**: {{version}} - {{purpose}}
+{{/dependencies}}
+
+### Development Dependencies
+{{#devDependencies}}
+- **{{name}}**: {{version}} - {{purpose}}
+{{/devDependencies}}
+
+## 2. Development Environment
+
+### Prerequisites
+{{#prerequisites}}
+- {{name}}: {{version}} ({{reason}})
+{{/prerequisites}}
+
+### Setup Instructions
+```bash
+{{setupCommands}}
+```
+
+### Environment Variables
+{{#envVars}}
+- `{{name}}`: {{description}} ({{required}})
+{{/envVars}}
+
+## 3. Build & Deployment
+
+### Build Process
+{{buildProcess}}
+
+### Testing Strategy
+{{#testingLevels}}
+- **{{level}}**: {{tools}} - {{coverage}}
+{{/testingLevels}}
+
+### Deployment Pipeline
+{{deploymentPipeline}}
+
+## 4. Technical Constraints
+
+### Performance Requirements
+{{#performanceReqs}}
+- {{metric}}: {{target}}
+{{/performanceReqs}}
+
+### Security Considerations
+{{#securityReqs}}
+- {{requirement}}: {{implementation}}
+{{/securityReqs}}
+
+### Compatibility Requirements
+{{#compatibility}}
+- {{platform}}: {{versions}}
+{{/compatibility}}
+
+## 5. Tool Configuration
+
+### Code Quality Tools
+{{#qualityTools}}
+- **{{tool}}**: {{config}}
+{{/qualityTools}}
+
+### IDE/Editor Setup
+{{#ideSetup}}
+- {{editor}}: {{extensions}}
+{{/ideSetup}}
+
+## 6. External Services
+
+### APIs & Integrations
+{{#externalAPIs}}
+- **{{service}}**: {{endpoint}}
+  - Authentication: {{auth}}
+  - Rate Limits: {{limits}}
+{{/externalAPIs}}
+
+### Third-Party Tools
+{{#thirdPartyTools}}
+- **{{tool}}**: {{purpose}} ({{config}})
+{{/thirdPartyTools}}
+
+---
+*Last Updated: {{lastUpdated}}*
