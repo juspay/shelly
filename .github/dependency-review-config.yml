@@ -1,0 +1,27 @@
+# Dependency Review Configuration for Shelly
+# This file configures the GitHub dependency-review-action
+
+# Vulnerability check settings
+vulnerability-check: true
+license-check: true
+
+# License configuration
+allow-licenses:
+  - MIT
+  - Apache-2.0
+  - ISC
+  - BSD-2-Clause
+  - BSD-3-Clause
+
+deny-licenses:
+  - GPL-2.0
+  - GPL-3.0
+  - AGPL-1.0
+  - AGPL-3.0
+
+# Severity configuration
+fail-on-severity: moderate
+
+# Additional settings
+allow-ghsas: []
+deny-packages: []

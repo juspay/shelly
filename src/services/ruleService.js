@@ -11,7 +11,6 @@ export async function loadRules() {
   const files = fs.readdirSync(rulesDir);
   for (const file of files) {
     if (file.endsWith('.js')) {
-      // Use a dynamic import with a path relative to the current file
       const rule = await import(path.join(rulesDir, file));
       rules.push(rule);
     }
