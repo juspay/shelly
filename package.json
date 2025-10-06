@@ -86,7 +86,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@juspay/neurolink": "^7.40.1",
+    "@juspay/neurolink": "^7.48.1",
     "commander": "^11.0.0",
     "inquirer": "^12.9.6",
     "node-pty": "^1.0.0",
