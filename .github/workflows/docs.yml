@@ -90,7 +90,7 @@ jobs:
           echo "✅ Documentation structure validation passed"
 
       - name: 🔍 Validate Markdown syntax
-        uses: DavidAnson/markdownlint-cli2-action@v13
+        uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           globs: |
             **/*.md
