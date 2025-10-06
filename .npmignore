@@ -1,0 +1,33 @@
+# Development files
+.env
+.env.*
+node_modules/
+.git/
+.gitignore
+
+# Development and testing
+src/tests/
+*.test.js
+coverage/
+.nyc_output/
+
+# Documentation that shouldn't be in package
+SETUP.md
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

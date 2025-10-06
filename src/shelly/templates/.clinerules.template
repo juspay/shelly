@@ -1,0 +1,293 @@
+# {{projectName}} Project Rules
+
+### **MIGRATION PATTERNS**
+- **Modular Architecture Enhancement**: {{repoType}} with extensible command processing
+- **Performance Optimization**: [Add your performance optimization patterns here]
+- **Code Quality Evolution**: [Add your code quality improvement patterns here]
+
+> **📚 Historical Learning Archive**: See `memory-bank/` for complete project context
+> **🎯 Current Focus**: {{description}}
+
+---
+
+## 🏗️ ARCHITECTURE PATTERNS (CRITICAL)
+
+### **Core Module Structure**
+```javascript
+{{projectName}}/
+├── package.json
+├── README.md
+├── src/                     # [Customize based on your project structure]
+│   └── main.js             # [Add your main entry points]
+├── test/                   # [Or tests/, __tests__, spec/]
+└── memory-bank/            # AI assistant context
+```
+
+### **Key Implementation Principles**
+- **[Principle 1]**: [Add your architectural principle here]
+- **[Principle 2]**: [Add your design pattern here]
+- **[Principle 3]**: [Add your coding standard here]
+- **[Principle 4]**: [Add your testing approach here]
+- **[Principle 5]**: [Add your deployment strategy here]
+
+### **Component Relationships**
+```
+[Your Module A] → [Your Module B] → [Your Module C] → [Output/UI]
+     ↓              ↓              ↓              ↓
+[Data Layer]   [Business Logic]  [Service Layer]  [Presentation]
+```
+
+---
+
+## 🛠️ ENTERPRISE DEVELOPMENT WORKFLOW
+
+### **Universal Commands (Always Available)**
+
+#### **Package Management**
+```bash
+npm install                 # Install dependencies
+npm update                  # Update dependencies
+npm audit                   # Security audit
+npm run                     # Show available scripts
+```
+
+#### **Universal Development Commands**
+```bash
+npm start                   # Start application
+npm test                    # Run tests
+npm run build              # Build for production
+npm run dev                # Development mode
+npm run lint               # Code linting
+npm run format             # Code formatting
+```
+
+#### **Git Workflow**
+```bash
+git status                  # Check status
+git add .                   # Stage changes
+git commit -m "message"     # Commit changes
+git push                    # Push to remote
+git pull                    # Pull from remote
+```
+
+#### **Project-Specific Commands**
+```bash
+# [Add your custom commands here]
+# npm run [your-command]    # [Description]
+# npm run [your-script]     # [Description]
+```
+
+---
+
+## 🔧 COMPLETE SDLC CYCLE
+
+### **Phase 1: Setup & Dependencies**
+```bash
+# 1. Clone and setup
+git clone [your-repo-url]
+cd {{projectName}}
+npm install
+
+# 2. Environment setup
+cp .env.example .env        # [If applicable]
+# [Add environment-specific setup here]
+```
+
+### **Phase 2: Development**
+```bash
+# 1. Start development
+npm run dev                 # [Or your dev command]
+
+# 2. Run tests in watch mode
+npm run test:watch         # [If available]
+
+# 3. Code quality checks
+npm run lint
+npm run format
+```
+
+### **Phase 3: Pre-Commit**
+```bash
+# 1. Quality assurance
+npm run lint && npm run format && npm test
+
+# 2. Build validation
+npm run build
+
+# 3. [Add your pre-commit steps here]
+```
+
+### **Phase 4: Testing & Validation**
+```bash
+# 1. Full test suite
+npm test
+npm run test:coverage      # [If available]
+
+# 2. Integration testing
+# [Add your integration test commands here]
+```
+
+### **Phase 5: Release**
+```bash
+# 1. Version bump
+npm version [patch|minor|major]
+
+# 2. Build and publish
+npm run build
+npm publish                # [If applicable]
+
+# 3. Git tagging
+git push --tags
+```
+
+---
+
+## 🧪 TESTING & DEBUGGING STRATEGY
+
+### **Testing Architecture**
+```
+Layer 1: Unit Tests → [Your unit testing approach]
+Layer 2: Integration Tests → [Your integration testing approach]  
+Layer 3: E2E Tests → [Your end-to-end testing approach]
+```
+
+### **Universal Testing Commands**
+```bash
+# Basic testing
+npm test                    # Run all tests
+npm run test:watch         # Watch mode
+npm run test:coverage      # Coverage report
+
+# Debugging
+npm run dev:debug          # Debug mode
+node --inspect [your-file] # Node debugger
+```
+
+### **Project-Specific Testing**
+```bash
+# [Add your specific testing commands here]
+# npm run test:[type]       # [Description]
+# npm run e2e              # [End-to-end tests]
+```
+
+---
+
+## 🔐 ENVIRONMENT & CONFIGURATION
+
+### **Environment Variables**
+```bash
+# [Add your environment variables here]
+# NODE_ENV=development
+# API_KEY=your_api_key
+# DATABASE_URL=your_database_url
+```
+
+### **Configuration Files**
+```bash
+# [List your important config files]
+# .env                      # Environment variables
+# config/[your-config].js   # Application config
+# [your-config-file]        # [Description]
+```
+
+---
+
+## 📖 DOCUMENTATION & RESOURCES
+
+### **Project Documentation Structure**
+```
+docs/
+├── README.md              # Project overview
+├── API.md                 # [If applicable]
+├── CONTRIBUTING.md        # Contribution guidelines
+└── [your-docs]/           # [Project-specific docs]
+```
+
+### **Key Resources**
+- **Project Repository**: [Your repo URL]
+- **Documentation**: [Your docs URL]
+- **Issue Tracker**: [Your issues URL]
+- **[Additional Resource]**: [URL/Description]
+
+---
+
+## 💻 DEVELOPMENT STANDARDS
+
+### **Code Organization**
+```javascript
+// [Add your project structure here]
+src/
+├── [your-main-file]       // [Description]
+├── [your-module]/         // [Description]
+│   ├── [sub-module].js    // [Description]
+│   └── [another-file].js  // [Description]
+└── [utilities]/           // [Shared utilities]
+```
+
+### **Coding Standards**
+```javascript
+// [Add your coding examples here]
+const [yourFunction] = ([parameters]) => {
+  // [Your coding pattern example]
+  return [result];
+};
+```
+
+---
+
+## ⚡ SUCCESS FACTORS
+
+### **Quality Metrics**
+- **Code Coverage**: [Your target, e.g., >80%]
+- **Build Success**: [Your requirement]
+- **Test Pass Rate**: [Your standard]
+- **[Custom Metric]**: [Your specification]
+
+### **Performance Targets**
+- **[Performance Metric 1]**: [Your target]
+- **[Performance Metric 2]**: [Your target]
+- **[Performance Metric 3]**: [Your target]
+
+### **Validation Pipeline**
+```bash
+# Complete validation
+npm install && npm run lint && npm test && npm run build
+# [Add additional validation commands]
+```
+
+---
+
+## 🎯 WORKING EXAMPLES
+
+### **Basic Usage**
+```bash
+# [Add your basic usage examples]
+# npm start
+# [your-command] [parameters]
+```
+
+### **Advanced Usage**
+```bash
+# [Add advanced usage examples]
+# [complex-command] --option value
+# [your-workflow-example]
+```
+
+### **Common Workflows**
+```bash
+# [Add common development workflows]
+# 1. [Workflow step 1]
+# 2. [Workflow step 2]
+# 3. [Workflow step 3]
+```
+
+---
+
+**🎯 CUSTOMIZATION GUIDE**: 
+1. Replace all `[placeholder text]` with your project-specific information
+2. Update commands to match your actual npm scripts
+3. Modify architecture diagrams to reflect your system design
+4. Add your specific testing and deployment procedures
+5. Include your team's coding standards and conventions
+
+**📝 OPERATIONAL EXCELLENCE**: This .clinerules template provides a comprehensive foundation. Customize each section to match your project's specific needs, tools, and workflows.

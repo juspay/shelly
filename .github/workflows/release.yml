@@ -1,0 +1,328 @@
+name: Shelly Release Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release Type'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: read
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  pre-release-validation:
+    name: Pre-Release Validation
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.changes.outputs.should-release }}
+      version-bump: ${{ steps.version.outputs.version-bump }}
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔒 Security audit
+        run: npm audit --audit-level=moderate
+
+      - name: 🛡️ Verify package integrity
+        run: npm audit signatures
+
+      - name: 📋 Validate package.json
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            const required = ['name', 'version', 'description', 'main', 'bin', 'keywords', 'author', 'license', 'repository', 'bugs', 'homepage'];
+            required.forEach(field => {
+              if (!pkg[field]) throw new Error(\`Missing required field: \${field}\`);
+            });
+            if (!pkg.name.startsWith('@juspay/')) throw new Error('Package name must be scoped to @juspay/');
+            console.log('✅ Package validation passed');
+          "
+
+      - name: 🔍 Check for release-worthy changes
+        id: changes
+        run: |
+          # Check if there are any commits since last release that warrant a release
+          if git describe --tags --exact-match HEAD 2>/dev/null; then
+            echo "should-release=false" >> $GITHUB_OUTPUT
+            echo "Current commit is already tagged, skipping release"
+          else
+            echo "should-release=true" >> $GITHUB_OUTPUT
+            echo "New commits detected, proceeding with release"
+          fi
+
+      - name: 📊 Determine version bump
+        id: version
+        run: |
+          if [ "${{ github.event.inputs.release_type }}" != "auto" ] && [ "${{ github.event.inputs.release_type }}" != "" ]; then
+            echo "version-bump=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
+          else
+            echo "version-bump=auto" >> $GITHUB_OUTPUT
+          fi
+
+  comprehensive-testing:
+    name: Comprehensive Testing Suite
+    runs-on: ${{ matrix.os }}
+    needs: pre-release-validation
+    if: needs.pre-release-validation.outputs.should-release == 'true'
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [18.x, 20.x]
+        shell: [bash]
+        include:
+          - os: macos-latest
+            node-version: 20.x
+            shell: zsh
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔍 Run linting
+        run: npm run lint
+
+      - name: 💅 Check formatting
+        run: npm run format:check
+
+      - name: 🏗️ Build package
+        run: npm run build --if-present
+
+      - name: 🧪 Test Shelly Error Analysis
+        shell: ${{ matrix.shell }}
+        run: |
+          # Test basic functionality
+          node src/main.js --version
+          node src/main.js --alias
+          
+          # Test error analysis with safe command
+          echo "Testing error analysis..."
+          timeout 10s node src/main.js "echo test" || true
+
+      - name: 🏗️ Test Repository Organization
+        shell: ${{ matrix.shell }}
+        run: |
+          # Create test project and test organize
+          mkdir release-test-project && cd release-test-project
+          npm init -y
+          
+          # Test organize command
+          node ../src/shelly/cli.js organize --force
+          
+          # Verify critical files were created
+          test -f package.json
+          test -f README.md
+          test -f .eslintrc.js
+          test -f .prettierrc
+          test -d .github
+          
+          # Test status command
+          node ../src/shelly/cli.js status
+
+      - name: 🧠 Test Memory Bank System
+        shell: ${{ matrix.shell }}
+        run: |
+          cd release-test-project
+          
+          # Test memory bank initialization
+          node ../src/shelly/cli.js memory init --force
+          
+          # Verify memory bank structure
+          test -d memory-bank
+          test -f memory-bank/README.md
+          test -d memory-bank/project
+          test -d memory-bank/technical
+          test -d memory-bank/current
+          
+          # Test memory bank commands
+          node ../src/shelly/cli.js memory status
+          node ../src/shelly/cli.js memory list
+          
+          # Test showing specific files
+          node ../src/shelly/cli.js memory show projectbrief.md
+
+      - name: 🚀 Test Project Initialization
+        shell: ${{ matrix.shell }}
+        run: |
+          # Test project init command
+          node src/shelly/cli.js init release-init-test --force
+          
+          # Verify new project structure
+          cd release-init-test
+          test -f package.json
+          test -f README.md
+          test -d memory-bank
+          test -d .github
+
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    needs: [pre-release-validation, comprehensive-testing]
+    if: needs.pre-release-validation.outputs.should-release == 'true'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+      packages: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🏗️ Build package
+        run: npm run build --if-present
+
+      - name: 🔍 Final validation
+        run: |
+          # Validate package can be packed
+          npm pack --dry-run
+          
+          # Test CLI commands work
+          node src/main.js --version
+          node src/shelly/cli.js --help
+
+      - name: 📊 Update Memory Bank for release
+        run: |
+          # Update Memory Bank with release information
+          echo "Updating Memory Bank with release context..."
+          node src/shelly/cli.js memory update --file progress.md || true
+        continue-on-error: true
+
+      - name: 🚀 Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
+
+      - name: 📈 Post-release validation
+        if: success()
+        run: |
+          # Verify the package was published
+          sleep 10
+          npm view @juspay/shelly version || echo "Package not yet available on npm"
+
+  post-release:
+    name: Post-Release Tasks
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: success()
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 📊 Update project documentation
+        run: |
+          # Update Memory Bank with latest release information
+          node src/shelly/cli.js memory update || true
+          
+          # Commit any Memory Bank updates
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet; then
+            echo "No Memory Bank updates to commit"
+          else
+            git add memory-bank/
+            git commit -m "docs: update Memory Bank after release" || true
+            git push origin HEAD:main || true
+          fi
+        continue-on-error: true
+
+      - name: 🎉 Release summary
+        run: |
+          echo "🎉 Shelly release completed successfully!"
+          echo ""
+          echo "📦 Package: @juspay/shelly"
+          echo "🏷️ Latest version: $(npm view @juspay/shelly version 2>/dev/null || echo 'checking...')"
+          echo "🔗 NPM: https://www.npmjs.com/package/@juspay/shelly"
+          echo "📖 Documentation: https://github.com/juspay/shelly#readme"
+          echo ""
+          echo "✨ Features included in this release:"
+          echo "   🔍 AI-powered error analysis"
+          echo "   🏗️ Repository organization system"
+          echo "   🧠 Memory Bank for AI-assisted development"
+          echo "   🤖 Enhanced AI integration"
+          echo ""
+          echo "🚀 Ready for community adoption!"
+
+  notify-failure:
+    name: Release Failure Notification
+    runs-on: ubuntu-latest
+    needs: [pre-release-validation, comprehensive-testing, release]
+    if: failure() && needs.pre-release-validation.outputs.should-release == 'true'
+
+    steps:
+      - name: 🚨 Release failed
+        run: |
+          echo "🚨 Shelly release pipeline failed!"
+          echo ""
+          echo "Failed jobs:"
+          echo "  - Pre-release validation: ${{ needs.pre-release-validation.result }}"
+          echo "  - Comprehensive testing: ${{ needs.comprehensive-testing.result }}"  
+          echo "  - Release: ${{ needs.release.result }}"
+          echo ""
+          echo "Please check the workflow logs and fix any issues before retrying."
+          echo "Manual release may be required."

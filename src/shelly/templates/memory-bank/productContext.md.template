@@ -1,0 +1,58 @@
+# Product Context: {{projectName}}
+
+## 1. Problem Statement
+
+### What Problem Does This Solve?
+{{problemStatement}}
+
+### Pain Points Addressed
+{{#painPoints}}
+- **{{issue}}**: {{impact}}
+{{/painPoints}}
+
+## 2. Solution Overview
+
+### How It Works
+{{solutionDescription}}
+
+### Key Value Propositions
+{{#valueProps}}
+- **{{benefit}}**: {{explanation}}
+{{/valueProps}}
+
+## 3. User Experience Goals
+
+### Primary User Workflows
+{{#workflows}}
+- **{{name}}**: {{steps}}
+{{/workflows}}
+
+### User Success Metrics
+{{#metrics}}
+- {{metric}}: {{target}}
+{{/metrics}}
+
+## 4. Competitive Landscape
+
+### Similar Solutions
+{{#competitors}}
+- **{{name}}**: {{strengths}} | {{weaknesses}}
+{{/competitors}}
+
+### Our Differentiation
+{{#differentiation}}
+- {{.}}
+{{/differentiation}}
+
+## 5. Product Evolution
+
+### Current Phase
+{{currentPhase}}
+
+### Next Milestones
+{{#milestones}}
+- **{{version}}**: {{features}} ({{timeline}})
+{{/milestones}}
+
+---
+*Last Updated: {{lastUpdated}}*

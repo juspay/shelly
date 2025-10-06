@@ -1,0 +1,442 @@
+# @juspay/shelly Project Rules
+
+### **MIGRATION PATTERNS**
+- **Dual CLI Architecture**: Node.js with extensible command processing for Error Analysis and Repository Organization
+- **AI Integration Enhancement**: Neurolink and Google AI services for intelligent content generation and command analysis
+- **Memory Bank Evolution**: Persistent AI context management with structured documentation for development continuity
+
+> **📚 Historical Learning Archive**: See `memory-bank/` for complete project context and AI assistant guidance
+> **🎯 Current Focus**: AI-powered development assistant combining error analysis, repository organization, and Memory Bank for enhanced AI-assisted development workflows
+
+---
+
+## 🏗️ ARCHITECTURE PATTERNS (CRITICAL)
+
+### **Core Module Structure**
+```javascript
+@juspay/shelly/
+├── package.json                 # Package metadata with @juspay/ scoping
+├── README.md                    # Comprehensive feature documentation
+├── src/                         # Main application source
+│   ├── main.js                  # Primary CLI - Error Analysis Engine
+│   ├── services/                # Core services layer
+│   │   ├── analysisService.js   # AI-powered command analysis
+│   │   ├── historyService.js    # Shell history integration
+│   │   ├── commandService.js    # Command processing
+│   │   ├── fileService.js       # File operations
+│   │   ├── shellService.js      # Shell compatibility layer
+│   │   ├── uiService.js         # User interface
+│   │   └── ruleService.js       # Rule-based processing
+│   ├── shelly/                  # Secondary CLI system
+│   │   ├── cli.js               # Repository Organization & Memory Bank CLI
+│   │   ├── commands/            # Command implementations
+│   │   │   ├── organize.js      # Project scaffolding & GitHub integration
+│   │   │   └── memory.js        # Memory Bank management
+│   │   ├── services/            # Shelly-specific services
+│   │   │   └── memoryBankService.js  # AI context management
+│   │   ├── templates/           # Project templates and scaffolding
+│   │   └── utils/               # Utility functions
+│   │       └── aiContentGenerator.js  # AI-powered content generation
+│   └── utils/                   # Shared utilities
+│       └── commandFinder.js     # Command discovery
+├── test/                        # Test suites
+├── docs/                        # Documentation
+│   ├── API.md                   # CLI and programmatic API reference
+│   ├── QUICK_START.md           # Multi-feature getting started guide
+│   ├── GETTING_STARTED.md       # Detailed setup instructions
+│   └── SETUP.md                 # Installation and configuration
+├── memory-bank/                 # AI assistant context management
+│   ├── project/                 # Project strategy and goals
+│   ├── technical/               # Architecture and system patterns
+│   └── current/                 # Active work and progress
+└── .github/                     # GitHub integration templates and workflows
+```
+
+### **Key Implementation Principles**
+- **Dual CLI Architecture**: Separation of concerns between Error Analysis (main.js) and Repository Organization/Memory Bank (shelly/cli.js)
+- **Service-Oriented Design**: Modular services for analysis, history, file operations, and AI integration
+- **Shell Compatibility**: Universal support for bash, zsh, tcsh with graceful fallbacks
+- **AI-First Development**: Integrated AI content generation and persistent context management
+- **Cross-Platform Reliability**: macOS and Linux compatibility with robust error handling
+
+### **Component Relationships**
+```
+Error Analysis Flow:
+Shell History → History Service → Analysis Service → AI Integration → User Interface
+
+Repository Organization Flow:
+Project Analysis → Template System → GitHub Integration → File Organization → Memory Bank
+
+Memory Bank Flow:
+Project Context → AI Content Generator → Structured Documentation → Cline Integration
+```
+
+---
+
+## 🛠️ ENTERPRISE DEVELOPMENT WORKFLOW
+
+### **Universal Commands (Always Available)**
+
+#### **Package Management**
+```bash
+npm install                 # Install dependencies
+npm update                  # Update dependencies
+npm audit                   # Security audit
+npm run                     # Show available scripts
+```
+
+#### **Universal Development Commands**
+```bash
+npm start                   # Start application
+npm test                    # Run tests
+npm run build              # Build for production
+npm run dev                # Development mode
+npm run lint               # Code linting
+npm run format             # Code formatting
+```
+
+#### **Git Workflow**
+```bash
+git status                  # Check status
+git add .                   # Stage changes
+git commit -m "message"     # Commit changes
+git push                    # Push to remote
+git pull                    # Pull from remote
+```
+
+#### **Shelly-Specific Commands**
+```bash
+# Error Analysis
+shelly                      # Analyze last failed command with AI suggestions
+shelly --alias             # Set up shell integration alias
+shelly --version           # Show version information
+
+# Repository Organization
+shelly organize            # Enhance current project with full scaffolding
+shelly organize --force    # Overwrite existing files during organization
+shelly organize --update   # Preserve existing files, add missing ones
+shelly organize --move     # Intelligently relocate misplaced files
+shelly status             # Check repository organization health
+shelly init <project>     # Create new project with complete setup
+
+# Memory Bank Management
+shelly memory init        # Initialize Memory Bank with AI-generated content
+shelly memory update      # Refresh Memory Bank with current project state
+shelly memory show <file> # Display specific Memory Bank file
+shelly memory status      # Check Memory Bank completeness
+shelly memory list        # List all Memory Bank files
+```
+
+---
+
+## 🔧 COMPLETE SDLC CYCLE
+
+### **Phase 1: Setup & Dependencies**
+```bash
+# 1. Install Shelly globally
+npm install -g @juspay/shelly
+
+# 2. Clone and setup project
+git clone https://github.com/juspay/shelly.git
+cd shelly
+npm install
+
+# 3. Environment setup for AI features
+cp .env.example .env
+# Add your Google AI API key or Vertex AI credentials
+export GOOGLE_AI_API_KEY=your_api_key_here
+```
+
+### **Phase 2: Development**
+```bash
+# 1. Set up shell integration
+shelly --alias
+source ~/.bashrc  # or ~/.zshrc
+
+# 2. Initialize project organization (if working on existing project)
+shelly organize
+
+# 3. Set up Memory Bank for AI assistance
+shelly memory init
+
+# 4. Code quality checks
+npm run lint
+npm run format
+```
+
+### **Phase 3: Pre-Commit**
+```bash
+# 1. Quality assurance
+npm run lint && npm run format && npm test
+
+# 2. Update Memory Bank with latest changes
+shelly memory update
+
+# 3. Validate repository organization
+shelly status
+```
+
+### **Phase 4: Testing & Validation**
+```bash
+# 1. Test all Shelly features
+node src/main.js --version
+node src/shelly/cli.js --help
+
+# 2. Test Error Analysis
+echo "test_command_that_fails" && shelly
+
+# 3. Test Repository Organization
+mkdir test-project && cd test-project
+npm init -y
+shelly organize
+shelly status
+
+# 4. Test Memory Bank
+shelly memory init
+shelly memory status
+```
+
+### **Phase 5: Release**
+```bash
+# 1. Update Memory Bank for release
+shelly memory update
+
+# 2. Version bump with semantic release
+npm run semantic-release
+
+# 3. Verify package publication
+npm view @juspay/shelly version
+```
+
+---
+
+## 🧪 TESTING & DEBUGGING STRATEGY
+
+### **Testing Architecture**
+```
+Layer 1: Unit Tests → Service layer testing (analysisService, memoryBankService)
+Layer 2: Integration Tests → CLI command testing, shell integration validation
+Layer 3: E2E Tests → Complete workflows (organize → memory init → status)
+```
+
+### **Shelly Testing Commands**
+```bash
+# Basic testing
+npm test                    # Run all tests
+npm run test:watch         # Watch mode for development
+npm run test:coverage      # Coverage report
+
+# Debugging Shelly features
+SHELLY_DEBUG=true shelly   # Debug mode for error analysis
+node --inspect src/main.js # Debug main CLI
+node --inspect src/shelly/cli.js organize --debug  # Debug organize command
+```
+
+### **Feature-Specific Testing**
+```bash
+# Error Analysis testing
+shelly --version          # Basic functionality test
+echo "invalid_command" && shelly  # Error analysis test
+
+# Repository Organization testing
+shelly organize --dry-run # Preview changes without applying
+shelly status --verbose   # Detailed organization status
+
+# Memory Bank testing
+shelly memory status      # Check Memory Bank health
+shelly memory show progress.md  # View specific files
+```
+
+---
+
+## 🔐 ENVIRONMENT & CONFIGURATION
+
+### **Environment Variables**
+```bash
+# AI Integration
+GOOGLE_AI_API_KEY=your_api_key                    # Google AI Studio (free tier)
+GOOGLE_VERTEX_PROJECT=your_project_id             # Google Vertex AI (enterprise)
+NEUROLINK_API_KEY=your_neurolink_key              # Neurolink integration
+
+# Shelly Configuration
+SHELLY_DEBUG=true                                 # Enable debug logging
+SHELLY_DISABLE_AI=true                           # Disable AI features for testing
+NODE_ENV=development                             # Development environment
+```
+
+### **Configuration Files**
+```bash
+# Core configuration
+.env                      # Environment variables for AI services
+package.json             # Project metadata and dependencies
+.eslintrc.js             # Code linting configuration
+.prettierrc              # Code formatting rules
+commitlint.config.js     # Commit message validation
+
+# Shelly-specific config
+.clinerules              # This file - AI assistant instructions
+memory-bank/             # AI context and project knowledge
+.github/                 # GitHub integration templates and workflows
+```
+
+---
+
+## 📖 DOCUMENTATION & RESOURCES
+
+### **Project Documentation Structure**
+```
+shelly/
+├── README.md              # Complete feature overview and usage
+├── CHANGELOG.md           # Version history and feature additions
+├── CONTRIBUTING.md        # Contribution guidelines for all features
+├── docs/                  # Comprehensive documentation
+│   ├── API.md            # CLI and programmatic API reference
+│   ├── QUICK_START.md    # Multi-feature getting started guide
+│   ├── GETTING_STARTED.md # Detailed setup instructions
+│   └── SETUP.md          # Installation and configuration
+└── memory-bank/          # AI assistant context management
+    ├── project/          # Project strategy and goals
+    ├── technical/        # Architecture and system patterns
+    └── current/          # Active work and progress
+```
+
+### **Key Resources**
+- **Project Repository**: https://github.com/juspay/shelly
+- **Documentation**: https://juspay.github.io/shelly/
+- **Issue Tracker**: https://github.com/juspay/shelly/issues
+- **NPM Package**: https://www.npmjs.com/package/@juspay/shelly
+- **AI Integration**: Neurolink platform and Google AI services
+
+---
+
+## 💻 DEVELOPMENT STANDARDS
+
+### **Code Organization**
+```javascript
+// Shelly service architecture
+src/
+├── main.js                    // Primary CLI entry point
+├── services/                  // Core service layer
+│   ├── analysisService.js    // AI-powered command analysis
+│   ├── historyService.js     // Shell history integration
+│   └── shellService.js       // Multi-shell compatibility
+├── shelly/                   // Secondary CLI system
+│   ├── cli.js               // Repository organization CLI
+│   ├── commands/            // Feature-specific commands
+│   │   ├── organize.js      // Project scaffolding
+│   │   └── memory.js        // Memory Bank management
+│   └── services/            // Specialized services
+│       └── memoryBankService.js  // AI context management
+└── utils/                   // Shared utilities
+    └── commandFinder.js     // Cross-platform command discovery
+```
+
+### **Coding Standards**
+```javascript
+// Shelly service pattern example
+const createAnalysisService = (config = {}) => {
+  const { aiProvider = 'neurolink', debugMode = false } = config;
+  
+  return {
+    async analyzeCommand(command, context) {
+      // AI-powered command analysis implementation
+      return await processWithAI(command, context, aiProvider);
+    },
+    
+    async generateSuggestions(errorOutput, history) {
+      // Context-aware suggestion generation
+      return await createSuggestions(errorOutput, history);
+    }
+  };
+};
+```
+
+---
+
+## ⚡ SUCCESS FACTORS
+
+### **Quality Metrics**
+- **Error Analysis Accuracy**: >90% helpful suggestion rate
+- **Repository Organization Success**: 100% for standard project types
+- **Memory Bank Generation**: Complete context coverage
+- **Cross-Platform Compatibility**: macOS and Linux support
+- **AI Integration Reliability**: Graceful fallback when AI unavailable
+
+### **Performance Targets**
+- **Command Analysis Response**: <2 seconds for most commands
+- **Repository Organization**: <30 seconds for typical projects
+- **Memory Bank Generation**: <60 seconds for comprehensive context
+- **Shell Integration Latency**: <100ms for history access
+
+### **Validation Pipeline**
+```bash
+# Complete Shelly validation
+npm install && npm run lint && npm test && npm run build
+
+# Feature-specific validation
+shelly --version && shelly organize --dry-run && shelly memory status
+```
+
+---
+
+## 🎯 WORKING EXAMPLES
+
+### **Basic Usage**
+```bash
+# Install and setup
+npm install -g @juspay/shelly
+shelly --alias
+
+# Error analysis
+some_command_that_fails
+shelly  # Get AI-powered suggestions
+
+# Repository organization
+cd your-project
+shelly organize
+shelly status
+```
+
+### **Advanced Usage**
+```bash
+# Complete project setup workflow
+shelly init my-new-project --template typescript
+cd my-new-project
+shelly memory init
+shelly organize --force
+shelly status
+
+# Memory Bank management
+shelly memory update --file progress.md
+shelly memory show systemPatterns.md
+```
+
+### **Common Workflows**
+```bash
+# Daily development workflow
+# 1. Use error analysis when commands fail
+git push origin main  # fails
+shelly  # get suggestions and fix
+
+# 2. Organize new projects
+shelly organize --update  # add missing files without overwriting
+
+# 3. Keep Memory Bank current
+shelly memory update  # refresh AI context
+
+# 4. Check repository health
+shelly status  # validate organization completeness
+```
+
+---
+
+**🎯 SHELLY IMPLEMENTATION COMPLETE**: 
+This .clinerules file now provides complete context for AI assistants working with Shelly. All placeholders have been replaced with actual Shelly-specific information including:
+
+1. ✅ Dual CLI architecture (Error Analysis + Repository Organization + Memory Bank)
+2. ✅ Complete command reference for all features
+3. ✅ AI integration patterns and environment setup
+4. ✅ Testing strategies for all components
+5. ✅ Real project structure and coding standards
+
+**📝 AI ASSISTANT GUIDANCE**: Use this comprehensive context to understand Shelly's architecture, provide accurate suggestions for development tasks, and maintain consistency with the established patterns for Error Analysis, Repository Organization, and Memory Bank features.

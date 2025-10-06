@@ -8,11 +8,14 @@ function getCodeSnippet(filePath, lineNumber, context = 5) {
     const fileContent = fs.readFileSync(filePath, 'utf-8').split('\n');
     const start = Math.max(0, lineNumber - context - 1);
     const end = Math.min(fileContent.length, lineNumber + context);
-    const snippet = fileContent.slice(start, end).map((line, index) => {
-      const currentLine = start + index + 1;
-      const isErrorLine = currentLine === lineNumber;
-      return `${isErrorLine ? '>' : ' '} ${currentLine.toString().padStart(4)}: ${line}`;
-    }).join('\n');
+    const snippet = fileContent
+      .slice(start, end)
+      .map((line, index) => {
+        const currentLine = start + index + 1;
+        const isErrorLine = currentLine === lineNumber;
+        return `${isErrorLine ? '>' : ' '} ${currentLine.toString().padStart(4)}: ${line}`;
+      })
+      .join('\n');
     return `\n--- Code from ${filePath}:${lineNumber} ---\n${snippet}\n--------------------------------------\n`;
   } catch (e) {
     return null; // Could not read or parse the file

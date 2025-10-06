@@ -1,0 +1,130 @@
+name: Shelly Copilot Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'src/**/*.js'
+      - 'test/**/*.js'
+      - 'scripts/**/*.js'
+      - '*.js'
+      - '*.md'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  copilot-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🧪 Run Tests
+        run: npm test
+        continue-on-error: true
+
+      - name: 🔍 Lint Code
+        run: npm run lint
+        continue-on-error: true
+
+      - name: 🔍 Shelly-specific Review Summary
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            // Categorize changed files by Shelly feature area
+            const categories = {
+              'error-analysis': [],
+              'repository-organization': [],
+              'memory-bank': [],
+              'ai-integration': [],
+              'shell-integration': [],
+              'cli-interface': [],
+              'documentation': [],
+              'other': []
+            };
+            
+            files.forEach(file => {
+              const path = file.filename;
+              if (path.includes('src/main.js') || path.includes('analysisService') || path.includes('historyService')) {
+                categories['error-analysis'].push(path);
+              } else if (path.includes('organize') || path.includes('templates') || path.includes('github')) {
+                categories['repository-organization'].push(path);
+              } else if (path.includes('memory') || path.includes('Memory') || path.includes('memory-bank')) {
+                categories['memory-bank'].push(path);
+              } else if (path.includes('ai') || path.includes('neurolink') || path.includes('aiContentGenerator')) {
+                categories['ai-integration'].push(path);
+              } else if (path.includes('shell') || path.includes('Shell')) {
+                categories['shell-integration'].push(path);
+              } else if (path.includes('cli.js') || path.includes('commands/')) {
+                categories['cli-interface'].push(path);
+              } else if (path.endsWith('.md') || path.includes('docs/')) {
+                categories['documentation'].push(path);
+              } else {
+                categories['other'].push(path);
+              }
+            });
+            
+            let summary = '🤖 **Shelly AI Code Review Completed**\n\n';
+            summary += '### 📋 Changed Files by Feature Area:\n\n';
+            
+            Object.entries(categories).forEach(([category, files]) => {
+              if (files.length > 0) {
+                const emoji = {
+                  'error-analysis': '🔍',
+                  'repository-organization': '🏗️', 
+                  'memory-bank': '🧠',
+                  'ai-integration': '🤖',
+                  'shell-integration': '🐚',
+                  'cli-interface': '🔧',
+                  'documentation': '📚',
+                  'other': '📄'
+                }[category] || '📄';
+                
+                summary += `${emoji} **${category.replace('-', ' ').toUpperCase()}** (${files.length} files)\n`;
+                files.forEach(file => summary += `   - \`${file}\`\n`);
+                summary += '\n';
+              }
+            });
+            
+            summary += '### 🔍 Review Focus Areas:\n';
+            summary += '- **Error Analysis**: Command parsing, AI suggestion accuracy, shell compatibility\n';
+            summary += '- **Repository Organization**: Project scaffolding, GitHub integration, file operations\n';
+            summary += '- **Memory Bank**: AI context management, documentation generation, persistence\n';
+            summary += '- **Security**: Shell injection prevention, file system safety, input validation\n';
+            summary += '- **Performance**: Memory usage, response times, resource management\n';
+            summary += '- **Cross-Platform**: macOS/Linux compatibility, shell-specific features\n\n';
+            summary += '📝 Check the **Files Changed** tab for detailed AI feedback on each file.\n';
+            summary += '🚀 Ensure all Shelly features (Error Analysis, Repository Organization, Memory Bank) work seamlessly together!';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

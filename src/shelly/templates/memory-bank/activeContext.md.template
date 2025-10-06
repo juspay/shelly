@@ -1,0 +1,81 @@
+# Active Context: {{projectName}}
+
+## 1. Current Work Focus
+
+### Primary Objective
+{{currentObjective}}
+
+### Active Features/Tasks
+{{#activeTasks}}
+- **{{task}}**: {{status}}
+  - Progress: {{progress}}
+  - Blockers: {{blockers}}
+  - Next Steps: {{nextSteps}}
+{{/activeTasks}}
+
+## 2. Recent Changes
+
+### Last 5 Significant Changes
+{{#recentChanges}}
+- **{{date}}**: {{change}}
+  - Impact: {{impact}}
+  - Files Modified: {{files}}
+{{/recentChanges}}
+
+## 3. Active Decisions & Considerations
+
+### Technical Decisions
+{{#techDecisions}}
+- **{{decision}}**: {{rationale}}
+  - Alternatives Considered: {{alternatives}}
+  - Trade-offs: {{tradeoffs}}
+{{/techDecisions}}
+
+### Product Decisions
+{{#productDecisions}}
+- **{{decision}}**: {{reasoning}}
+  - User Impact: {{userImpact}}
+  - Business Impact: {{businessImpact}}
+{{/productDecisions}}
+
+## 4. Current Patterns & Preferences
+
+### Coding Patterns
+{{#codingPatterns}}
+- **{{pattern}}**: {{usage}}
+{{/codingPatterns}}
+
+### Architecture Preferences
+{{#archPreferences}}
+- {{preference}}: {{reason}}
+{{/archPreferences}}
+
+## 5. Learning & Insights
+
+### Key Discoveries
+{{#discoveries}}
+- **{{insight}}**: {{application}}
+{{/discoveries}}
+
+### Best Practices Established
+{{#bestPractices}}
+- {{practice}}: {{context}}
+{{/bestPractices}}
+
+## 6. Immediate Next Steps
+
+### Priority Queue
+{{#nextSteps}}
+1. **{{task}}** ({{priority}})
+   - Estimate: {{estimate}}
+   - Dependencies: {{dependencies}}
+   - Success Criteria: {{criteria}}
+{{/nextSteps}}
+
+### Waiting For
+{{#waitingFor}}
+- {{item}}: {{reason}} ({{expectedDate}})
+{{/waitingFor}}
+
+---
+*Last Updated: {{lastUpdated}} by {{updatedBy}}*
