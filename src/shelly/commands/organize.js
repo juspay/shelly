@@ -560,7 +560,7 @@ export class OrganizeCommand {
    * Smart merge package.json preserving existing content while adding enhancements
    */
   smartMergePackageJson(existing, enhanced) {
-    const merged = { ...existing };
+    let merged = { ...existing };
 
     // Enhance name with @juspay/ prefix if not already present
     if (enhanced.name && !existing.name.startsWith('@juspay/')) {

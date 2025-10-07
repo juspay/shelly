@@ -60,8 +60,8 @@ export async function suggestCorrections(command) {
   try {
     const result = await neurolink.generate({
       input: { text: prompt },
-      provider: 'google-ai',
-      model: 'gemini-2.5-flash',
+      provider: "googlevertex",
+      model: "gemini-2.5-flash",
     });
     const suggestions = result.content
       .trim()
