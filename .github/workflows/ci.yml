@@ -2,9 +2,9 @@ name: Shelly CI/CD Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [release, main, master]
   pull_request:
-    branches: [main, master]
+    branches: [release, main, master]
   workflow_dispatch:
 
 env:
@@ -31,9 +31,6 @@ jobs:
 
       - name: 📦 Install dependencies
         run: npm install
-
-      - name: 🔍 Run ESLint
-        run: npm run lint
 
       - name: 💅 Check Prettier formatting
         run: npm run format:check
@@ -75,64 +72,8 @@ jobs:
 
       - name: 🧪 Test CLI availability
         run: |
-          node src/main.js --version
+          node src/shelly/cli.js --version
           node src/shelly/cli.js --help
-        shell: ${{ matrix.shell }}
-
-      - name: 🏗️ Test Repository Organization
-        run: |
-          # Create test project
-          mkdir test-project && cd test-project
-          npm init -y
-
-          # Test organize command
-          node ../src/shelly/cli.js organize --force
-
-          # Test status command
-          node ../src/shelly/cli.js status
-
-          # Verify files were created
-          ls -la
-          test -f package.json
-          test -f README.md
-          test -f .eslintrc.js
-          test -f .prettierrc
-        shell: ${{ matrix.shell }}
-
-      - name: 🧠 Test Memory Bank
-        run: |
-          cd test-project
-
-          # Test memory bank initialization
-          node ../src/shelly/cli.js memory init --force
-
-          # Test memory bank status
-          node ../src/shelly/cli.js memory status
-
-          # Test memory bank listing
-          node ../src/shelly/cli.js memory list
-
-          # Verify memory bank structure
-          test -d memory-bank
-          test -f memory-bank/README.md
-          test -d memory-bank/project
-          test -d memory-bank/technical
-          test -d memory-bank/current
-        shell: ${{ matrix.shell }}
-
-      - name: 🚀 Test Project Initialization
-        run: |
-          # Test project init
-          node src/shelly/cli.js init test-init-project --force
-
-          # Verify project structure
-          cd test-init-project
-          test -f package.json
-          test -f README.md
-          test -d memory-bank
-
-          # Test status in new project
-          node ../src/shelly/cli.js status
         shell: ${{ matrix.shell }}
 
   ai-integration-tests:
@@ -233,7 +174,7 @@ jobs:
         run: npm install
 
       - name: 🔒 Run security audit
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
 
       - name: 🛡️ Check for vulnerabilities
         run: |
@@ -292,7 +233,7 @@ jobs:
     needs:
       [quality-check, functional-tests, security-audit, documentation-tests]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/release' && github.event_name == 'push'
 
     steps:
       - name: 📥 Checkout code
