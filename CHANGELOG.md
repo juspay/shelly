@@ -1,3 +1,17 @@
+# 1.0.0 (2025-10-25)
+
+
+### Bug Fixes
+
+* **ci:** resolve matrix.shell validation errors in release workflow ([d70f4c7](https://github.com/juspay/Shelly/commit/d70f4c7dbbc946c033b043cad3e1d4690fa2607a))
+
+
+### Features
+
+* **cli:** comprehensive AI-powered project scaffolding and setup ([28355d9](https://github.com/juspay/Shelly/commit/28355d93bd194f2dc99841e62fb8cb5c2ac05504))
+* **github:** add advanced GitHub repository configuration ([b7fc3f9](https://github.com/juspay/Shelly/commit/b7fc3f999becae7e54133bb86d1dbd711f4668ee))
+* update provider settings and fix organize command ([496046d](https://github.com/juspay/Shelly/commit/496046db1db4673bb36a275741a74eaac94b61d1))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
