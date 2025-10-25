@@ -2,7 +2,7 @@ name: Shelly Documentation Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [release, main, master]
     paths:
       - 'docs/**'
       - 'memory-bank/**'
@@ -14,7 +14,7 @@ on:
       - '.github/workflows/docs.yml'
       - 'mkdocs.yml'
   pull_request:
-    branches: [main, master]
+    branches: [release, main, master]
     paths:
       - 'docs/**'
       - 'memory-bank/**'
@@ -293,13 +293,13 @@ jobs:
 
       - name: 📤 Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/release' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           path: ./docs-build
 
   deploy-docs:
     name: Deploy Documentation
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/release' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     needs: build-docs
     runs-on: ubuntu-latest
     environment:
@@ -324,7 +324,7 @@ jobs:
   update-memory-bank:
     name: Update Memory Bank Documentation
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/release' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
 
     steps:
       - name: 📥 Checkout code
@@ -358,6 +358,6 @@ jobs:
             echo "📝 Committing Memory Bank updates..."
             git add memory-bank/
             git commit -m "docs: update Memory Bank after documentation changes" || true
-            git push origin HEAD:main || echo "Push failed or no changes to push"
+            git push origin HEAD:release || echo "Push failed or no changes to push"
           fi
         continue-on-error: true
