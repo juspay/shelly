@@ -95,11 +95,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         node-version: [18.x, 20.x]
-        shell: [bash]
-        include:
-          - os: macos-latest
-            node-version: 20.x
-            shell: zsh
 
     steps:
       - name: 📥 Checkout code
@@ -124,7 +119,7 @@ jobs:
         run: npm run build --if-present
 
       - name: 🧪 Test Shelly Error Analysis
-        shell: ${{ matrix.shell }}
+        shell: bash
         run: |
           # Test basic functionality
           node src/main.js --version
@@ -135,7 +130,7 @@ jobs:
           timeout 10s node src/main.js "echo test" || true
 
       - name: 🏗️ Test Repository Organization
-        shell: ${{ matrix.shell }}
+        shell: bash
         run: |
           # Create test project and test organize
           mkdir release-test-project && cd release-test-project
@@ -155,7 +150,7 @@ jobs:
           node ../src/shelly/cli.js status
 
       - name: 🧠 Test Memory Bank System
-        shell: ${{ matrix.shell }}
+        shell: bash
         run: |
           cd release-test-project
 
@@ -177,7 +172,7 @@ jobs:
           node ../src/shelly/cli.js memory show projectbrief.md
 
       - name: 🚀 Test Project Initialization
-        shell: ${{ matrix.shell }}
+        shell: bash
         run: |
           # Test project init command
           node src/shelly/cli.js init release-init-test --force
