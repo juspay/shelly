@@ -2,9 +2,9 @@ name: Shelly CI/CD Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [release, main, master]
   pull_request:
-    branches: [main, master]
+    branches: [release, main, master]
   workflow_dispatch:
 
 env:
@@ -292,7 +292,7 @@ jobs:
     needs:
       [quality-check, functional-tests, security-audit, documentation-tests]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/release' && github.event_name == 'push'
 
     steps:
       - name: 📥 Checkout code
