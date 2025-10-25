@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { OrganizeCommand } from './commands/organize.js';
 import { MemoryCommand } from './commands/memory.js';
+import { GitHubSetupCommand } from './commands/githubSetup.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs/promises';
@@ -20,7 +21,10 @@ async function getPackageInfo() {
     const packageContent = await fs.readFile(packagePath, 'utf8');
     return JSON.parse(packageContent);
   } catch (error) {
-    return { version: '1.0.0', description: 'AI-assisted repository organization tool' };
+    return {
+      version: '1.0.0',
+      description: 'AI-assisted repository organization tool',
+    };
   }
 }
 
@@ -29,7 +33,9 @@ async function setupCLI() {
 
   program
     .name('shelly')
-    .description('AI-assisted repository organization tool for publishing-ready projects')
+    .description(
+      'AI-assisted repository organization tool for publishing-ready projects'
+    )
     .version(packageInfo.version);
 
   // Organize command
@@ -39,7 +45,10 @@ async function setupCLI() {
     .option('-f, --force', 'overwrite existing files without prompting')
     .option('-u, --update', 'only add missing files, preserve existing ones')
     .option('-m, --move', 'move misplaced files to their correct directories')
-    .option('-d, --directory <path>', 'target directory (defaults to current directory)')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
     .action(async (options) => {
       try {
         // Handle current working directory access safely
@@ -51,12 +60,18 @@ async function setupCLI() {
             targetDirectory = process.cwd();
           } catch (error) {
             if (error.code === 'EPERM' || error.code === 'ENOENT') {
-              console.error(`❌ Cannot access current directory: ${error.message}\n`);
+              console.error(
+                `❌ Cannot access current directory: ${error.message}\n`
+              );
               console.error(`💡 Solutions:`);
-              console.error(`   1. Use: shelly organize --directory /path/to/your/project`);
+              console.error(
+                `   1. Use: shelly organize --directory /path/to/your/project`
+              );
               console.error(`   2. Navigate to a directory you have access to`);
               console.error(`   3. Check directory permissions\n`);
-              console.error(`📁 Current directory issue: ${error.code === 'EPERM' ? 'Permission denied' : 'Directory not found'}`);
+              console.error(
+                `📁 Current directory issue: ${error.code === 'EPERM' ? 'Permission denied' : 'Directory not found'}`
+              );
               process.exit(1);
             }
             throw error;
@@ -67,7 +82,7 @@ async function setupCLI() {
           force: options.force,
           update: options.update,
           move: options.move,
-          cwd: targetDirectory
+          cwd: targetDirectory,
         });
 
         await organizeCommand.execute();
@@ -90,7 +105,7 @@ async function setupCLI() {
     .action(async (projectName, options) => {
       try {
         console.log('🚀 Initializing new project...');
-        
+
         const projectDir = path.join(
           options.directory ? path.resolve(options.directory) : process.cwd(),
           projectName
@@ -108,11 +123,11 @@ async function setupCLI() {
           main: 'src/index.js',
           type: 'module',
           scripts: {
-            test: 'echo "Error: no test specified" && exit 1'
+            test: 'echo "Error: no test specified" && exit 1',
           },
           keywords: [],
           author: '',
-          license: 'ISC'
+          license: 'ISC',
         };
 
         await fs.writeFile(
@@ -126,7 +141,7 @@ async function setupCLI() {
         // Run organize command on the new project
         const organizeCommand = new OrganizeCommand({
           force: true,
-          cwd: projectDir
+          cwd: projectDir,
         });
 
         await organizeCommand.execute();
@@ -136,7 +151,6 @@ async function setupCLI() {
         console.log(`   cd ${projectName}`);
         console.log(`   npm install`);
         console.log(`   npm run prepare`);
-
       } catch (error) {
         console.error('❌ Error initializing project:', error.message);
         if (process.env.DEBUG) {
@@ -150,10 +164,15 @@ async function setupCLI() {
   program
     .command('status')
     .description('Check the current repository organization status')
-    .option('-d, --directory <path>', 'target directory (defaults to current directory)')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
     .action(async (options) => {
       try {
-        const targetDir = options.directory ? path.resolve(options.directory) : process.cwd();
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
         await checkRepositoryStatus(targetDir);
       } catch (error) {
         console.error('❌ Error checking status:', error.message);
@@ -165,17 +184,25 @@ async function setupCLI() {
   program
     .command('memory')
     .description('Manage project Memory Bank for AI-assisted development')
-    .argument('[subcommand]', 'memory subcommand (init, update, show, status, list)')
+    .argument(
+      '[subcommand]',
+      'memory subcommand (init, update, show, status, list)'
+    )
     .argument('[filename]', 'filename for show command')
     .option('-f, --force', 'force operation (overwrite existing files)')
     .option('--file <name>', 'specify a specific file for update operations')
-    .option('-d, --directory <path>', 'target directory (defaults to current directory)')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
     .action(async (subcommand, filename, options) => {
       try {
-        const targetDir = options.directory ? path.resolve(options.directory) : process.cwd();
-        
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
         const memoryCommand = new MemoryCommand({
-          cwd: targetDir
+          cwd: targetDir,
         });
 
         // Handle filename for show command
@@ -186,6 +213,133 @@ async function setupCLI() {
         await memoryCommand.execute(subcommand || 'help', options);
       } catch (error) {
         console.error('❌ Error executing memory command:', error.message);
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // GitHub setup command
+  program
+    .command('github')
+    .description(
+      'Configure GitHub repository with best practices for publishing and collaboration'
+    )
+    .argument('[subcommand]', 'github subcommand (setup)', 'setup')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be configured without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .action(async (subcommand, options) => {
+      try {
+        if (subcommand !== 'setup') {
+          console.error(`❌ Unknown subcommand: ${subcommand}`);
+          console.error('Available subcommands: setup');
+          process.exit(1);
+        }
+
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        const githubSetupCommand = new GitHubSetupCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+        });
+
+        await githubSetupCommand.execute();
+      } catch (error) {
+        console.error(
+          '❌ Error executing GitHub setup command:',
+          error.message
+        );
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // Shortcut commands for GitHub setup
+  program
+    .command('gh')
+    .description('Shortcut for GitHub setup (alias for "github setup")')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be configured without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .action(async (options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        const githubSetupCommand = new GitHubSetupCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+        });
+
+        await githubSetupCommand.execute();
+      } catch (error) {
+        console.error(
+          '❌ Error executing GitHub setup command:',
+          error.message
+        );
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // Quick setup command
+  program
+    .command('setup')
+    .description('Quick repository setup (GitHub + organize)')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be configured without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .option('--github-only', 'only run GitHub setup, skip organize')
+    .option('--organize-only', 'only run organize, skip GitHub setup')
+    .action(async (options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        if (!options.organizeOnly) {
+          console.log('🔧 Running GitHub setup...\n');
+          const githubSetupCommand = new GitHubSetupCommand({
+            cwd: targetDir,
+            force: options.force,
+            dryRun: options.dryRun,
+          });
+          await githubSetupCommand.execute();
+        }
+
+        if (!options.githubOnly) {
+          console.log('\n📁 Running repository organization...\n');
+          const organizeCommand = new OrganizeCommand({
+            cwd: targetDir,
+            force: options.force,
+            update: !options.force,
+          });
+          await organizeCommand.execute();
+        }
+
+        console.log('\n🎉 Complete repository setup finished!');
+      } catch (error) {
+        console.error('❌ Error executing setup command:', error.message);
         if (process.env.DEBUG) {
           console.error(error.stack);
         }
@@ -211,24 +365,25 @@ async function checkRepositoryStatus(targetDir) {
     '.gitignore',
     '.eslintrc.js',
     '.prettierrc',
-    'CHANGELOG.md'
+    'CHANGELOG.md',
   ];
 
   const requiredDirs = [
     '.github/ISSUE_TEMPLATE',
     '.github/workflows',
     'src',
-    'docs'
+    'docs',
   ];
 
   const githubFiles = [
     '.github/PULL_REQUEST_TEMPLATE.md',
     '.github/CODEOWNERS',
-    '.github/workflows/ci.yml'
+    '.github/workflows/ci.yml',
   ];
 
   let score = 0;
-  const maxScore = requiredFiles.length + requiredDirs.length + githubFiles.length;
+  const maxScore =
+    requiredFiles.length + requiredDirs.length + githubFiles.length;
 
   console.log('📋 Required Files:');
   for (const file of requiredFiles) {
@@ -255,7 +410,9 @@ async function checkRepositoryStatus(targetDir) {
   console.log(`\n📊 Organization Score: ${score}/${maxScore} (${percentage}%)`);
 
   if (percentage < 100) {
-    console.log('\n💡 Run "shelly organize" to complete repository organization');
+    console.log(
+      '\n💡 Run "shelly organize" to complete repository organization'
+    );
   } else {
     console.log('\n🎉 Repository is fully organized!');
   }
@@ -265,12 +422,12 @@ async function checkRepositoryStatus(targetDir) {
     const packagePath = path.join(targetDir, 'package.json');
     const packageContent = await fs.readFile(packagePath, 'utf8');
     const packageJson = JSON.parse(packageContent);
-    
+
     console.log('\n📦 Package Information:');
     console.log(`   Name: ${packageJson.name}`);
     console.log(`   Version: ${packageJson.version}`);
     console.log(`   License: ${packageJson.license || 'Not specified'}`);
-    
+
     if (!packageJson.name.startsWith('@juspay/')) {
       console.log('\n⚠️  Package name is not prefixed with @juspay/');
       console.log('   Run "shelly organize" to fix this');

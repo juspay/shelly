@@ -30,7 +30,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: false
 
 env:
@@ -40,7 +40,7 @@ jobs:
   validate-documentation:
     name: Documentation Validation
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -57,28 +57,28 @@ jobs:
       - name: 📋 Validate documentation structure
         run: |
           echo "🔍 Checking required documentation files..."
-          
+
           # Core documentation files
           test -f README.md || { echo "❌ README.md missing"; exit 1; }
           test -f CHANGELOG.md || { echo "❌ CHANGELOG.md missing"; exit 1; }
           test -f CONTRIBUTING.md || { echo "❌ CONTRIBUTING.md missing"; exit 1; }
           test -f CODE_OF_CONDUCT.md || { echo "❌ CODE_OF_CONDUCT.md missing"; exit 1; }
           test -f LICENSE || { echo "❌ LICENSE missing"; exit 1; }
-          
+
           # docs directory structure
           test -d docs || { echo "❌ docs/ directory missing"; exit 1; }
           test -f docs/API.md || { echo "❌ docs/API.md missing"; exit 1; }
           test -f docs/QUICK_START.md || { echo "❌ docs/QUICK_START.md missing"; exit 1; }
           test -f docs/GETTING_STARTED.md || echo "⚠️ docs/GETTING_STARTED.md missing (optional)"
           test -f docs/SETUP.md || echo "⚠️ docs/SETUP.md missing (optional)"
-          
+
           # Memory Bank structure
           test -d memory-bank || { echo "❌ memory-bank/ directory missing"; exit 1; }
           test -f memory-bank/README.md || { echo "❌ memory-bank/README.md missing"; exit 1; }
           test -d memory-bank/project || { echo "❌ memory-bank/project/ missing"; exit 1; }
           test -d memory-bank/technical || { echo "❌ memory-bank/technical/ missing"; exit 1; }
           test -d memory-bank/current || { echo "❌ memory-bank/current/ missing"; exit 1; }
-          
+
           # Memory Bank files
           test -f memory-bank/project/projectbrief.md || { echo "❌ memory-bank/project/projectbrief.md missing"; exit 1; }
           test -f memory-bank/project/productContext.md || { echo "❌ memory-bank/project/productContext.md missing"; exit 1; }
@@ -86,7 +86,7 @@ jobs:
           test -f memory-bank/technical/techContext.md || { echo "❌ memory-bank/technical/techContext.md missing"; exit 1; }
           test -f memory-bank/current/activeContext.md || { echo "❌ memory-bank/current/activeContext.md missing"; exit 1; }
           test -f memory-bank/current/progress.md || { echo "❌ memory-bank/current/progress.md missing"; exit 1; }
-          
+
           echo "✅ Documentation structure validation passed"
 
       - name: 🔍 Validate Markdown syntax
@@ -101,21 +101,21 @@ jobs:
       - name: 🔗 Check internal links
         run: |
           echo "🔍 Checking internal documentation links..."
-          
+
           # Check for broken internal links in main docs
           grep -r "\[.*\](\..*\.md)" docs/ || echo "No internal markdown links found in docs/"
           grep -r "\[.*\](\..*\.md)" *.md || echo "No internal markdown links found in root docs"
-          
+
           # Validate critical cross-references
           grep -q "docs/" README.md && echo "✅ README links to docs/" || echo "⚠️ README doesn't link to docs/"
           grep -q "memory-bank/" README.md && echo "✅ README mentions Memory Bank" || echo "⚠️ README doesn't mention Memory Bank"
-          
+
           echo "✅ Internal link validation completed"
 
       - name: 📊 Validate package.json documentation fields
         run: |
           echo "📋 Checking package.json documentation metadata..."
-          
+
           node -e "
             const pkg = require('./package.json');
             
@@ -137,22 +137,22 @@ jobs:
       - name: 🧠 Validate Memory Bank consistency
         run: |
           echo "🧠 Checking Memory Bank content consistency..."
-          
+
           # Check that Memory Bank files reference current features
           grep -q "Repository Organization" memory-bank/project/projectbrief.md || echo "⚠️ Memory Bank may be outdated - missing Repository Organization"
           grep -q "Memory Bank" memory-bank/project/projectbrief.md || echo "⚠️ Memory Bank may be outdated - missing Memory Bank references"
           grep -q "Error Analysis" memory-bank/project/projectbrief.md || echo "⚠️ Memory Bank may be outdated - missing Error Analysis"
-          
+
           # Check current status
           grep -q "publication-ready\|ready for publication" memory-bank/current/progress.md && echo "✅ Memory Bank indicates publication readiness" || echo "⚠️ Memory Bank may need progress update"
-          
+
           echo "✅ Memory Bank consistency check completed"
 
   build-docs:
     name: Build Documentation Site
     runs-on: ubuntu-latest
     needs: [validate-documentation]
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -174,27 +174,27 @@ jobs:
       - name: 📚 Install MkDocs and dependencies
         run: |
           pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin
-          
+
       - name: 🏗️ Build documentation site
         run: |
           echo "🏗️ Building comprehensive documentation site..."
-          
+
           # Create docs build directory
           mkdir -p docs-build
-          
+
           # Copy main documentation
           cp README.md docs-build/
           cp CHANGELOG.md docs-build/
           cp CONTRIBUTING.md docs-build/
           cp CODE_OF_CONDUCT.md docs-build/
-          
+
           # Copy docs directory
           cp -r docs/* docs-build/
-          
+
           # Copy Memory Bank (for developer reference)
           mkdir -p docs-build/memory-bank
           cp -r memory-bank/* docs-build/memory-bank/
-          
+
           # Build with MkDocs if config exists
           if [ -f mkdocs.yml ]; then
             echo "📖 Building with MkDocs..."
@@ -270,15 +270,15 @@ jobs:
                   <pre style="background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 8px; overflow-x: auto;">
           # Install Shelly
           npm install -g @juspay/shelly
-          
+
           # Error Analysis
           shelly  # Analyze last failed command
-          
+
           # Repository Organization  
           shelly organize
           shelly status
           shelly init my-project
-          
+
           # Memory Bank Management
           shelly memory init
           shelly memory status
@@ -288,7 +288,7 @@ jobs:
           </html>
           EOF
           fi
-          
+
           echo "✅ Documentation site built successfully"
 
       - name: 📤 Upload Pages artifact
@@ -305,7 +305,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
+
     steps:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
@@ -325,7 +325,7 @@ jobs:
     name: Update Memory Bank Documentation
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -344,14 +344,14 @@ jobs:
       - name: 🧠 Update Memory Bank with documentation changes
         run: |
           echo "🧠 Updating Memory Bank with latest documentation state..."
-          
+
           # Update Memory Bank to reflect current documentation state
           node src/shelly/cli.js memory update --file current/activeContext.md || true
-          
+
           # Check if there are changes to commit
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           if git diff --quiet memory-bank/; then
             echo "📝 No Memory Bank updates needed"
           else

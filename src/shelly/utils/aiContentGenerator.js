@@ -3,10 +3,10 @@ import { generateText } from '@juspay/neurolink';
 export class AIContentGenerator {
   constructor() {
     this.generateOptions = {
-      provider: "googlevertex", 
-      model: "gemini-2.0-flash-exp", 
-      project: "dev-ai-gamma",
-      region: "us-east5"
+      provider: 'googlevertex',
+      model: 'gemini-2.0-flash-exp',
+      project: 'dev-ai-gamma',
+      region: 'us-east5',
     };
   }
 
@@ -45,13 +45,16 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 2500,
         temperature: 0.7,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackReadme(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackReadme(packageInfo);
     }
   }
@@ -88,12 +91,15 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 1200,
         temperature: 0.6,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       return response.content || this.getFallbackContributing(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackContributing(packageInfo);
     }
   }
@@ -114,11 +120,17 @@ Start the response directly with the # title line.`;
 
     // Add missing essential fields
     if (!enhanced.description || enhanced.description.trim() === '') {
-      enhanced.description = await this.generateProjectDescription(enhanced, repoName);
+      enhanced.description = await this.generateProjectDescription(
+        enhanced,
+        repoName
+      );
     }
 
     if (!enhanced.keywords || enhanced.keywords.length === 0) {
-      enhanced.keywords = await this.generateRepoSpecificKeywords(enhanced, repoName);
+      enhanced.keywords = await this.generateRepoSpecificKeywords(
+        enhanced,
+        repoName
+      );
     }
 
     // Add author information
@@ -126,7 +138,7 @@ Start the response directly with the # title line.`;
       enhanced.author = {
         name: 'Juspay Technologies',
         email: 'support@juspay.in',
-        url: 'https://juspay.io'
+        url: 'https://juspay.io',
       };
     }
 
@@ -139,13 +151,13 @@ Start the response directly with the # title line.`;
     if (!enhanced.repository) {
       enhanced.repository = {
         type: 'git',
-        url: `git+https://github.com/juspay/${repoName}.git`
+        url: `git+https://github.com/juspay/${repoName}.git`,
       };
     }
 
     if (!enhanced.bugs) {
       enhanced.bugs = {
-        url: `https://github.com/juspay/${repoName}/issues`
+        url: `https://github.com/juspay/${repoName}/issues`,
       };
     }
 
@@ -157,23 +169,18 @@ Start the response directly with the # title line.`;
     if (!enhanced.engines) {
       enhanced.engines = {
         node: '>=18.0.0',
-        npm: '>=8.0.0'
+        npm: '>=8.0.0',
       };
     }
 
     // Add files array
     if (!enhanced.files) {
-      enhanced.files = [
-        'src/',
-        'README.md',
-        'package.json',
-        'LICENSE'
-      ];
+      enhanced.files = ['src/', 'README.md', 'package.json', 'LICENSE'];
     }
 
     // Ensure essential dev dependencies
     enhanced.devDependencies = enhanced.devDependencies || {};
-    
+
     const essentialDevDeps = {
       'semantic-release': '^22.0.0',
       '@semantic-release/changelog': '^6.0.3',
@@ -182,12 +189,12 @@ Start the response directly with the # title line.`;
       '@semantic-release/github': '^9.0.0',
       '@semantic-release/npm': '^11.0.0',
       '@semantic-release/release-notes-generator': '^12.0.0',
-      'eslint': '^8.57.0',
-      'prettier': '^3.0.0',
-      'husky': '^9.1.7',
+      eslint: '^8.57.0',
+      prettier: '^3.0.0',
+      husky: '^9.1.7',
       'lint-staged': '^16.1.5',
       '@commitlint/cli': '^17.0.0',
-      '@commitlint/config-conventional': '^17.0.0'
+      '@commitlint/config-conventional': '^17.0.0',
     };
 
     // Add missing essential dev dependencies
@@ -200,12 +207,12 @@ Start the response directly with the # title line.`;
     // Add scripts if missing
     enhanced.scripts = enhanced.scripts || {};
     const essentialScripts = {
-      'lint': 'eslint .',
+      lint: 'eslint .',
       'lint:fix': 'eslint . --fix',
-      'format': 'prettier --write .',
+      format: 'prettier --write .',
       'format:check': 'prettier --check .',
-      'prepare': 'husky install',
-      'release': 'semantic-release'
+      prepare: 'husky install',
+      release: 'semantic-release',
     };
 
     Object.entries(essentialScripts).forEach(([script, command]) => {
@@ -221,20 +228,15 @@ Start the response directly with the # title line.`;
         useTabs: false,
         semi: true,
         singleQuote: true,
-        trailingComma: 'es5'
+        trailingComma: 'es5',
       };
     }
 
     // Add lint-staged configuration
     if (!enhanced['lint-staged']) {
       enhanced['lint-staged'] = {
-        'src/**/*.js': [
-          'eslint --fix',
-          'prettier --write'
-        ],
-        '*.{json,md}': [
-          'prettier --write'
-        ]
+        'src/**/*.js': ['eslint --fix', 'prettier --write'],
+        '*.{json,md}': ['prettier --write'],
       };
     }
 
@@ -243,11 +245,14 @@ Start the response directly with the # title line.`;
 
   /**
    * Extract technologies from package.json dependencies
-   * @param {Object} packageInfo 
+   * @param {Object} packageInfo
    * @returns {string}
    */
   extractTechnologies(packageInfo) {
-    const deps = { ...packageInfo.dependencies, ...packageInfo.devDependencies };
+    const deps = {
+      ...packageInfo.dependencies,
+      ...packageInfo.devDependencies,
+    };
     const technologies = [];
 
     if (deps.react) technologies.push('React');
@@ -259,20 +264,24 @@ Start the response directly with the # title line.`;
     if (deps.next) technologies.push('Next.js');
     if (deps.nuxt) technologies.push('Nuxt.js');
 
-    return technologies.length > 0 ? technologies.join(', ') : 'JavaScript/Node.js';
+    return technologies.length > 0
+      ? technologies.join(', ')
+      : 'JavaScript/Node.js';
   }
 
   /**
    * Generate project description using AI
-   * @param {Object} packageInfo 
-   * @param {string} repoName 
+   * @param {Object} packageInfo
+   * @param {string} repoName
    * @returns {Promise<string>}
    */
   async generateProjectDescription(packageInfo, repoName) {
     const prompt = `Generate a concise, professional description for a project named "${repoName}" based on these details:
 - Technologies: ${this.extractTechnologies(packageInfo)}
 - Main file: ${packageInfo.main || 'index.js'}
-- Dependencies: ${Object.keys(packageInfo.dependencies || {}).slice(0, 5).join(', ')}
+- Dependencies: ${Object.keys(packageInfo.dependencies || {})
+      .slice(0, 5)
+      .join(', ')}
 
 Return only the description text, no additional formatting.`;
 
@@ -281,10 +290,13 @@ Return only the description text, no additional formatting.`;
         prompt,
         maxTokens: 100,
         temperature: 0.5,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
-      return response.content?.trim() || `A ${this.extractTechnologies(packageInfo)} project`;
+
+      return (
+        response.content?.trim() ||
+        `A ${this.extractTechnologies(packageInfo)} project`
+      );
     } catch (error) {
       return `A ${this.extractTechnologies(packageInfo)} project`;
     }
@@ -292,8 +304,8 @@ Return only the description text, no additional formatting.`;
 
   /**
    * Generate relevant keywords using AI
-   * @param {Object} packageInfo 
-   * @param {string} repoName 
+   * @param {Object} packageInfo
+   * @param {string} repoName
    * @returns {Promise<string[]>}
    */
   async generateKeywords(packageInfo, repoName) {
@@ -304,11 +316,14 @@ Return only the description text, no additional formatting.`;
         prompt,
         maxTokens: 50,
         temperature: 0.4,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
-      const keywords = response.content?.split(',').map(k => k.trim().toLowerCase()) || [];
-      return keywords.length > 0 ? keywords : this.getDefaultKeywords(packageInfo);
+
+      const keywords =
+        response.content?.split(',').map((k) => k.trim().toLowerCase()) || [];
+      return keywords.length > 0
+        ? keywords
+        : this.getDefaultKeywords(packageInfo);
     } catch (error) {
       return this.getDefaultKeywords(packageInfo);
     }
@@ -319,11 +334,15 @@ Return only the description text, no additional formatting.`;
    */
   getFallbackReadme(packageInfo) {
     const projectName = packageInfo.name || 'project';
-    const description = packageInfo.description || `A powerful ${this.extractTechnologies(packageInfo)} project`;
+    const description =
+      packageInfo.description ||
+      `A powerful ${this.extractTechnologies(packageInfo)} project`;
     const license = packageInfo.license || 'ISC';
-    const repoName = packageInfo.repoName || projectName.replace('@juspay/', '');
-    const isCliTool = packageInfo.bin || repoName.includes('cli') || repoName.includes('tool');
-    
+    const repoName =
+      packageInfo.repoName || projectName.replace('@juspay/', '');
+    const isCliTool =
+      packageInfo.bin || repoName.includes('cli') || repoName.includes('tool');
+
     return `# ${projectName}
 
 <p align="center">
@@ -473,14 +492,17 @@ npm run lint
 
   /**
    * Generate repo-specific keywords using AI based on project analysis
-   * @param {Object} packageInfo 
-   * @param {string} repoName 
+   * @param {Object} packageInfo
+   * @param {string} repoName
    * @returns {Promise<string[]>}
    */
   async generateRepoSpecificKeywords(packageInfo, repoName) {
-    const deps = { ...packageInfo.dependencies, ...packageInfo.devDependencies };
+    const deps = {
+      ...packageInfo.dependencies,
+      ...packageInfo.devDependencies,
+    };
     const technologies = this.extractTechnologies(packageInfo);
-    
+
     const prompt = `Analyze this JavaScript/Node.js project and generate 8-12 relevant, specific keywords for npm/GitHub discovery:
 
 Project Details:
@@ -505,25 +527,28 @@ Examples: "cli, command-line, typescript, react, api, testing, automation, devel
         prompt,
         maxTokens: 80,
         temperature: 0.3,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       if (response.content) {
         const keywords = response.content
           .split(',')
-          .map(k => k.trim().toLowerCase())
-          .filter(k => k.length > 0 && k.length < 25)
+          .map((k) => k.trim().toLowerCase())
+          .filter((k) => k.length > 0 && k.length < 25)
           .slice(0, 12); // Limit to 12 keywords
-        
+
         if (keywords.length > 0) {
           return keywords;
         }
       }
-      
+
       // Fallback to enhanced default keywords if AI fails
       return this.getDefaultKeywords(packageInfo, repoName);
     } catch (error) {
-      console.warn('AI keyword generation failed, using fallback:', error.message);
+      console.warn(
+        'AI keyword generation failed, using fallback:',
+        error.message
+      );
       return this.getDefaultKeywords(packageInfo, repoName);
     }
   }
@@ -533,9 +558,12 @@ Examples: "cli, command-line, typescript, react, api, testing, automation, devel
    */
   getDefaultKeywords(packageInfo, repoName) {
     const technologies = this.extractTechnologies(packageInfo).toLowerCase();
-    const deps = { ...packageInfo.dependencies, ...packageInfo.devDependencies };
+    const deps = {
+      ...packageInfo.dependencies,
+      ...packageInfo.devDependencies,
+    };
     const keywords = new Set(['javascript', 'nodejs']);
-    
+
     // Technology-based keywords
     if (technologies.includes('react')) {
       keywords.add('react');
@@ -553,36 +581,41 @@ Examples: "cli, command-line, typescript, react, api, testing, automation, devel
     }
     if (technologies.includes('vue')) keywords.add('vue');
     if (technologies.includes('angular')) keywords.add('angular');
-    
+
     // CLI-specific keywords
-    if (repoName.includes('cli') || packageInfo.bin || deps.commander || deps.yargs) {
+    if (
+      repoName.includes('cli') ||
+      packageInfo.bin ||
+      deps.commander ||
+      deps.yargs
+    ) {
       keywords.add('cli');
       keywords.add('command-line');
       keywords.add('terminal');
     }
-    
+
     // Testing keywords
     if (deps.jest || deps.mocha || deps.vitest) {
       keywords.add('testing');
     }
-    
+
     // Build tool keywords
     if (deps.webpack || deps.vite || deps.rollup) {
       keywords.add('build-tools');
     }
-    
+
     // AI/ML keywords
     if (deps['@juspay/neurolink'] || repoName.includes('ai')) {
       keywords.add('ai');
       keywords.add('machine-learning');
     }
-    
+
     // Development tools
     if (repoName.includes('dev') || repoName.includes('tool')) {
       keywords.add('development-tools');
       keywords.add('productivity');
     }
-    
+
     return Array.from(keywords).slice(0, 10);
   }
 
@@ -689,11 +722,11 @@ const result = await main({
       /^Let me [^:]*:?\s*/i,
       /^```markdown\s*/i,
       /```\s*$/,
-      /^---\s*$/m
+      /^---\s*$/m,
     ];
 
     let cleaned = content.trim();
-    
+
     // Apply cleaning patterns
     for (const pattern of cleanPatterns) {
       cleaned = cleaned.replace(pattern, '');
@@ -701,8 +734,10 @@ const result = await main({
 
     // Find the first line that starts with # (markdown heading)
     const lines = cleaned.split('\n');
-    const firstHeaderIndex = lines.findIndex(line => line.trim().startsWith('#'));
-    
+    const firstHeaderIndex = lines.findIndex((line) =>
+      line.trim().startsWith('#')
+    );
+
     if (firstHeaderIndex > 0) {
       // Remove everything before the first header
       cleaned = lines.slice(firstHeaderIndex).join('\n');
@@ -750,13 +785,16 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 2000,
         temperature: 0.6,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProjectBrief(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackProjectBrief(packageInfo);
     }
   }
@@ -791,13 +829,16 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 1800,
         temperature: 0.6,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProductContext(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackProductContext(packageInfo);
     }
   }
@@ -813,7 +854,9 @@ Start the response directly with the # title line.`;
 Project Details:
 - Name: ${packageInfo.name}
 - Type: ${packageInfo.repoType || 'Node.js Project'}
-- Dependencies: ${Object.keys(packageInfo.dependencies || {}).slice(0, 10).join(', ')}
+- Dependencies: ${Object.keys(packageInfo.dependencies || {})
+      .slice(0, 10)
+      .join(', ')}
 - Has Source: ${packageInfo.projectStructure?.hasSrc ? 'Yes' : 'No'}
 
 IMPORTANT: Return ONLY raw markdown content starting with # System Patterns: ${packageInfo.name}
@@ -833,13 +876,16 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 2000,
         temperature: 0.5,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackSystemPatterns(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackSystemPatterns(packageInfo);
     }
   }
@@ -876,13 +922,16 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 2000,
         temperature: 0.5,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackTechContext(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackTechContext(packageInfo);
     }
   }
@@ -894,7 +943,7 @@ Start the response directly with the # title line.`;
    */
   async generateActiveContext(packageInfo) {
     const currentDate = new Date().toISOString().split('T')[0];
-    
+
     const prompt = `Generate ONLY the markdown content for an Active Context document for "${packageInfo.name}".
 
 This should capture the current state of work as of ${currentDate}.
@@ -921,13 +970,16 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 1800,
         temperature: 0.7,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackActiveContext(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackActiveContext(packageInfo);
     }
   }
@@ -965,13 +1017,16 @@ Start the response directly with the # title line.`;
         prompt,
         maxTokens: 2200,
         temperature: 0.6,
-        ...this.generateOptions
+        ...this.generateOptions,
       });
-      
+
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProgress(packageInfo);
     } catch (error) {
-      console.warn('AI generation failed, using fallback content:', error.message);
+      console.warn(
+        'AI generation failed, using fallback content:',
+        error.message
+      );
       return this.getFallbackProgress(packageInfo);
     }
   }
@@ -983,7 +1038,7 @@ Start the response directly with the # title line.`;
     const name = packageInfo.name || 'Project';
     const description = packageInfo.description || 'A modern software project';
     const type = packageInfo.repoType || 'Node.js Project';
-    
+
     return `# Project Brief: ${name}
 
 ## 1. Core Mission
@@ -1050,7 +1105,7 @@ ${name} is ${description}.
   getFallbackProductContext(packageInfo) {
     const name = packageInfo.name || 'Project';
     const type = packageInfo.repoType || 'Node.js Project';
-    
+
     return `# Product Context: ${name}
 
 ## 1. Problem Statement
@@ -1113,7 +1168,7 @@ Initial development and core feature implementation
   getFallbackSystemPatterns(packageInfo) {
     const name = packageInfo.name || 'Project';
     const type = packageInfo.repoType || 'Node.js Project';
-    
+
     return `# System Patterns: ${name}
 
 ## 1. Architecture Overview
@@ -1193,7 +1248,7 @@ Proper cleanup and resource management to prevent memory leaks.
     const name = packageInfo.name || 'Project';
     const deps = Object.keys(packageInfo.dependencies || {});
     const devDeps = Object.keys(packageInfo.devDependencies || {});
-    
+
     return `# Technical Context: ${name}
 
 ## 1. Technology Stack
@@ -1204,10 +1259,24 @@ Proper cleanup and resource management to prevent memory leaks.
 - **Package Manager**: npm/yarn/pnpm
 
 ### Key Dependencies
-${deps.length > 0 ? deps.slice(0, 5).map(dep => `- **${dep}**: Core functionality`).join('\n') : '- No major dependencies'}
+${
+  deps.length > 0
+    ? deps
+        .slice(0, 5)
+        .map((dep) => `- **${dep}**: Core functionality`)
+        .join('\n')
+    : '- No major dependencies'
+}
 
 ### Development Dependencies
-${devDeps.length > 0 ? devDeps.slice(0, 5).map(dep => `- **${dep}**: Development tooling`).join('\n') : '- Standard development tools'}
+${
+  devDeps.length > 0
+    ? devDeps
+        .slice(0, 5)
+        .map((dep) => `- **${dep}**: Development tooling`)
+        .join('\n')
+    : '- Standard development tools'
+}
 
 ## 2. Development Environment
 
@@ -1283,6 +1352,8 @@ CI/CD pipeline with automated testing, building, and deployment.
 - Well-defined interfaces for external services
 - Graceful handling of service unavailability
 - Comprehensive error handling and retry logic
+- GitHub API integration for repository automation
+- GitHub Actions workflow management
 
 ---
 *Last Updated: ${new Date().toISOString().split('T')[0]}*
@@ -1292,7 +1363,7 @@ CI/CD pipeline with automated testing, building, and deployment.
   getFallbackActiveContext(packageInfo) {
     const name = packageInfo.name || 'Project';
     const currentDate = new Date().toISOString().split('T')[0];
-    
+
     return `# Active Context: ${name}
 
 ## 1. Current Work Focus
@@ -1305,10 +1376,18 @@ Implementing Memory Bank functionality to enhance project context management and
   - Progress: 70%
   - Blockers: None
   - Next Steps: Complete AI content generation methods
+- **GitHub Repository Setup**: Complete
+  - Progress: 100%
+  - Features: Branch protection, GitHub Pages, Actions permissions, NPM guidance
+  - Commands: shelly gh, shelly github setup, shelly setup
 
 ## 2. Recent Changes
 
 ### Last 5 Significant Changes
+- **${currentDate}**: Added GitHub repository setup automation
+  - Impact: Automated GitHub best practices configuration
+  - Files Modified: GitHubService, GitHubSetupCommand, CLI commands
+  - Features: Branch protection, GitHub Pages, Actions settings
 - **${currentDate}**: Added Memory Bank service and templates
   - Impact: Enhanced project documentation and context management
   - Files Modified: Memory Bank templates, service layer
@@ -1378,7 +1457,7 @@ Implementing Memory Bank functionality to enhance project context management and
   getFallbackProgress(packageInfo) {
     const name = packageInfo.name || 'Project';
     const version = packageInfo.version || '1.0.0';
-    
+
     return `# Progress: ${name}
 
 ## 1. Current Status
@@ -1398,6 +1477,10 @@ Implementing Memory Bank functionality to enhance project context management and
   - Implementation: 70%
   - Testing: 30%
   - Documentation: 50%
+- **GitHub Repository Setup**: Complete
+  - Implementation: 100%
+  - Testing: 85%
+  - Documentation: 95%
 
 ## 2. What Works
 
@@ -1414,11 +1497,17 @@ Implementing Memory Bank functionality to enhance project context management and
   - Quality: High
   - Performance: Fast
   - Test Coverage: 90%
+- **GitHub Repository Setup**: Automated configuration
+  - Quality: High
+  - Performance: Fast
+  - Test Coverage: 85%
+  - Features: Branch protection, GitHub Pages, Actions settings, NPM guidance
 
 ### Stable Components
 - CLI interface: Stable (last changed: 2 weeks ago)
 - File service: Stable (last changed: 1 month ago)
 - Template system: Stable (last changed: 1 week ago)
+- GitHub service: Stable (last changed: today)
 
 ## 3. What's Left to Build
 

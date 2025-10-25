@@ -38,22 +38,26 @@ This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDU
 Shelly uses a **dual CLI architecture** with three main feature areas:
 
 ### 🔍 **Error Analysis** (`src/main.js`)
+
 - **Purpose**: Analyzes failed shell commands and provides AI-powered suggestions
 - **Key Services**: `analysisService.js`, `historyService.js`, `shellService.js`
 - **Shell Support**: bash, zsh, tcsh compatibility
 - **AI Integration**: Neurolink and Google AI services
 
 ### 🏗️ **Repository Organization** (`src/shelly/cli.js`)
+
 - **Purpose**: Project scaffolding, GitHub integration, and file organization
 - **Key Components**: `commands/organize.js`, template system, GitHub integration
 - **Features**: `shelly organize`, `shelly status`, `shelly init`
 
 ### 🧠 **Memory Bank** (`src/shelly/commands/memory.js`)
+
 - **Purpose**: AI context management and documentation generation
 - **Key Services**: `memoryBankService.js`, `aiContentGenerator.js`
 - **Features**: `shelly memory init`, `shelly memory update`, persistent context
 
 ### Component Flow
+
 ```
 Error Analysis: Shell History → Analysis Service → AI Integration → User Interface
 Repository Org: Project Analysis → Template System → GitHub Integration → File Organization
@@ -65,6 +69,7 @@ Memory Bank: Project Context → AI Content Generator → Structured Documentati
 Choose an area that matches your interests and expertise:
 
 ### 🔍 **Error Analysis Contributions**
+
 - **Good for**: AI/ML enthusiasts, shell scripting experts, CLI tool developers
 - **Skills needed**: JavaScript, shell scripting, AI/prompt engineering
 - **Example contributions**:
@@ -73,7 +78,8 @@ Choose an area that matches your interests and expertise:
   - Enhance AI prompt engineering
   - Add new error pattern recognition
 
-### 🏗️ **Repository Organization Contributions**  
+### 🏗️ **Repository Organization Contributions**
+
 - **Good for**: DevOps engineers, project template enthusiasts, GitHub automation experts
 - **Skills needed**: JavaScript, GitHub API, project scaffolding, file system operations
 - **Example contributions**:
@@ -83,6 +89,7 @@ Choose an area that matches your interests and expertise:
   - Add support for new project types
 
 ### 🧠 **Memory Bank Contributions**
+
 - **Good for**: Documentation enthusiasts, AI context management, developer experience
 - **Skills needed**: JavaScript, AI content generation, documentation systems
 - **Example contributions**:
@@ -92,6 +99,7 @@ Choose an area that matches your interests and expertise:
   - Improve integration with AI assistants
 
 ### 🤖 **AI Integration Contributions**
+
 - **Good for**: AI/ML engineers, API integration specialists
 - **Skills needed**: JavaScript, AI APIs, prompt engineering
 - **Example contributions**:
@@ -101,6 +109,7 @@ Choose an area that matches your interests and expertise:
   - Add new AI-powered features
 
 ### 🐚 **Shell Integration Contributions**
+
 - **Good for**: System administrators, shell experts, cross-platform developers
 - **Skills needed**: Shell scripting, cross-platform development
 - **Example contributions**:
@@ -110,6 +119,7 @@ Choose an area that matches your interests and expertise:
   - Cross-platform compatibility improvements
 
 ### 📚 **Documentation & UX Contributions**
+
 - **Good for**: Technical writers, UX designers, developer advocates
 - **Skills needed**: Documentation, user experience design
 - **Example contributions**:

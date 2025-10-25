@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### 🏗️ Repository Organization System
+
 - **Complete project scaffolding** with `shelly organize` command
 - **GitHub integration** with automated templates, workflows, and issue templates
 - **Package enhancement** with automatic @juspay/ prefix and metadata optimization
@@ -19,7 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repository status checking** with `shelly status` command
 - **Project templates** support for different project types (React, TypeScript, CLI tools)
 
+#### 🚀 GitHub Repository Automation System
+
+- **Automated repository setup** with `shelly gh` and `shelly github setup` commands
+- **Branch protection rules** with automated "release" ruleset (linear history, PR requirements, force push protection)
+- **Repository merge settings** configured for rebase-only workflow (disabled merge commits and squash merge)
+- **GitHub Pages automation** with docs folder setup and ready-to-publish structure
+- **GitHub Actions integration** with workflow permissions and fork PR approval settings
+- **NPM publishing guidance** with automated NPM token setup instructions for publishing workflows
+- **Complete setup command** with `shelly setup` combining GitHub automation and repository organization
+- **Comprehensive GitHub configuration** following industry best practices for professional repositories
+
 #### 🧠 Memory Bank System
+
 - **AI-assisted development context** with comprehensive Memory Bank implementation
 - **Structured documentation** organized into project, technical, and current state files
 - **Neurolink integration** for advanced AI-generated documentation using Google Vertex AI
@@ -29,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Project knowledge management** with centralized decision tracking
 
 #### 🔧 Enhanced CLI System
+
 - **Dual CLI architecture** with main error analysis and secondary organization tools
 - **Advanced command handling** with Commander.js integration
 - **Intelligent directory handling** with safe current working directory access
@@ -36,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Debug mode improvements** with comprehensive logging and troubleshooting
 
 #### 🐚 Extended Shell Support
+
 - **Tcsh/Csh support** added to existing bash and zsh compatibility
 - **Improved shell detection** with fallback mechanisms
 - **Enhanced alias generation** for seamless integration across shells

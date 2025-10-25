@@ -10,28 +10,33 @@ export class OrganizeCommand {
     this.force = options.force || false;
     this.update = options.update || false;
     this.move = options.move || false;
-    
+
     // Initialize preservation flags
     this.preserveDocs = false;
     this.preserveTests = false;
-    
+
     // Handle directory access safely
     try {
       this.cwd = options.cwd || process.cwd();
     } catch (error) {
       if (error.code === 'EPERM' || error.code === 'ENOENT') {
-        throw new Error(`❌ Cannot access current directory: ${error.message}\n\n` +
-          `💡 Solutions:\n` +
-          `   1. Use: shelly organize --directory /path/to/your/project\n` +
-          `   2. Navigate to a directory you have access to\n` +
-          `   3. Check directory permissions\n\n` +
-          `📁 Current directory issue: ${error.code === 'EPERM' ? 'Permission denied' : 'Directory not found'}`);
+        throw new Error(
+          `❌ Cannot access current directory: ${error.message}\n\n` +
+            `💡 Solutions:\n` +
+            `   1. Use: shelly organize --directory /path/to/your/project\n` +
+            `   2. Navigate to a directory you have access to\n` +
+            `   3. Check directory permissions\n\n` +
+            `📁 Current directory issue: ${error.code === 'EPERM' ? 'Permission denied' : 'Directory not found'}`
+        );
       }
       throw error;
     }
-    
+
     this.aiGenerator = new AIContentGenerator();
-    this.templatesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../templates');
+    this.templatesDir = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../templates'
+    );
   }
 
   /**
@@ -39,7 +44,7 @@ export class OrganizeCommand {
    */
   async execute() {
     console.log('🚀 Starting repository organization...');
-    
+
     try {
       // Step 1: Analyze current repository and set preservation flags
       const repoAnalysis = await this.analyzeRepository();
@@ -74,10 +79,9 @@ export class OrganizeCommand {
       console.log('🧠 Initialized Memory Bank');
 
       console.log('✅ Repository organization complete!');
-      
+
       // Show summary
       this.showSummary(repoAnalysis);
-      
     } catch (error) {
       console.error('❌ Error during organization:', error.message);
       process.exit(1);
@@ -89,22 +93,22 @@ export class OrganizeCommand {
    */
   async analyzeRepository() {
     const packageJsonPath = path.join(this.cwd, 'package.json');
-    
+
     try {
       const packageContent = await fs.readFile(packageJsonPath, 'utf8');
       const packageJson = JSON.parse(packageContent);
-      
+
       // Extract repository name
       const repoName = this.extractRepoName(packageJson);
-      
+
       // Determine repository type
       const repoType = this.determineRepoType(packageJson);
-      
+
       return {
         ...packageJson,
         repoName,
         repoType,
-        hasExistingFiles: await this.checkExistingFiles()
+        hasExistingFiles: await this.checkExistingFiles(),
       };
     } catch (error) {
       throw new Error(`Failed to read package.json: ${error.message}`);
@@ -119,7 +123,7 @@ export class OrganizeCommand {
       // Remove @juspay/ prefix if present
       return packageJson.name.replace('@juspay/', '');
     }
-    
+
     // Fall back to directory name
     return path.basename(this.cwd);
   }
@@ -128,15 +132,18 @@ export class OrganizeCommand {
    * Determine repository type based on dependencies
    */
   determineRepoType(packageJson) {
-    const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-    
+    const deps = {
+      ...packageJson.dependencies,
+      ...packageJson.devDependencies,
+    };
+
     if (deps.react) return 'React Application';
     if (deps.vue) return 'Vue Application';
     if (deps.angular) return 'Angular Application';
     if (deps.express) return 'Express API';
     if (deps.typescript) return 'TypeScript Project';
     if (deps['@juspay/neurolink']) return 'Neurolink Project';
-    
+
     return 'Node.js Project';
   }
 
@@ -148,16 +155,23 @@ export class OrganizeCommand {
     const docsPath = path.join(this.cwd, 'docs');
     if (await this.fileExists(docsPath)) {
       this.preserveDocs = true;
-      console.log('🔒 Preservation mode: Will not modify existing docs directory');
+      console.log(
+        '🔒 Preservation mode: Will not modify existing docs directory'
+      );
     }
 
     // Check for test/tests directories
     const testPath = path.join(this.cwd, 'test');
     const testsPath = path.join(this.cwd, 'tests');
-    
-    if (await this.fileExists(testPath) || await this.fileExists(testsPath)) {
+
+    if (
+      (await this.fileExists(testPath)) ||
+      (await this.fileExists(testsPath))
+    ) {
       this.preserveTests = true;
-      console.log('🔒 Preservation mode: Will not modify existing test directories');
+      console.log(
+        '🔒 Preservation mode: Will not modify existing test directories'
+      );
     }
   }
 
@@ -171,11 +185,11 @@ export class OrganizeCommand {
       'CODE_OF_CONDUCT.md',
       '.gitignore',
       '.eslintrc.js',
-      '.prettierrc'
+      '.prettierrc',
     ];
 
     const existing = {};
-    
+
     for (const file of importantFiles) {
       try {
         await fs.access(path.join(this.cwd, file));
@@ -184,10 +198,9 @@ export class OrganizeCommand {
         existing[file] = false;
       }
     }
-    
+
     return existing;
   }
-
 
   /**
    * Move misplaced files to their correct directories
@@ -206,56 +219,125 @@ export class OrganizeCommand {
       // Comprehensive list of files that should NEVER be moved from root
       const protectedFiles = [
         // Critical project files
-        'package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb',
-        '.gitignore', '.gitattributes', '.nvmrc', '.node-version',
-        
+        'package.json',
+        'package-lock.json',
+        'yarn.lock',
+        'pnpm-lock.yaml',
+        'bun.lockb',
+        '.gitignore',
+        '.gitattributes',
+        '.nvmrc',
+        '.node-version',
+
         // Environment files
-        '.env', '.env.example', '.env.local', '.env.production', '.env.development',
-        
+        '.env',
+        '.env.example',
+        '.env.local',
+        '.env.production',
+        '.env.development',
+
         // Configuration files for build tools and frameworks
-        'webpack.config.js', 'webpack.config.ts', 'vite.config.js', 'vite.config.ts',
-        'rollup.config.js', 'rollup.config.ts', 'esbuild.config.js', 'esbuild.config.ts',
-        'next.config.js', 'next.config.ts', 'nuxt.config.js', 'nuxt.config.ts',
-        'angular.json', 'vue.config.js', 'svelte.config.js', 'astro.config.js',
-        
+        'webpack.config.js',
+        'webpack.config.ts',
+        'vite.config.js',
+        'vite.config.ts',
+        'rollup.config.js',
+        'rollup.config.ts',
+        'esbuild.config.js',
+        'esbuild.config.ts',
+        'next.config.js',
+        'next.config.ts',
+        'nuxt.config.js',
+        'nuxt.config.ts',
+        'angular.json',
+        'vue.config.js',
+        'svelte.config.js',
+        'astro.config.js',
+
         // Test configuration files
-        'jest.config.js', 'jest.config.ts', 'vitest.config.js', 'vitest.config.ts',
-        'playwright.config.js', 'playwright.config.ts', 'cypress.config.js', 'cypress.config.ts',
-        'karma.conf.js', 'protractor.conf.js',
-        
+        'jest.config.js',
+        'jest.config.ts',
+        'vitest.config.js',
+        'vitest.config.ts',
+        'playwright.config.js',
+        'playwright.config.ts',
+        'cypress.config.js',
+        'cypress.config.ts',
+        'karma.conf.js',
+        'protractor.conf.js',
+
         // TypeScript and JavaScript configuration
-        'tsconfig.json', 'tsconfig.*.json', 'jsconfig.json',
-        
+        'tsconfig.json',
+        'tsconfig.*.json',
+        'jsconfig.json',
+
         // Linting and formatting configuration
-        '.eslintrc.js', '.eslintrc.json', '.eslintrc.yaml', '.eslintrc.yml',
-        'eslint.config.js', 'eslint.config.ts', '.prettierrc', '.prettierrc.json',
-        'prettier.config.js', 'prettier.config.ts',
-        
+        '.eslintrc.js',
+        '.eslintrc.json',
+        '.eslintrc.yaml',
+        '.eslintrc.yml',
+        'eslint.config.js',
+        'eslint.config.ts',
+        '.prettierrc',
+        '.prettierrc.json',
+        'prettier.config.js',
+        'prettier.config.ts',
+
         // Other development tool configurations
-        'tailwind.config.js', 'tailwind.config.ts', 'postcss.config.js', 'postcss.config.ts',
-        'babel.config.js', 'babel.config.json', '.babelrc', '.babelrc.json',
-        'commitlint.config.js', 'commitlint.config.ts', 'husky.config.js',
-        'lint-staged.config.js', '.lintstagedrc', '.clinerules',
-        
+        'tailwind.config.js',
+        'tailwind.config.ts',
+        'postcss.config.js',
+        'postcss.config.ts',
+        'babel.config.js',
+        'babel.config.json',
+        '.babelrc',
+        '.babelrc.json',
+        'commitlint.config.js',
+        'commitlint.config.ts',
+        'husky.config.js',
+        'lint-staged.config.js',
+        '.lintstagedrc',
+        '.clinerules',
+
         // Docker and containerization
-        'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml', '.dockerignore',
-        
+        'Dockerfile',
+        'docker-compose.yml',
+        'docker-compose.yaml',
+        '.dockerignore',
+
         // Build system files
-        'Makefile', 'CMakeLists.txt', 'build.gradle', 'pom.xml', 'Cargo.toml',
-        
+        'Makefile',
+        'CMakeLists.txt',
+        'build.gradle',
+        'pom.xml',
+        'Cargo.toml',
+
         // Deployment and hosting configuration
-        'vercel.json', 'netlify.toml', '.vercelignore', '.netlifyignore',
-        'app.json', 'Procfile', 'railway.json',
-        
+        'vercel.json',
+        'netlify.toml',
+        '.vercelignore',
+        '.netlifyignore',
+        'app.json',
+        'Procfile',
+        'railway.json',
+
         // Documentation that should stay in root
-        'README.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md',
-        'LICENSE', 'LICENSE.md', 'LICENSE.txt', 'SECURITY.md',
-        
+        'README.md',
+        'CHANGELOG.md',
+        'CONTRIBUTING.md',
+        'CODE_OF_CONDUCT.md',
+        'LICENSE',
+        'LICENSE.md',
+        'LICENSE.txt',
+        'SECURITY.md',
+
         // Editor and IDE configuration
-        '.editorconfig', '.vscode', '.idea',
-        
+        '.editorconfig',
+        '.vscode',
+        '.idea',
+
         // GitHub configuration (these should stay in root, not be moved to .github)
-        '.github'
+        '.github',
       ];
 
       // GitHub-specific files that should be moved to .github directory
@@ -271,14 +353,14 @@ export class OrganizeCommand {
         ['copilot-review.yml', '.github/workflows'],
         ['dependency-review.yml', '.github/workflows'],
         ['singlecommitenforcement.yml', '.github/workflows'],
-        
+
         // Issue and PR templates
         ['PULL_REQUEST_TEMPLATE.md', '.github'],
         ['bug_report.md', '.github/ISSUE_TEMPLATE'],
         ['feature_request.md', '.github/ISSUE_TEMPLATE'],
         ['bug_report.yml', '.github/ISSUE_TEMPLATE'],
         ['feature_request.yml', '.github/ISSUE_TEMPLATE'],
-        
+
         // GitHub configuration files
         ['CODEOWNERS', '.github'],
         ['dependabot.yml', '.github'],
@@ -286,59 +368,82 @@ export class OrganizeCommand {
         ['copilot-review.json', '.github'],
         ['BRANCH_PROTECTION_CONFIG.md', '.github'],
         ['SINGLE_COMMIT_POLICY.md', '.github'],
-        ['FUNDING.yml', '.github']
+        ['FUNDING.yml', '.github'],
       ]);
 
       // Prioritized classification rules (order matters!)
       const classificationRules = {
         // Priority 1: Test files (most specific patterns first)
         test: {
-          extensions: ['.test.js', '.test.ts', '.test.jsx', '.test.tsx', '.spec.js', '.spec.ts', '.spec.jsx', '.spec.tsx'],
+          extensions: [
+            '.test.js',
+            '.test.ts',
+            '.test.jsx',
+            '.test.tsx',
+            '.spec.js',
+            '.spec.ts',
+            '.spec.jsx',
+            '.spec.tsx',
+          ],
           patterns: [
             /\.test\.(js|ts|jsx|tsx|mjs|cjs)$/i,
             /\.spec\.(js|ts|jsx|tsx|mjs|cjs)$/i,
-            /^test.*\.(js|ts|jsx|tsx|mjs|cjs)$/i
-          ]
+            /^test.*\.(js|ts|jsx|tsx|mjs|cjs)$/i,
+          ],
         },
-        
+
         // Priority 2: Source files
         src: {
           extensions: ['.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs'],
-          patterns: [/^(index|main|app|server|client)\.(js|ts|jsx|tsx|mjs|cjs)$/i],
-          exclude: protectedFiles // Reference the comprehensive protected list
+          patterns: [
+            /^(index|main|app|server|client)\.(js|ts|jsx|tsx|mjs|cjs)$/i,
+          ],
+          exclude: protectedFiles, // Reference the comprehensive protected list
         },
-        
+
         // Priority 3: Documentation files (excluding important root docs)
         docs: {
           extensions: ['.md', '.txt'],
           patterns: [/\.(md|txt|rst|adoc)$/i],
           exclude: [
-            'README.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md',
-            'LICENSE.md', 'SECURITY.md', 'AUTHORS.md', 'MAINTAINERS.md'
-          ]
+            'README.md',
+            'CHANGELOG.md',
+            'CONTRIBUTING.md',
+            'CODE_OF_CONDUCT.md',
+            'LICENSE.md',
+            'SECURITY.md',
+            'AUTHORS.md',
+            'MAINTAINERS.md',
+          ],
         },
-        
+
         // Priority 4: Script files
         scripts: {
           extensions: ['.sh', '.bash', '.zsh', '.fish', '.ps1', '.bat', '.cmd'],
           patterns: [/\.(sh|bash|zsh|fish|ps1|bat|cmd)$/i],
           exclude: [
             // Common root-level scripts that should stay
-            'build.sh', 'deploy.sh', 'start.sh', 'stop.sh', 'install.sh',
-            'setup.sh', 'bootstrap.sh', 'run.sh'
-          ]
-        }
+            'build.sh',
+            'deploy.sh',
+            'start.sh',
+            'stop.sh',
+            'install.sh',
+            'setup.sh',
+            'bootstrap.sh',
+            'run.sh',
+          ],
+        },
       };
 
       // Scan files in root directory
       for (const dirent of rootFiles) {
         if (!dirent.isFile()) continue;
-        
+
         const fileName = dirent.name;
-        
+
         // Skip protected files (must stay in root)
         if (protectedFiles.includes(fileName)) continue;
-        
+
         // Skip hidden files (starting with .) unless specifically handled
         if (fileName.startsWith('.') && !githubFiles.has(fileName)) continue;
 
@@ -349,13 +454,13 @@ export class OrganizeCommand {
         if (githubFiles.has(fileName)) {
           const githubDir = githubFiles.get(fileName);
           const githubDirPath = path.join(this.cwd, githubDir);
-          
+
           if (await this.fileExists(githubDirPath)) {
             targetDir = githubDir;
             targetPath = path.join(githubDirPath, fileName);
           }
         }
-        
+
         // Priority 2: Apply general classification rules if not a GitHub file
         if (!targetDir) {
           targetDir = this.classifyFile(fileName, classificationRules);
@@ -375,7 +480,7 @@ export class OrganizeCommand {
             fileName,
             from: path.join(this.cwd, fileName),
             to: targetPath,
-            category: targetDir
+            category: targetDir,
           });
         }
       }
@@ -411,7 +516,6 @@ export class OrganizeCommand {
       }
 
       console.log(`✅ Successfully moved ${movedCount} file(s)`);
-
     } catch (error) {
       console.warn(`⚠️ Error during file moving: ${error.message}`);
     }
@@ -460,8 +564,8 @@ export class OrganizeCommand {
         type: 'confirm',
         name: 'shouldMove',
         message: `Move these ${filesToMove.length} file(s) to their correct directories?`,
-        default: true
-      }
+        default: true,
+      },
     ]);
 
     return shouldMove;
@@ -478,36 +582,43 @@ export class OrganizeCommand {
       'scripts',
       'docs',
       `${repoAnalysis.repoName}-demo`,
-      'test'
+      'test',
     ];
 
     for (const dir of directories) {
       const dirPath = path.join(this.cwd, dir);
-      
+
       // Skip docs folder if it already exists to preserve user's existing documentation
-      if (dir === 'docs' && await this.fileExists(dirPath)) {
+      if (dir === 'docs' && (await this.fileExists(dirPath))) {
         console.log(`📁 Preserving existing ${dir} directory`);
         continue;
       }
-      
+
       // Skip test folder if either 'test' or 'tests' already exists
       if (dir === 'test') {
         const testPath = path.join(this.cwd, 'test');
         const testsPath = path.join(this.cwd, 'tests');
-        
+
         // Check if ANY test directory exists - if so, skip creating 'test'
-        if (await this.fileExists(testPath) || await this.fileExists(testsPath)) {
-          const existingType = await this.fileExists(testPath) ? 'test' : 'tests';
+        if (
+          (await this.fileExists(testPath)) ||
+          (await this.fileExists(testsPath))
+        ) {
+          const existingType = (await this.fileExists(testPath))
+            ? 'test'
+            : 'tests';
           console.log(`📁 Preserving existing ${existingType} directory`);
           continue;
         }
       }
-      
+
       try {
         await fs.mkdir(dirPath, { recursive: true });
       } catch (error) {
         if (error.code !== 'EEXIST') {
-          console.warn(`Warning: Could not create directory ${dir}: ${error.message}`);
+          console.warn(
+            `Warning: Could not create directory ${dir}: ${error.message}`
+          );
         }
       }
     }
@@ -519,18 +630,21 @@ export class OrganizeCommand {
   async enhancePackageJson(repoAnalysis) {
     const packageJsonPath = path.join(this.cwd, 'package.json');
     const exists = await this.fileExists(packageJsonPath);
-    
+
     // Get enhanced package.json
-    const enhanced = await this.aiGenerator.enhancePackageJson(repoAnalysis, repoAnalysis.repoName);
+    const enhanced = await this.aiGenerator.enhancePackageJson(
+      repoAnalysis,
+      repoAnalysis.repoName
+    );
 
     // In update mode, intelligently merge instead of preserving completely
     if (exists && this.update) {
       const existingContent = await fs.readFile(packageJsonPath, 'utf8');
       const existingPackage = JSON.parse(existingContent);
-      
+
       // Smart merge: preserve existing, add missing
       const smartMerged = this.smartMergePackageJson(existingPackage, enhanced);
-      
+
       await fs.writeFile(
         packageJsonPath,
         JSON.stringify(smartMerged, null, 2) + '\n',
@@ -539,7 +653,7 @@ export class OrganizeCommand {
       console.log('🔄 Intelligently enhanced package.json');
       return;
     }
-    
+
     // In normal mode (not force), ask for confirmation
     if (exists && !this.force && !this.update) {
       const shouldUpdate = await this.promptForOverwrite('package.json');
@@ -560,7 +674,7 @@ export class OrganizeCommand {
    * Smart merge package.json preserving existing content while adding enhancements
    */
   smartMergePackageJson(existing, enhanced) {
-    let merged = { ...existing };
+    const merged = { ...existing };
 
     // Enhance name with @juspay/ prefix if not already present
     if (enhanced.name && !existing.name.startsWith('@juspay/')) {
@@ -568,8 +682,15 @@ export class OrganizeCommand {
     }
 
     // Add missing top-level fields
-    const fieldsToAdd = ['repository', 'bugs', 'homepage', 'license', 'engines', 'type'];
-    fieldsToAdd.forEach(field => {
+    const fieldsToAdd = [
+      'repository',
+      'bugs',
+      'homepage',
+      'license',
+      'engines',
+      'type',
+    ];
+    fieldsToAdd.forEach((field) => {
       if (enhanced[field] && !existing[field]) {
         merged[field] = enhanced[field];
       }
@@ -578,7 +699,7 @@ export class OrganizeCommand {
     // Smart merge dependencies with version conflict resolution
     if (enhanced.dependencies) {
       merged.dependencies = this.mergeDependenciesWithVersionResolution(
-        existing.dependencies || {}, 
+        existing.dependencies || {},
         enhanced.dependencies
       );
     }
@@ -586,7 +707,7 @@ export class OrganizeCommand {
     // Smart merge devDependencies with version conflict resolution
     if (enhanced.devDependencies) {
       merged.devDependencies = this.mergeDependenciesWithVersionResolution(
-        existing.devDependencies || {}, 
+        existing.devDependencies || {},
         enhanced.devDependencies
       );
     }
@@ -594,7 +715,7 @@ export class OrganizeCommand {
     // Smart merge scripts with deduplication
     if (enhanced.scripts) {
       merged.scripts = this.mergeScriptsWithDeduplication(
-        existing.scripts || {}, 
+        existing.scripts || {},
         enhanced.scripts
       );
     }
@@ -602,13 +723,15 @@ export class OrganizeCommand {
     // Add missing keywords (merge arrays)
     if (enhanced.keywords && Array.isArray(enhanced.keywords)) {
       const existingKeywords = existing.keywords || [];
-      const newKeywords = enhanced.keywords.filter(keyword => !existingKeywords.includes(keyword));
+      const newKeywords = enhanced.keywords.filter(
+        (keyword) => !existingKeywords.includes(keyword)
+      );
       merged.keywords = [...existingKeywords, ...newKeywords];
     }
 
     // Add other missing configuration objects
     const configFields = ['lint-staged', 'husky', 'prettier', 'eslintConfig'];
-    configFields.forEach(field => {
+    configFields.forEach((field) => {
       if (enhanced[field] && !existing[field]) {
         merged[field] = enhanced[field];
       }
@@ -630,7 +753,10 @@ export class OrganizeCommand {
       } else {
         // Resolve version conflict by choosing the higher version
         const existingVersion = merged[pkg];
-        const resolvedVersion = this.resolveVersionConflict(existingVersion, enhancedVersion);
+        const resolvedVersion = this.resolveVersionConflict(
+          existingVersion,
+          enhancedVersion
+        );
         merged[pkg] = resolvedVersion;
       }
     }
@@ -643,32 +769,32 @@ export class OrganizeCommand {
    */
   mergeScriptsWithDeduplication(existing, enhanced) {
     // Start with existing scripts
-    let merged = { ...existing };
-    
+    const merged = { ...existing };
+
     // Define script equivalence and redundancy rules
     const redundancyRules = {
       // Exact duplicates (same command, different name)
       duplicates: [
         ['release', 'semantic-release'], // Both typically run 'semantic-release'
       ],
-      
+
       // Command-based redundancy (same command content)
       commandEquivalents: {
         'semantic-release': ['release'], // If command is 'semantic-release', remove 'release'
         'lint-staged': ['lint:staged'], // If command is 'lint-staged', remove 'lint:staged'
         'prettier --write .': ['format'],
-        'prettier --check .': ['format:check']
+        'prettier --check .': ['format:check'],
       },
-      
+
       // Complex redundants - remove these entirely if they exist
       complexRedundants: [
         'quality:check', // Usually just combines other scripts
-        'precommit' // Usually redundant with husky + lint-staged
-      ]
+        'precommit', // Usually redundant with husky + lint-staged
+      ],
     };
 
     // Step 1: Remove complex redundant scripts
-    redundancyRules.complexRedundants.forEach(scriptName => {
+    redundancyRules.complexRedundants.forEach((scriptName) => {
       if (merged[scriptName]) {
         console.log(`🧹 Removing redundant script: ${scriptName}`);
         delete merged[scriptName];
@@ -679,29 +805,42 @@ export class OrganizeCommand {
     redundancyRules.duplicates.forEach(([script1, script2]) => {
       const has1 = merged[script1];
       const has2 = merged[script2];
-      
+
       if (has1 && has2) {
         // Both exist, keep the more semantic one
         if (script1 === 'release' && script2 === 'semantic-release') {
-          console.log(`🧹 Removing duplicate script: ${script1} (keeping ${script2})`);
+          console.log(
+            `🧹 Removing duplicate script: ${script1} (keeping ${script2})`
+          );
           delete merged[script1];
         } else {
-          console.log(`🧹 Removing duplicate script: ${script2} (keeping ${script1})`);
+          console.log(
+            `🧹 Removing duplicate script: ${script2} (keeping ${script1})`
+          );
           delete merged[script2];
         }
       }
     });
 
     // Step 3: Handle command-based equivalents
-    for (const [command, equivalentNames] of Object.entries(redundancyRules.commandEquivalents)) {
+    for (const [command, equivalentNames] of Object.entries(
+      redundancyRules.commandEquivalents
+    )) {
       // Find scripts that have this exact command
-      const scriptsWithCommand = Object.entries(merged).filter(([name, cmd]) => cmd === command);
-      
+      const scriptsWithCommand = Object.entries(merged).filter(
+        ([name, cmd]) => cmd === command
+      );
+
       if (scriptsWithCommand.length > 0) {
         // Remove any equivalent named scripts
-        equivalentNames.forEach(equivName => {
-          if (merged[equivName] && scriptsWithCommand.some(([name]) => name !== equivName)) {
-            console.log(`🧹 Removing equivalent script: ${equivName} (command '${command}' exists)`);
+        equivalentNames.forEach((equivName) => {
+          if (
+            merged[equivName] &&
+            scriptsWithCommand.some(([name]) => name !== equivName)
+          ) {
+            console.log(
+              `🧹 Removing equivalent script: ${equivName} (command '${command}' exists)`
+            );
             delete merged[equivName];
           }
         });
@@ -712,8 +851,13 @@ export class OrganizeCommand {
     for (const [scriptName, scriptCommand] of Object.entries(enhanced)) {
       if (!merged[scriptName]) {
         // Check if this would create a redundancy
-        const wouldBeRedundant = this.wouldCreateRedundancy(scriptName, scriptCommand, merged, redundancyRules);
-        
+        const wouldBeRedundant = this.wouldCreateRedundancy(
+          scriptName,
+          scriptCommand,
+          merged,
+          redundancyRules
+        );
+
         if (!wouldBeRedundant) {
           merged[scriptName] = scriptCommand;
         } else {
@@ -741,14 +885,16 @@ export class OrganizeCommand {
     }
 
     // Check command equivalents
-    for (const [command, equivalentNames] of Object.entries(redundancyRules.commandEquivalents)) {
+    for (const [command, equivalentNames] of Object.entries(
+      redundancyRules.commandEquivalents
+    )) {
       if (scriptCommand === command) {
         // This script has a command that makes other scripts redundant
-        if (equivalentNames.some(name => existing[name])) {
+        if (equivalentNames.some((name) => existing[name])) {
           return true;
         }
       }
-      
+
       if (equivalentNames.includes(scriptName)) {
         // This script name is equivalent to an existing command
         const hasEquivalentCommand = Object.values(existing).includes(command);
@@ -768,18 +914,18 @@ export class OrganizeCommand {
     // Simple version comparison - prioritize newer versions
     const cleanVersion1 = version1.replace(/[^0-9.]/g, '');
     const cleanVersion2 = version2.replace(/[^0-9.]/g, '');
-    
+
     const parts1 = cleanVersion1.split('.').map(Number);
     const parts2 = cleanVersion2.split('.').map(Number);
-    
+
     for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
       const part1 = parts1[i] || 0;
       const part2 = parts2[i] || 0;
-      
+
       if (part1 > part2) return version1;
       if (part2 > part1) return version2;
     }
-    
+
     // If versions are equal, prefer the enhanced version (likely more modern)
     return version2;
   }
@@ -791,40 +937,46 @@ export class OrganizeCommand {
     const files = [
       {
         name: 'README.md',
-        generator: () => this.aiGenerator.generateReadme(repoAnalysis)
+        generator: () => this.aiGenerator.generateReadme(repoAnalysis),
       },
       {
         name: 'CONTRIBUTING.md',
-        generator: () => this.aiGenerator.generateContributing(repoAnalysis)
+        generator: () => this.aiGenerator.generateContributing(repoAnalysis),
       },
       {
         name: 'CODE_OF_CONDUCT.md',
-        generator: () => this.loadTemplate('CODE_OF_CONDUCT.template.md', repoAnalysis)
+        generator: () =>
+          this.loadTemplate('CODE_OF_CONDUCT.template.md', repoAnalysis),
       },
       {
         name: '.gitignore',
-        generator: () => this.loadTemplate('.gitignore.template', repoAnalysis)
+        generator: () => this.loadTemplate('.gitignore.template', repoAnalysis),
       },
       {
         name: 'CHANGELOG.md',
-        generator: () => this.generateChangelog(repoAnalysis)
+        generator: () => this.generateChangelog(repoAnalysis),
       },
       {
         name: 'LICENSE',
-        generator: () => this.generateLicense(repoAnalysis)
+        generator: () => this.generateLicense(repoAnalysis),
       },
       {
         name: '.clinerules',
-        generator: () => this.loadTemplateWithProjectNameOnly('.clinerules.template', repoAnalysis)
+        generator: () =>
+          this.loadTemplateWithProjectNameOnly(
+            '.clinerules.template',
+            repoAnalysis
+          ),
       },
       {
         name: '.env.example',
-        generator: () => this.loadTemplate('.env.example.template', repoAnalysis)
+        generator: () =>
+          this.loadTemplate('.env.example.template', repoAnalysis),
       },
       {
         name: 'mkdocs.yml',
-        generator: () => this.loadTemplate('mkdocs.yml.template', repoAnalysis)
-      }
+        generator: () => this.loadTemplate('mkdocs.yml.template', repoAnalysis),
+      },
     ];
 
     for (const file of files) {
@@ -840,79 +992,79 @@ export class OrganizeCommand {
       // Issue and PR templates
       {
         source: '.github/ISSUE_TEMPLATE/bug_report.yml',
-        target: '.github/ISSUE_TEMPLATE/bug_report.yml'
+        target: '.github/ISSUE_TEMPLATE/bug_report.yml',
       },
       {
         source: '.github/ISSUE_TEMPLATE/bug_report.md.template',
-        target: '.github/ISSUE_TEMPLATE/bug_report.md'
+        target: '.github/ISSUE_TEMPLATE/bug_report.md',
       },
       {
         source: '.github/ISSUE_TEMPLATE/feature_request.md.template',
-        target: '.github/ISSUE_TEMPLATE/feature_request.md'
+        target: '.github/ISSUE_TEMPLATE/feature_request.md',
       },
       {
         source: '.github/ISSUE_TEMPLATE/feature_request.yml.template',
-        target: '.github/ISSUE_TEMPLATE/feature_request.yml'
+        target: '.github/ISSUE_TEMPLATE/feature_request.yml',
       },
       {
         source: '.github/PULL_REQUEST_TEMPLATE.md',
-        target: '.github/PULL_REQUEST_TEMPLATE.md'
+        target: '.github/PULL_REQUEST_TEMPLATE.md',
       },
       // Workflow files
       {
         source: '.github/workflows/ci.yml',
-        target: '.github/workflows/ci.yml'
+        target: '.github/workflows/ci.yml',
       },
       {
         source: '.github/workflows/copilot-review.yml.template',
-        target: '.github/workflows/copilot-review.yml'
+        target: '.github/workflows/copilot-review.yml',
       },
       {
         source: '.github/workflows/dependency-review.yml.template',
-        target: '.github/workflows/dependency-review.yml'
+        target: '.github/workflows/dependency-review.yml',
       },
       {
         source: '.github/workflows/docs.yml.template',
-        target: '.github/workflows/docs.yml'
+        target: '.github/workflows/docs.yml',
       },
       {
         source: '.github/workflows/release.yml.template',
-        target: '.github/workflows/release.yml'
+        target: '.github/workflows/release.yml',
       },
       {
         source: '.github/workflows/singlecommitenforcement.yml.template',
-        target: '.github/workflows/singlecommitenforcement.yml'
+        target: '.github/workflows/singlecommitenforcement.yml',
       },
       // GitHub configuration files
       {
         source: '.github/BRANCH_PROTECTION_CONFIG.md.template',
-        target: '.github/BRANCH_PROTECTION_CONFIG.md'
+        target: '.github/BRANCH_PROTECTION_CONFIG.md',
       },
       {
         source: '.github/SINGLE_COMMIT_POLICY.md.template',
-        target: '.github/SINGLE_COMMIT_POLICY.md'
+        target: '.github/SINGLE_COMMIT_POLICY.md',
       },
       {
         source: '.github/copilot-review.json.template',
-        target: '.github/copilot-review.json'
+        target: '.github/copilot-review.json',
       },
       {
         source: '.github/dependabot.yml.template',
-        target: '.github/dependabot.yml'
+        target: '.github/dependabot.yml',
       },
       {
         source: '.github/settings.yml.template',
-        target: '.github/settings.yml'
+        target: '.github/settings.yml',
       },
       // Documentation files
       {
         source: 'docs/API.md.template',
-        target: 'docs/API.md'
+        target: 'docs/API.md',
       },
       {
         source: 'docs/GETTING_STARTED.md.template',
-        target: 'docs/GETTING_STARTED.md'
-      }
+        target: 'docs/GETTING_STARTED.md',
+      },
     ];
 
     for (const template of templates) {
@@ -942,31 +1094,35 @@ export class OrganizeCommand {
       env: {
         browser: true,
         es2021: true,
-        node: true
+        node: true,
       },
-      extends: [
-        'eslint:recommended'
-      ],
+      extends: ['eslint:recommended'],
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module'
+        sourceType: 'module',
       },
       rules: {
-        'indent': ['error', 2],
+        indent: ['error', 2],
         'linebreak-style': ['error', 'unix'],
-        'quotes': ['error', 'single'],
-        'semi': ['error', 'always']
-      }
+        quotes: ['error', 'single'],
+        semi: ['error', 'always'],
+      },
     };
 
     // Add TypeScript configuration if TypeScript is detected
-    if (repoAnalysis.devDependencies?.typescript || repoAnalysis.dependencies?.typescript) {
+    if (
+      repoAnalysis.devDependencies?.typescript ||
+      repoAnalysis.dependencies?.typescript
+    ) {
       eslintConfig.parser = '@typescript-eslint/parser';
       eslintConfig.plugins = ['@typescript-eslint'];
       eslintConfig.extends.push('@typescript-eslint/recommended');
     }
 
-    await this.writeFileIfNeeded('.eslintrc.js', `module.exports = ${JSON.stringify(eslintConfig, null, 2)};`);
+    await this.writeFileIfNeeded(
+      '.eslintrc.js',
+      `module.exports = ${JSON.stringify(eslintConfig, null, 2)};`
+    );
 
     // Prettier configuration
     const prettierConfig = {
@@ -975,10 +1131,13 @@ export class OrganizeCommand {
       singleQuote: true,
       printWidth: 80,
       tabWidth: 2,
-      useTabs: false
+      useTabs: false,
     };
 
-    await this.writeFileIfNeeded('.prettierrc', JSON.stringify(prettierConfig, null, 2));
+    await this.writeFileIfNeeded(
+      '.prettierrc',
+      JSON.stringify(prettierConfig, null, 2)
+    );
 
     // Commitlint configuration
     const commitlintConfig = `module.exports = {
@@ -1000,12 +1159,14 @@ export class OrganizeCommand {
    */
   async loadTemplate(templateName, repoAnalysis) {
     const templatePath = path.join(this.templatesDir, templateName);
-    
+
     try {
       const content = await fs.readFile(templatePath, 'utf8');
       return this.replacePlaceholders(content, repoAnalysis);
     } catch (error) {
-      console.warn(`Warning: Could not load template ${templateName}: ${error.message}`);
+      console.warn(
+        `Warning: Could not load template ${templateName}: ${error.message}`
+      );
       return '';
     }
   }
@@ -1015,12 +1176,14 @@ export class OrganizeCommand {
    */
   async loadTemplateRaw(templateName) {
     const templatePath = path.join(this.templatesDir, templateName);
-    
+
     try {
       const content = await fs.readFile(templatePath, 'utf8');
       return content;
     } catch (error) {
-      console.warn(`Warning: Could not load template ${templateName}: ${error.message}`);
+      console.warn(
+        `Warning: Could not load template ${templateName}: ${error.message}`
+      );
       return '';
     }
   }
@@ -1030,14 +1193,16 @@ export class OrganizeCommand {
    */
   async loadTemplateWithProjectNameOnly(templateName, repoAnalysis) {
     const templatePath = path.join(this.templatesDir, templateName);
-    
+
     try {
       const content = await fs.readFile(templatePath, 'utf8');
       // Only replace the project name placeholder
       const projectName = repoAnalysis.name || repoAnalysis.repoName;
       return content.replace(/\{\{projectName\}\}/g, projectName);
     } catch (error) {
-      console.warn(`Warning: Could not load template ${templateName}: ${error.message}`);
+      console.warn(
+        `Warning: Could not load template ${templateName}: ${error.message}`
+      );
       return '';
     }
   }
@@ -1051,14 +1216,18 @@ export class OrganizeCommand {
     if (repoAnalysis.author) {
       if (typeof repoAnalysis.author === 'string') {
         authorName = repoAnalysis.author;
-      } else if (typeof repoAnalysis.author === 'object' && repoAnalysis.author.name) {
+      } else if (
+        typeof repoAnalysis.author === 'object' &&
+        repoAnalysis.author.name
+      ) {
         authorName = repoAnalysis.author.name;
       }
     }
 
     const replacements = {
       '{{projectName}}': repoAnalysis.name || repoAnalysis.repoName,
-      '{{packageName}}': repoAnalysis.name || `@juspay/${repoAnalysis.repoName}`,
+      '{{packageName}}':
+        repoAnalysis.name || `@juspay/${repoAnalysis.repoName}`,
       '{{repoName}}': repoAnalysis.repoName,
       '{{description}}': repoAnalysis.description || 'A JavaScript project',
       '{{license}}': repoAnalysis.license || 'ISC',
@@ -1070,12 +1239,15 @@ export class OrganizeCommand {
       '{{returnType}}': 'Promise<any>',
       '{{CURRENT_DATE}}': new Date().toISOString(),
       '{{currentYear}}': new Date().getFullYear().toString(),
-      '{{author}}': authorName
+      '{{author}}': authorName,
     };
 
     let result = content;
     Object.entries(replacements).forEach(([placeholder, value]) => {
-      result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), value);
+      result = result.replace(
+        new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'),
+        value
+      );
     });
 
     return result;
@@ -1110,22 +1282,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    */
   generateLicense(repoAnalysis) {
     const licenseType = (repoAnalysis.license || 'MIT').toUpperCase();
-    
+
     // Map license types to template files
     const licenseTemplateMap = {
-      'MIT': 'LICENSE_MIT.template',
+      MIT: 'LICENSE_MIT.template',
       'APACHE-2.0': 'LICENSE_APACHE.template',
-      'APACHE': 'LICENSE_APACHE.template',
-      'ISC': 'LICENSE_ISC.template',
+      APACHE: 'LICENSE_APACHE.template',
+      ISC: 'LICENSE_ISC.template',
       'BSD-3-CLAUSE': 'LICENSE_BSD.template',
-      'BSD': 'LICENSE_BSD.template',
+      BSD: 'LICENSE_BSD.template',
       'GPL-3.0': 'LICENSE_GPL.template',
-      'GPL': 'LICENSE_GPL.template'
+      GPL: 'LICENSE_GPL.template',
     };
-    
+
     // Get the appropriate template file
-    const templateFile = licenseTemplateMap[licenseType] || 'LICENSE_MIT.template';
-    
+    const templateFile =
+      licenseTemplateMap[licenseType] || 'LICENSE_MIT.template';
+
     // Load and process the template
     return this.loadTemplate(templateFile, repoAnalysis);
   }
@@ -1166,12 +1339,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     // Check preservation flags to prevent writing to preserved directories
     if (this.preserveDocs && filename.startsWith('docs/')) {
-      console.log(`🔒 Preserving existing docs directory - skipping ${filename}`);
+      console.log(
+        `🔒 Preserving existing docs directory - skipping ${filename}`
+      );
       return;
     }
 
-    if (this.preserveTests && (filename.startsWith('test/') || filename.startsWith('tests/'))) {
-      console.log(`🔒 Preserving existing test directory - skipping ${filename}`);
+    if (
+      this.preserveTests &&
+      (filename.startsWith('test/') || filename.startsWith('tests/'))
+    ) {
+      console.log(
+        `🔒 Preserving existing test directory - skipping ${filename}`
+      );
       return;
     }
 
@@ -1214,8 +1394,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         type: 'confirm',
         name: 'overwrite',
         message: `${filename} already exists. Overwrite?`,
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     return overwrite;
@@ -1235,40 +1415,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     try {
       // Check if Memory Bank already exists
       const status = await memoryBankService.getMemoryBankStatus();
-      
+
       if (status.exists && !this.force) {
         console.log('🧠 Memory Bank already exists - skipping initialization');
-        console.log('💡 Use --force to recreate or use `shelly memory update` to refresh');
+        console.log(
+          '💡 Use --force to recreate or use `shelly memory update` to refresh'
+        );
         return;
       }
 
       // Prepare Memory Bank data with project structure analysis
       const memoryBankData = {
         ...repoAnalysis,
-        projectStructure: await this.analyzeProjectStructure()
+        projectStructure: await this.analyzeProjectStructure(),
       };
 
       // Initialize Memory Bank with appropriate options based on organize mode
       const options = {
-        force: this.force
+        force: this.force,
       };
 
-      const results = await memoryBankService.initializeMemoryBank(memoryBankData, options);
+      const results = await memoryBankService.initializeMemoryBank(
+        memoryBankData,
+        options
+      );
 
       // Report results
       if (results.created.length > 0) {
-        console.log(`🧠 Created Memory Bank files: ${results.created.join(', ')}`);
+        console.log(
+          `🧠 Created Memory Bank files: ${results.created.join(', ')}`
+        );
       }
       if (results.updated.length > 0) {
-        console.log(`🔄 Updated Memory Bank files: ${results.updated.join(', ')}`);
+        console.log(
+          `🔄 Updated Memory Bank files: ${results.updated.join(', ')}`
+        );
       }
       if (results.skipped.length > 0) {
-        console.log(`⏭️ Preserved existing Memory Bank files: ${results.skipped.join(', ')}`);
+        console.log(
+          `⏭️ Preserved existing Memory Bank files: ${results.skipped.join(', ')}`
+        );
       }
       if (results.errors.length > 0) {
-        console.warn(`⚠️ Memory Bank errors: ${results.errors.map(e => e.file).join(', ')}`);
+        console.warn(
+          `⚠️ Memory Bank errors: ${results.errors.map((e) => e.file).join(', ')}`
+        );
       }
-
     } catch (error) {
       console.warn(`⚠️ Memory Bank initialization failed: ${error.message}`);
       // Don't fail the entire organize process for Memory Bank issues
@@ -1285,7 +1477,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       hasDocs: false,
       hasExamples: false,
       hasScripts: false,
-      hasConfig: false
+      hasConfig: false,
     };
 
     const checkDirs = [
@@ -1294,7 +1486,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       { key: 'hasDocs', paths: ['docs', 'documentation'] },
       { key: 'hasExamples', paths: ['examples', 'example'] },
       { key: 'hasScripts', paths: ['scripts', 'bin'] },
-      { key: 'hasConfig', paths: ['config', 'configuration'] }
+      { key: 'hasConfig', paths: ['config', 'configuration'] },
     ];
 
     for (const { key, paths } of checkDirs) {
@@ -1316,7 +1508,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     console.log('\n📋 Summary of changes:');
     console.log(`   Repository: ${repoAnalysis.name}`);
     console.log(`   Type: ${repoAnalysis.repoType}`);
-    console.log(`   Enhanced package.json with @juspay/${repoAnalysis.repoName}`);
+    console.log(
+      `   Enhanced package.json with @juspay/${repoAnalysis.repoName}`
+    );
     console.log('   Created/updated documentation files');
     console.log('   Set up GitHub templates and CI/CD workflows');
     console.log('   Configured ESLint, Prettier, and Commitlint');
@@ -1329,9 +1523,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     console.log('   1. Review the generated files');
     console.log('   2. Install new dependencies: npm install');
     console.log('   3. Set up Husky hooks: npm run prepare');
-    console.log('   4. Commit your changes: git add . && git commit -m "feat: organize repository with shelly"');
+    console.log(
+      '   4. Commit your changes: git add . && git commit -m "feat: organize repository with shelly"'
+    );
     if (this.move) {
-      console.log('\n💡 File moving tip: Use --move flag to automatically organize misplaced files');
+      console.log(
+        '\n💡 File moving tip: Use --move flag to automatically organize misplaced files'
+      );
     }
   }
 }

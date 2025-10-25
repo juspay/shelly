@@ -3,9 +3,11 @@
 ## Required Videos
 
 ### 1. memory-bank-init.mp4/.webm
+
 **Duration**: 60-75 seconds
 **Purpose**: Show Memory Bank initialization and AI content generation
 **Script**:
+
 ```bash
 # Scene 1: Project without Memory Bank (8s)
 $ ls
@@ -69,15 +71,18 @@ $ shelly memory status
 ```
 
 **Narration Script**:
+
 - "Initialize comprehensive AI-generated project documentation"
 - "Memory Bank analyzes your project and creates structured context"
 - "Seven essential files covering project strategy, architecture, and current state"
 - "Ready for AI assistant integration and team collaboration"
 
 ### 2. ai-context-generation.mp4/.webm
+
 **Duration**: 45-60 seconds
 **Purpose**: Show the quality and depth of AI-generated content
 **Script**:
+
 ```bash
 # Scene 1: Show generated project brief (15s)
 $ shelly memory show projectbrief.md
@@ -85,13 +90,13 @@ $ shelly memory show projectbrief.md
 # Project Brief: @juspay/shelly
 
 ## Mission Statement
-Shelly is an AI-powered CLI assistant that revolutionizes developer 
-productivity through intelligent error analysis, automated repository 
+Shelly is an AI-powered CLI assistant that revolutionizes developer
+productivity through intelligent error analysis, automated repository
 organization, and persistent AI context management.
 
 ## Core Objectives
 - **Error Resolution**: Provide instant, AI-powered debugging assistance
-- **Project Organization**: Automate repository standardization  
+- **Project Organization**: Automate repository standardization
 - **AI Integration**: Enable seamless AI-assisted development workflows
 
 ## Target Audience
@@ -139,15 +144,18 @@ $ shelly memory show current/activeContext.md
 ```
 
 **Narration Script**:
+
 - "See the quality of AI-generated project documentation"
 - "Comprehensive project briefs, technical architecture, and current context"
 - "Professional documentation that understands your project deeply"
 - "Perfect for onboarding team members and AI assistants"
 
 ### 3. cline-integration.mp4/.webm
+
 **Duration**: 50-65 seconds
 **Purpose**: Show Memory Bank integration with AI assistants
 **Script**:
+
 ```bash
 # Scene 1: Show .clinerules generation (15s)
 $ cat .clinerules | head -20
@@ -204,6 +212,7 @@ $ shelly memory update
 ```
 
 **Narration Script**:
+
 - "Memory Bank integrates seamlessly with AI development assistants"
 - "Generated .clinerules provide instant AI context for your project"
 - "Keep Memory Bank current with automatic updates after changes"
@@ -212,12 +221,14 @@ $ shelly memory update
 ## Video Production Guidelines
 
 ### Technical Specifications
+
 - **Resolution**: 1080p minimum for text readability
 - **Frame Rate**: 30fps (sufficient for documentation viewing)
 - **Duration**: 45-75 seconds per video
 - **Formats**: MP4 and WebM for web compatibility
 
 ### Content Presentation
+
 - **Text Rendering**: Ensure AI-generated content is clearly readable
 - **File Navigation**: Show smooth file browsing and content viewing
 - **Progress Indicators**: Capture real-time AI content generation
@@ -226,6 +237,7 @@ $ shelly memory update
 ### Recording Focus Areas
 
 #### Memory Bank Structure Emphasis
+
 ```
 memory-bank/
 ├── README.md                    # Overview and usage guide
@@ -241,6 +253,7 @@ memory-bank/
 ```
 
 #### AI Content Quality Showcase
+
 - **Professional Writing**: Show high-quality, comprehensive documentation
 - **Technical Accuracy**: Demonstrate deep understanding of project architecture
 - **Contextual Awareness**: Show how AI understands project specifics
@@ -249,6 +262,7 @@ memory-bank/
 ### Demo Scenarios
 
 #### Scenario 1: New Project Memory Bank
+
 ```bash
 # Fresh project
 $ npm init -y
@@ -258,6 +272,7 @@ $ shelly memory init
 ```
 
 #### Scenario 2: Existing Project Enhancement
+
 ```bash
 # Project with some documentation
 $ ls
@@ -267,6 +282,7 @@ $ shelly memory init
 ```
 
 #### Scenario 3: Development Workflow Integration
+
 ```bash
 # Regular development session
 $ git add .
@@ -276,6 +292,7 @@ $ shelly memory update
 ```
 
 ### Quality Standards
+
 - **Real Content**: Show actual AI-generated content, not mock-ups
 - **Performance**: Demonstrate realistic generation and update timing
 - **Integration**: Show genuine AI assistant interaction when possible

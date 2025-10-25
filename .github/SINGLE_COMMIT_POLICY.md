@@ -13,18 +13,21 @@ All pull requests to the main branch must be merged using **squash and merge** t
 ## Benefits for Shelly Development
 
 ### Clean History for AI-Powered Features
+
 - Each Error Analysis enhancement becomes a single commit
 - Repository Organization improvements are easily tracked
 - Memory Bank updates maintain clear progression
 - AI integration changes are isolated and revertible
 
 ### Better Feature Tracking
+
 - Clear correlation between issues and Shelly feature areas
 - Easier debugging of Error Analysis regressions
 - Simplified Memory Bank evolution tracking
 - Professional commit history for open source adoption
 
 ### Improved Reviews for Complex AI Features
+
 - Focus on complete Error Analysis algorithm changes
 - Repository Organization enhancements reviewed holistically
 - Memory Bank system changes evaluated as complete units
@@ -35,6 +38,7 @@ All pull requests to the main branch must be merged using **squash and merge** t
 ### Required Settings
 
 #### Repository Settings
+
 1. Go to **Settings** → **General** → **Pull Requests**
 2. ✅ **Allow squash merging**
 3. ❌ **Allow merge commits** (disable)
@@ -43,6 +47,7 @@ All pull requests to the main branch must be merged using **squash and merge** t
 6. ✅ **Automatically delete head branches**
 
 #### Branch Protection Rules
+
 - Require pull request reviews before merging
 - Require status checks to pass before merging
 - Require branches to be up to date before merging
@@ -60,6 +65,7 @@ When squashing commits, use the following format:
 ```
 
 #### Types
+
 - **feat**: New feature
 - **fix**: Bug fix
 - **docs**: Documentation changes
@@ -96,11 +102,13 @@ Fixes #456
 ### For Contributors
 
 1. **Create Feature Branch**
+
    ```bash
    git checkout -b feature/new-feature
    ```
 
 2. **Make Multiple Commits** (during development)
+
    ```bash
    git commit -m "WIP: initial implementation"
    git commit -m "add tests"
@@ -218,6 +226,7 @@ npm install --save-dev @commitlint/cli @commitlint/config-conventional
 ## Contact
 
 For questions about this policy:
+
 - Team Lead: opensource@juspay.in
 - Documentation: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Issues: https://github.com/juspay/shelly/issues

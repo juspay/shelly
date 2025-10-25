@@ -11,64 +11,73 @@ This document outlines the recommended branch protection settings for the Shelly
 ### Required Settings
 
 #### Require a pull request before merging
+
 - ✅ **Require approvals**: 2 approving reviews (for critical changes to core features)
 - ✅ **Dismiss stale PR approvals when new commits are pushed**
 - ✅ **Require review from code owners** (see CODEOWNERS for feature-specific teams)
 - ✅ **Restrict pushes that create files larger than 100MB**
 
 #### Require status checks to pass before merging
+
 - ✅ **Require branches to be up to date before merging**
 - ✅ **Status checks that are required**:
-  
+
   **Core Quality Checks:**
   - `Shelly CI/CD Pipeline / Code Quality & Linting (Node.js 18.x)`
   - `Shelly CI/CD Pipeline / Code Quality & Linting (Node.js 20.x)`
-  
+
   **Functional Testing:**
   - `Shelly CI/CD Pipeline / Functional Testing (ubuntu-latest, 18.x, bash)`
   - `Shelly CI/CD Pipeline / Functional Testing (ubuntu-latest, 20.x, bash)`
   - `Shelly CI/CD Pipeline / Functional Testing (macos-latest, 18.x, bash)`
   - `Shelly CI/CD Pipeline / Functional Testing (macos-latest, 20.x, bash)`
   - `Shelly CI/CD Pipeline / Functional Testing (macos-latest, 20.x, zsh)`
-  
+
   **Platform & Security:**
   - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (ubuntu-latest, 18.x)`
   - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (ubuntu-latest, 20.x)`
   - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (macos-latest, 18.x)`
   - `Shelly CI/CD Pipeline / Cross-Platform Compatibility (macos-latest, 20.x)`
   - `Shelly CI/CD Pipeline / Security Audit`
-  
+
   **Documentation:**
   - `Shelly CI/CD Pipeline / Documentation Validation`
   - `Shelly Documentation Pipeline / Documentation Validation`
   - `Shelly Documentation Pipeline / Test Documentation Examples`
-  
+
   **Dependencies:**
   - `Dependency Review / dependency-review`
 
 #### Require conversation resolution before merging
+
 - ✅ **Require conversation resolution before merging**
 
 #### Require signed commits
+
 - ✅ **Require signed commits** (recommended for security)
 
 #### Require linear history
+
 - ✅ **Require linear history** (maintains clean git history)
 
 #### Require deployments to succeed before merging
-- ✅ **Required deployment environments before merge**: 
+
+- ✅ **Required deployment environments before merge**:
   - `github-pages` (for documentation deployment)
 
 ### Additional Rules
 
 #### Restrict pushes that create files
+
 - ✅ **Block pushes that contain secrets**
 - ✅ **Block pushes that contain files larger than 100MB**
 
 #### Lock branch
+
 - ❌ **Lock branch** (only enable for maintenance mode)
 
 #### Do not allow bypassing the above settings
+
 - ✅ **Include administrators**
 - ✅ **Restrict pushes that create files**
 
@@ -77,6 +86,7 @@ This document outlines the recommended branch protection settings for the Shelly
 For development branches (`develop`, `staging`):
 
 ### Required Settings
+
 - ✅ **Require approvals**: 1 approving review
 - ✅ **Require status checks to pass**
 - ✅ **Require branches to be up to date**
@@ -88,6 +98,7 @@ For development branches (`develop`, `staging`):
 For feature branches (`feature/*`, `fix/*`):
 
 ### Recommended Settings
+
 - ✅ **Require status checks to pass**
 - ❌ **Require approvals** (optional for feature branches)
 - ❌ **Require signed commits** (optional)
@@ -125,7 +136,7 @@ resource "github_branch_protection" "main" {
     strict = true
     contexts = [
       "CI / test",
-      "CI / lint", 
+      "CI / lint",
       "CI / build"
     ]
   }
@@ -160,14 +171,17 @@ resource "github_branch_protection" "main" {
 ### Common Issues
 
 **Status checks not appearing**
+
 - Ensure CI workflows are properly configured
 - Check that status check names match exactly
 
 **Unable to merge despite approvals**
+
 - Verify all required status checks are passing
 - Check if branch is up to date with base branch
 
 **Administrators cannot bypass**
+
 - This is by design when "Include administrators" is enabled
 - Temporarily disable protection to make emergency changes
 

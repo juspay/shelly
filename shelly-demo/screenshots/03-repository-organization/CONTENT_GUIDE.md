@@ -3,14 +3,17 @@
 ## Required Screenshots
 
 ### 1. before-organization.png
+
 **Purpose**: Show a messy, unorganized project structure
 **Content**:
+
 - File explorer showing disorganized project:
   - Files scattered in root directory
   - Missing essential files (.gitignore, README.md, etc.)
   - No proper src/ structure
   - Mixed file types in same directory
-**Example Structure**:
+    **Example Structure**:
+
 ```
 my-project/
 ├── index.js
@@ -22,8 +25,10 @@ my-project/
 ```
 
 ### 2. organize-command.png
+
 **Purpose**: Show the `shelly organize` command in action
 **Content**:
+
 - Terminal showing the command execution
 - Progress indicators and file creation messages
 - Real-time output showing what Shelly is doing:
@@ -31,7 +36,8 @@ my-project/
   - "📝 Generated README.md"
   - "🔧 Created .eslintrc.js"
   - "📋 Added GitHub templates"
-**Command Output Example**:
+    **Command Output Example**:
+
 ```bash
 $ shelly organize
 🚀 Organizing repository structure...
@@ -56,13 +62,16 @@ $ shelly organize
 ```
 
 ### 3. after-organization.png
+
 **Purpose**: Show the clean, organized project structure
 **Content**:
+
 - File explorer showing perfectly organized structure
 - All standard files in place
 - Clear directory hierarchy
 - Professional project layout
-**Example Organized Structure**:
+  **Example Organized Structure**:
+
 ```
 my-project/
 ├── .github/
@@ -86,6 +95,7 @@ my-project/
 ```
 
 ## Technical Requirements
+
 - **File Explorer**: Use a clear file manager (VS Code explorer, Finder, etc.)
 - **Syntax Highlighting**: Enable for configuration files
 - **Tree View**: Show directory structures clearly

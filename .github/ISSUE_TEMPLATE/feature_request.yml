@@ -1,16 +1,16 @@
 name: Feature Request
 description: Suggest a new feature for Shelly AI-powered development assistant
-title: "[FEATURE] "
-labels: ["enhancement"]
+title: '[FEATURE] '
+labels: ['enhancement']
 assignees: []
 body:
   - type: markdown
     attributes:
       value: |
         ## ✨ Shelly Feature Request
-        
+
         Thanks for taking the time to suggest a new feature for Shelly! Your ideas help us enhance our AI-powered development assistant.
-        
+
         Please describe how this feature would improve Error Analysis, Repository Organization, Memory Bank, or other aspects of the development workflow.
 
   - type: dropdown
@@ -19,16 +19,16 @@ body:
       label: Feature Area
       description: Which Shelly feature area would this enhancement target?
       options:
-        - "🔍 Error Analysis (command analysis, shell integration, AI suggestions)"
-        - "🏗️ Repository Organization (project scaffolding, GitHub integration, file organization)"
-        - "🧠 Memory Bank (AI context management, documentation generation)"
-        - "🔧 CLI Interface (command parsing, user experience, new commands)"
-        - "🤖 AI Integration (new AI providers, improved analysis)"
-        - "📱 Platform Support (new shells, operating systems)"
-        - "🔌 Extensibility (plugins, integrations, APIs)"
-        - "📚 Documentation (guides, examples, help)"
-        - "🔨 Developer Experience (setup, configuration, debugging)"
-        - "Other/Cross-cutting"
+        - '🔍 Error Analysis (command analysis, shell integration, AI suggestions)'
+        - '🏗️ Repository Organization (project scaffolding, GitHub integration, file organization)'
+        - '🧠 Memory Bank (AI context management, documentation generation)'
+        - '🔧 CLI Interface (command parsing, user experience, new commands)'
+        - '🤖 AI Integration (new AI providers, improved analysis)'
+        - '📱 Platform Support (new shells, operating systems)'
+        - '🔌 Extensibility (plugins, integrations, APIs)'
+        - '📚 Documentation (guides, examples, help)'
+        - '🔨 Developer Experience (setup, configuration, debugging)'
+        - 'Other/Cross-cutting'
     validations:
       required: true
 
@@ -46,16 +46,16 @@ body:
     attributes:
       label: Current Workflow
       description: How do you currently handle this situation or what workaround do you use?
-      placeholder: "Currently I have to manually search Stack Overflow, check documentation..."
+      placeholder: 'Currently I have to manually search Stack Overflow, check documentation...'
     validations:
       required: false
-      
+
   - type: textarea
     id: solution
     attributes:
       label: Proposed Solution
       description: Describe the solution you'd like
-      placeholder: "I would like Shelly to automatically detect when..."
+      placeholder: 'I would like Shelly to automatically detect when...'
     validations:
       required: true
 
@@ -78,12 +78,12 @@ body:
       label: Target Users
       description: Who would benefit from this feature? (check all that apply)
       options:
-        - label: "Individual developers"
-        - label: "Development teams"
-        - label: "Open source maintainers"
-        - label: "Enterprise development"
-        - label: "Educational use"
-        - label: "AI-assisted development users"
+        - label: 'Individual developers'
+        - label: 'Development teams'
+        - label: 'Open source maintainers'
+        - label: 'Enterprise development'
+        - label: 'Educational use'
+        - label: 'AI-assisted development users'
 
   - type: textarea
     id: use-cases
@@ -133,14 +133,14 @@ body:
       label: Compatibility & Requirements
       description: What are the system requirements for this feature?
       options:
-        - label: "Should work on macOS"
-        - label: "Should work on Linux" 
-        - label: "Should work on Windows"
-        - label: "Requires bash shell support"
-        - label: "Requires zsh shell support"
-        - label: "Requires tcsh shell support"
-        - label: "Requires AI service integration"
-        - label: "Should maintain backward compatibility"
+        - label: 'Should work on macOS'
+        - label: 'Should work on Linux'
+        - label: 'Should work on Windows'
+        - label: 'Requires bash shell support'
+        - label: 'Requires zsh shell support'
+        - label: 'Requires tcsh shell support'
+        - label: 'Requires AI service integration'
+        - label: 'Should maintain backward compatibility'
 
   - type: dropdown
     id: priority
@@ -148,10 +148,10 @@ body:
       label: Priority Level
       description: How important is this feature to you?
       options:
-        - "Low (nice to have, no urgency)"
-        - "Medium (would improve user experience)"
-        - "High (addresses significant pain point)"
-        - "Critical (blocks important workflow)"
+        - 'Low (nice to have, no urgency)'
+        - 'Medium (would improve user experience)'
+        - 'High (addresses significant pain point)'
+        - 'Critical (blocks important workflow)'
     validations:
       required: true
 
@@ -179,12 +179,12 @@ body:
         - [ ] Updates Memory Bank appropriately
         - [ ] Includes comprehensive documentation
         - [ ] Works across supported platforms
-        
+
         **Testing Requirements:**
         - [ ] Unit tests for new functionality
         - [ ] Integration tests with existing features
         - [ ] Cross-platform testing
-        
+
         **Documentation Requirements:**
         - [ ] README updates
         - [ ] API documentation
@@ -197,7 +197,7 @@ body:
     attributes:
       label: Additional Context
       description: Add any other context, screenshots, or mockups about the feature request here
-      placeholder: "Screenshots, related issues, community discussions, timeline requirements..."
+      placeholder: 'Screenshots, related issues, community discussions, timeline requirements...'
     validations:
       required: false
 
@@ -208,6 +208,6 @@ body:
       description: Have you researched this feature request?
       options:
         - label: "I've checked existing Shelly documentation"
-        - label: "I've searched existing issues and discussions"  
+        - label: "I've searched existing issues and discussions"
         - label: "I've looked at similar tools and approaches"
         - label: "I've considered how this fits with Shelly's architecture"
