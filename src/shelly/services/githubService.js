@@ -181,7 +181,9 @@ export class GitHubService {
           'ℹ️  GitHub Copilot code review rule added (will be active if Copilot is available)'
         );
       } catch (error) {
-        console.log('ℹ️  GitHub Copilot code review rule could not be added');
+        console.log(
+          'ℹ️  GitHub Copilot code review rule could not be added'
+        );
       }
 
       const response = await this.octokit.repos.createRepoRuleset({
@@ -193,15 +195,14 @@ export class GitHubService {
       return response.data;
     } catch (error) {
       if (error.status === 422 && error.message.includes('already exists')) {
-        throw new Error(
-          `Branch protection ruleset "${defaultBranch}-protection" already exists`
-        );
+        throw new Error(`Branch protection ruleset "${defaultBranch}-protection" already exists`);
       }
       throw new Error(
         `Failed to create branch protection ruleset: ${error.message}`
       );
     }
   }
+
 
   /**
    * Get repository default branch
@@ -341,9 +342,7 @@ You can write documentation in:
           },
         });
 
-        console.log(
-          `✅ GitHub Pages configured: ${defaultBranch} branch /docs folder`
-        );
+        console.log(`✅ GitHub Pages configured: ${defaultBranch} branch /docs folder`);
         console.log(
           `📋 Settings ready - site will be at: https://${owner}.github.io/${repo}`
         );
@@ -380,9 +379,7 @@ You can write documentation in:
       console.log(
         `💡 Manual setup: Go to https://github.com/${owner}/${repo}/settings/pages`
       );
-      console.log(
-        `   Set Source: Deploy from branch → ${defaultBranch} → /docs`
-      );
+      console.log(`   Set Source: Deploy from branch → ${defaultBranch} → /docs`);
 
       // Still create the docs folder even if API fails
       try {
