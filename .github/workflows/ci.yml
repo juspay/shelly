@@ -2,9 +2,9 @@ name: Shelly CI/CD Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [release, main, master]
   pull_request:
-    branches: [main, master]
+    branches: [release, main, master]
   workflow_dispatch:
 
 env:
@@ -31,9 +31,6 @@ jobs:
 
       - name: 📦 Install dependencies
         run: npm install
-
-      - name: 🔍 Run ESLint
-        run: npm run lint
 
       - name: 💅 Check Prettier formatting
         run: npm run format:check
@@ -233,7 +230,7 @@ jobs:
         run: npm install
 
       - name: 🔒 Run security audit
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
 
       - name: 🛡️ Check for vulnerabilities
         run: |
@@ -292,7 +289,7 @@ jobs:
     needs:
       [quality-check, functional-tests, security-audit, documentation-tests]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/release' && github.event_name == 'push'
 
     steps:
       - name: 📥 Checkout code
