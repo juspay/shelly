@@ -3,13 +3,16 @@
 ## Required Screenshots
 
 ### 1. command-failure.png
+
 **Purpose**: Show a typical command failure that Shelly can help with
 **Content**:
+
 - Terminal showing a failed command (e.g., `grp "pattern" file.txt`)
 - Error message: `grp: command not found`
 - Show the cursor ready for next command
 - Include realistic directory context (project folder)
-**Command Examples**:
+  **Command Examples**:
+
 ```bash
 $ grp "hello" src/main.js
 grp: command not found
@@ -17,8 +20,10 @@ $ █
 ```
 
 ### 2. shelly-analysis.png
+
 **Purpose**: Show Shelly's AI analysis in action
 **Content**:
+
 - Previous failed command visible
 - `$ shelly` command executed
 - Full Neurolink analysis output:
@@ -26,7 +31,8 @@ $ █
   - "Maybe you meant:" suggestion
   - AI analysis section with detailed explanation
   - Suggested corrections
-**Example Output**:
+    **Example Output**:
+
 ```bash
 $ shelly
 Analyzing previous command: "grp "hello" src/main.js"
@@ -44,6 +50,7 @@ Common typos include:
 ```
 
 ## Technical Specifications
+
 - **Terminal Font**: Use a clear monospace font (JetBrains Mono, Fira Code)
 - **Colors**: Ensure error messages are clearly visible (red text)
 - **Window Size**: Full terminal window, not just command snippets

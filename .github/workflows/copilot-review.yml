@@ -22,7 +22,7 @@ jobs:
   copilot-review:
     name: AI Code Review
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number
             });
-            
+
             // Categorize changed files by Shelly feature area
             const categories = {
               'error-analysis': [],
@@ -68,7 +68,7 @@ jobs:
               'documentation': [],
               'other': []
             };
-            
+
             files.forEach(file => {
               const path = file.filename;
               if (path.includes('src/main.js') || path.includes('analysisService') || path.includes('historyService')) {
@@ -89,10 +89,10 @@ jobs:
                 categories['other'].push(path);
               }
             });
-            
+
             let summary = '🤖 **Shelly AI Code Review Completed**\n\n';
             summary += '### 📋 Changed Files by Feature Area:\n\n';
-            
+
             Object.entries(categories).forEach(([category, files]) => {
               if (files.length > 0) {
                 const emoji = {
@@ -111,7 +111,7 @@ jobs:
                 summary += '\n';
               }
             });
-            
+
             summary += '### 🔍 Review Focus Areas:\n';
             summary += '- **Error Analysis**: Command parsing, AI suggestion accuracy, shell compatibility\n';
             summary += '- **Repository Organization**: Project scaffolding, GitHub integration, file operations\n';
@@ -121,7 +121,7 @@ jobs:
             summary += '- **Cross-Platform**: macOS/Linux compatibility, shell-specific features\n\n';
             summary += '📝 Check the **Files Changed** tab for detailed AI feedback on each file.\n';
             summary += '🚀 Ensure all Shelly features (Error Analysis, Repository Organization, Memory Bank) work seamlessly together!';
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

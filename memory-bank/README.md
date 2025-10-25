@@ -50,6 +50,7 @@ The Memory Bank serves as a comprehensive knowledge base that:
 ## 🚀 Usage
 
 ### For AI Assistants (Cline, etc.)
+
 ```bash
 # Initialize Memory Bank
 shelly memory init
@@ -66,10 +67,11 @@ shelly memory update
 ```
 
 ### For Developers
+
 The Memory Bank is automatically maintained by Shelly but can be manually updated:
 
 1. **Read** relevant context before starting work
-2. **Update** active context and progress as you work  
+2. **Update** active context and progress as you work
 3. **Review** technical decisions and patterns for consistency
 4. **Reference** project goals to stay aligned
 
@@ -91,14 +93,16 @@ The Memory Bank is automatically maintained by Shelly but can be manually update
 ## 🔗 Integration
 
 This Memory Bank integrates with:
+
 - **Shelly CLI**: Automated maintenance and updates
 - **AI Assistants**: Rich context for code assistance
+- **GitHub Configuration**: Repository settings, branch protection, Actions security
 - **Development Workflow**: Project onboarding and knowledge transfer
 - **Documentation**: Single source of truth for project state
 
 ---
 
 **Generated**: 2024-10-06 | **Project**: Shelly | **Tool**: Shelly Memory Bank
-**Last Updated**: 2024-10-06
+**Last Updated**: 2025-10-25
 
 > 💡 **Tip**: Use `shelly memory show <file>` to view any Memory Bank file, or browse this directory directly.

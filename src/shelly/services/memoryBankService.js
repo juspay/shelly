@@ -15,25 +15,45 @@ export class MemoryBankService {
     this.aiGenerator = new AIContentGenerator();
     this.templatesPath = 'src/shelly/templates/memory-bank';
     this.targetPath = 'memory-bank';
-    
+
     // Memory Bank structure with organized folders
     this.structure = {
       'README.md': { template: 'README.md.template', generator: null },
-      'project/projectbrief.md': { template: 'projectbrief.md.template', generator: 'generateProjectBrief' },
-      'project/productContext.md': { template: 'productContext.md.template', generator: 'generateProductContext' },
-      'technical/systemPatterns.md': { template: 'systemPatterns.md.template', generator: 'generateSystemPatterns' },
-      'technical/techContext.md': { template: 'techContext.md.template', generator: 'generateTechContext' },
-      'current/activeContext.md': { template: 'activeContext.md.template', generator: 'generateActiveContext' },
-      'current/progress.md': { template: 'progress.md.template', generator: 'generateProgress' }
+      'project/projectbrief.md': {
+        template: 'projectbrief.md.template',
+        generator: 'generateProjectBrief',
+      },
+      'project/productContext.md': {
+        template: 'productContext.md.template',
+        generator: 'generateProductContext',
+      },
+      'technical/systemPatterns.md': {
+        template: 'systemPatterns.md.template',
+        generator: 'generateSystemPatterns',
+      },
+      'technical/techContext.md': {
+        template: 'techContext.md.template',
+        generator: 'generateTechContext',
+      },
+      'current/activeContext.md': {
+        template: 'activeContext.md.template',
+        generator: 'generateActiveContext',
+      },
+      'current/progress.md': {
+        template: 'progress.md.template',
+        generator: 'generateProgress',
+      },
     };
-    
+
     // Additional files to generate outside memory-bank directory
     this.rootFiles = {
-      '.clinerules': { generator: 'generateClinerules' }
+      '.clinerules': { generator: 'generateClinerules' },
     };
-    
+
     // Core Memory Bank files for backward compatibility
-    this.coreFiles = Object.keys(this.structure).filter(file => file !== 'README.md');
+    this.coreFiles = Object.keys(this.structure).filter(
+      (file) => file !== 'README.md'
+    );
   }
 
   /**
@@ -47,7 +67,7 @@ export class MemoryBankService {
       created: [],
       updated: [],
       skipped: [],
-      errors: []
+      errors: [],
     };
 
     console.log('🧠 Initializing Memory Bank with organized structure...');
@@ -55,7 +75,9 @@ export class MemoryBankService {
     // Ensure memory-bank directory and subdirectories exist
     await fs.mkdir(this.targetPath, { recursive: true });
     await fs.mkdir(path.join(this.targetPath, 'project'), { recursive: true });
-    await fs.mkdir(path.join(this.targetPath, 'technical'), { recursive: true });
+    await fs.mkdir(path.join(this.targetPath, 'technical'), {
+      recursive: true,
+    });
     await fs.mkdir(path.join(this.targetPath, 'current'), { recursive: true });
 
     // Create or update each file in the structure
@@ -70,9 +92,12 @@ export class MemoryBankService {
           continue;
         }
 
-        const content = await this.generateMemoryBankContent(filePath, packageInfo);
+        const content = await this.generateMemoryBankContent(
+          filePath,
+          packageInfo
+        );
         await fs.writeFile(fullPath, content, 'utf8');
-        
+
         if (exists) {
           console.log(`🔄 Updated ${filePath}`);
           results.updated.push(filePath);
@@ -99,7 +124,7 @@ export class MemoryBankService {
 
         const content = await this.generateClinerules(packageInfo);
         await fs.writeFile(fileName, content, 'utf8');
-        
+
         if (exists) {
           console.log(`🔄 Updated ${fileName}`);
           results.updated.push(fileName);
@@ -125,7 +150,7 @@ export class MemoryBankService {
   async updateMemoryBank(fileName = null, packageInfo) {
     const results = {
       updated: [],
-      errors: []
+      errors: [],
     };
 
     console.log('🧠 Updating Memory Bank...');
@@ -137,7 +162,7 @@ export class MemoryBankService {
         const filePath = path.join(this.targetPath, file);
         const content = await this.generateMemoryBankContent(file, packageInfo);
         await fs.writeFile(filePath, content, 'utf8');
-        
+
         console.log(`🔄 Updated ${file}`);
         results.updated.push(file);
       } catch (error) {
@@ -165,29 +190,29 @@ export class MemoryBankService {
    */
   async listMemoryBankFiles() {
     const files = [];
-    
+
     for (const fileName of this.coreFiles) {
       const filePath = path.join(this.targetPath, fileName);
       const exists = await this.fileExists(filePath);
-      
+
       if (exists) {
         const stats = await fs.stat(filePath);
         files.push({
           name: fileName,
           exists: true,
           lastModified: stats.mtime,
-          size: stats.size
+          size: stats.size,
         });
       } else {
         files.push({
           name: fileName,
           exists: false,
           lastModified: null,
-          size: 0
+          size: 0,
         });
       }
     }
-    
+
     return files;
   }
 
@@ -204,7 +229,10 @@ export class MemoryBankService {
     }
 
     // If neurolink content is available, use it
-    if (packageInfo.neurolinkContent && packageInfo.neurolinkContent[fileName]) {
+    if (
+      packageInfo.neurolinkContent &&
+      packageInfo.neurolinkContent[fileName]
+    ) {
       console.log(`🤖 Using neurolink content for ${fileName}`);
       return packageInfo.neurolinkContent[fileName];
     }
@@ -212,7 +240,7 @@ export class MemoryBankService {
     // Fallback to individual AI generation
     console.log(`🔄 Using fallback AI generation for ${fileName}`);
     const baseName = path.basename(fileName, '.md');
-    
+
     switch (baseName) {
       case 'projectbrief':
         return await this.aiGenerator.generateProjectBrief(packageInfo);
@@ -239,7 +267,7 @@ export class MemoryBankService {
   generateReadmeContent(packageInfo) {
     const projectName = packageInfo.name || 'Project';
     const currentDate = new Date().toISOString().split('T')[0];
-    
+
     return `# 🧠 Memory Bank
 
 > **AI-Assisted Development Context for ${projectName}**
@@ -365,7 +393,7 @@ This Memory Bank integrates with:
       author: '',
       repository: '',
       lastUpdated: new Date().toISOString(),
-      neurolinkContent: null
+      neurolinkContent: null,
     };
 
     try {
@@ -374,7 +402,7 @@ This Memory Bank integrates with:
       if (await this.fileExists(packagePath)) {
         const packageContent = await fs.readFile(packagePath, 'utf8');
         const packageJson = JSON.parse(packageContent);
-        
+
         Object.assign(analysis, {
           name: packageJson.name || analysis.name,
           description: packageJson.description || analysis.description,
@@ -384,13 +412,19 @@ This Memory Bank integrates with:
           scripts: packageJson.scripts || {},
           license: packageJson.license || analysis.license,
           author: packageJson.author || analysis.author,
-          repository: packageJson.repository?.url || analysis.repository
+          repository: packageJson.repository?.url || analysis.repository,
         });
 
         // Determine project type
-        if (packageJson.dependencies?.react || packageJson.devDependencies?.react) {
+        if (
+          packageJson.dependencies?.react ||
+          packageJson.devDependencies?.react
+        ) {
           analysis.repoType = 'React Project';
-        } else if (packageJson.dependencies?.typescript || packageJson.devDependencies?.typescript) {
+        } else if (
+          packageJson.dependencies?.typescript ||
+          packageJson.devDependencies?.typescript
+        ) {
           analysis.repoType = 'TypeScript Project';
         } else if (packageJson.dependencies?.express) {
           analysis.repoType = 'Express API Project';
@@ -401,21 +435,28 @@ This Memory Bank integrates with:
 
       // Analyze project structure
       const srcExists = await this.fileExists(path.join(repositoryPath, 'src'));
-      const testExists = await this.fileExists(path.join(repositoryPath, 'test'));
-      const docsExists = await this.fileExists(path.join(repositoryPath, 'docs'));
-      
+      const testExists = await this.fileExists(
+        path.join(repositoryPath, 'test')
+      );
+      const docsExists = await this.fileExists(
+        path.join(repositoryPath, 'docs')
+      );
+
       analysis.projectStructure = {
         hasSrc: srcExists,
         hasTests: testExists,
-        hasDocs: docsExists
+        hasDocs: docsExists,
       };
 
       // Generate comprehensive memory bank content using Neurolink
       console.log('🧠 Generating Memory Bank content with Neurolink...');
-      analysis.neurolinkContent = await this.generateNeurolinkContent(repositoryPath);
-
+      analysis.neurolinkContent =
+        await this.generateNeurolinkContent(repositoryPath);
     } catch (error) {
-      console.warn('Warning: Could not fully analyze repository:', error.message);
+      console.warn(
+        'Warning: Could not fully analyze repository:',
+        error.message
+      );
     }
 
     return analysis;
@@ -423,23 +464,30 @@ This Memory Bank integrates with:
 
   /**
    * Generate comprehensive memory bank content using Neurolink (Two-step process)
-   * @param {string} repositoryPath - Path to repository  
+   * @param {string} repositoryPath - Path to repository
    * @returns {Promise<Object>} Parsed neurolink content by file
    */
   async generateNeurolinkContent(repositoryPath = '.') {
     try {
       // Step 1: Analyze repository structure and understand the project
-      console.log('🔍 Step 1: Analyzing repository structure with neurolink...');
-      const repositoryAnalysis = await this.analyzeRepositoryWithNeurolink(repositoryPath);
-      
+      console.log(
+        '🔍 Step 1: Analyzing repository structure with neurolink...'
+      );
+      const repositoryAnalysis =
+        await this.analyzeRepositoryWithNeurolink(repositoryPath);
+
       if (!repositoryAnalysis) {
         throw new Error('Repository analysis failed');
       }
 
       // Step 2: Generate memory bank content using analysis + Cline rules
-      console.log('📝 Step 2: Generating memory bank content using analysis + Cline rules...');
-      return await this.generateMemoryBankWithAnalysis(repositoryAnalysis, repositoryPath);
-
+      console.log(
+        '📝 Step 2: Generating memory bank content using analysis + Cline rules...'
+      );
+      return await this.generateMemoryBankWithAnalysis(
+        repositoryAnalysis,
+        repositoryPath
+      );
     } catch (error) {
       console.warn('Neurolink generation failed:', error.message);
       console.log('🔄 Falling back to individual AI generation...');
@@ -497,25 +545,24 @@ ANALYZE ALL ASPECTS:
 Please provide a detailed, comprehensive analysis that covers all these aspects. Be specific and include actual details from the codebase, not generic statements.`;
 
       const command = `npx @juspay/neurolink generate "${analysisPrompt}" --provider vertex --model gemini-2.0-flash-exp`;
-      
+
       const env = {
         ...process.env,
         GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
-        GOOGLE_CLOUD_REGION: 'us-east5'
+        GOOGLE_CLOUD_REGION: 'us-east5',
       };
-      
-      const { stdout, stderr } = await execAsync(command, { 
+
+      const { stdout, stderr } = await execAsync(command, {
         cwd: repositoryPath,
         env: env,
-        maxBuffer: 1024 * 1024 * 10
+        maxBuffer: 1024 * 1024 * 10,
       });
-      
+
       if (stderr) {
         console.warn('Repository analysis stderr:', stderr);
       }
 
       return stdout.trim();
-
     } catch (error) {
       console.warn('Repository analysis failed:', error.message);
       return null;
@@ -528,18 +575,26 @@ Please provide a detailed, comprehensive analysis that covers all these aspects.
    * @param {string} repositoryPath - Path to repository
    * @returns {Promise<Object>} Parsed neurolink content by file
    */
-  async generateMemoryBankWithAnalysis(repositoryAnalysis, repositoryPath = '.') {
+  async generateMemoryBankWithAnalysis(
+    repositoryAnalysis,
+    repositoryPath = '.'
+  ) {
     try {
       // Read .clinerules template to provide context
-      const clineruleTemplatePath = path.join('src/shelly/templates/.clinerules.template');
+      const clineruleTemplatePath = path.join(
+        'src/shelly/templates/.clinerules.template'
+      );
       let clinerules = '';
-      
+
       if (await this.fileExists(clineruleTemplatePath)) {
         clinerules = await fs.readFile(clineruleTemplatePath, 'utf8');
       }
 
       // Create a temporary file for the complex prompt to avoid shell parsing issues
-      const tempPromptFile = path.join(repositoryPath, '.temp_memory_prompt.txt');
+      const tempPromptFile = path.join(
+        repositoryPath,
+        '.temp_memory_prompt.txt'
+      );
       const memoryBankPrompt = `CRITICAL: You MUST generate ALL 6 memory bank files. Do not generate partial responses.
 
 MEMORY BANK GENERATION REQUEST:
@@ -602,33 +657,35 @@ CRITICAL REMINDER: Your response MUST contain ALL 6 files with the exact markers
       await fs.writeFile(tempPromptFile, memoryBankPrompt, 'utf8');
 
       const command = `npx @juspay/neurolink generate "$(cat ${tempPromptFile})" --provider vertex --model gemini-2.0-flash-exp --max 8000`;
-      
+
       const env = {
         ...process.env,
         GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
-        GOOGLE_CLOUD_REGION: 'us-east5'
+        GOOGLE_CLOUD_REGION: 'us-east5',
       };
-      
-      const { stdout, stderr } = await execAsync(command, { 
+
+      const { stdout, stderr } = await execAsync(command, {
         cwd: repositoryPath,
         env: env,
-        maxBuffer: 1024 * 1024 * 10
+        maxBuffer: 1024 * 1024 * 10,
       });
-      
+
       // Clean up temporary file
       try {
         await fs.unlink(tempPromptFile);
       } catch (unlinkError) {
-        console.warn('Warning: Could not clean up temporary prompt file:', unlinkError.message);
+        console.warn(
+          'Warning: Could not clean up temporary prompt file:',
+          unlinkError.message
+        );
       }
-      
+
       if (stderr) {
         console.warn('Memory bank generation stderr:', stderr);
       }
 
       // Parse the neurolink output into individual files
       return this.parseNeurolinkOutput(stdout);
-
     } catch (error) {
       console.warn('Memory bank generation failed:', error.message);
       return null;
@@ -643,32 +700,34 @@ CRITICAL REMINDER: Your response MUST contain ALL 6 files with the exact markers
   parseNeurolinkOutput(output) {
     const parsedContent = {};
     const fileMarker = /--- MEMORY_BANK_FILE: ([^-]+) ---/g;
-    
+
     // Split content by file markers
     const sections = output.split(fileMarker);
-    
+
     // Process each section (skip first empty section)
     for (let i = 1; i < sections.length; i += 2) {
       const filename = sections[i].trim();
       const content = sections[i + 1] ? sections[i + 1].trim() : '';
-      
+
       if (filename && content) {
         // Map filename to full path
         const fileMap = {
           'projectbrief.md': 'project/projectbrief.md',
-          'productContext.md': 'project/productContext.md', 
+          'productContext.md': 'project/productContext.md',
           'systemPatterns.md': 'technical/systemPatterns.md',
           'techContext.md': 'technical/techContext.md',
           'activeContext.md': 'current/activeContext.md',
-          'progress.md': 'current/progress.md'
+          'progress.md': 'current/progress.md',
         };
-        
+
         const fullPath = fileMap[filename] || filename;
         parsedContent[fullPath] = content;
       }
     }
-    
-    console.log(`✅ Parsed ${Object.keys(parsedContent).length} memory bank files from neurolink`);
+
+    console.log(
+      `✅ Parsed ${Object.keys(parsedContent).length} memory bank files from neurolink`
+    );
     return parsedContent;
   }
 
@@ -682,7 +741,7 @@ CRITICAL REMINDER: Your response MUST contain ALL 6 files with the exact markers
       complete: false,
       files: {},
       missingFiles: [],
-      lastUpdated: null
+      lastUpdated: null,
     };
 
     const directoryExists = await this.fileExists(this.targetPath);
@@ -696,9 +755,9 @@ CRITICAL REMINDER: Your response MUST contain ALL 6 files with the exact markers
     for (const fileName of this.coreFiles) {
       const filePath = path.join(this.targetPath, fileName);
       const exists = await this.fileExists(filePath);
-      
+
       status.files[fileName] = exists;
-      
+
       if (!exists) {
         status.missingFiles.push(fileName);
       } else {
@@ -722,7 +781,10 @@ CRITICAL REMINDER: Your response MUST contain ALL 6 files with the exact markers
    */
   async generateClinerules(packageInfo) {
     console.log('🚀 Using .clinerules template with project name only');
-    return this.loadTemplateWithProjectNameOnly('.clinerules.template', packageInfo);
+    return this.loadTemplateWithProjectNameOnly(
+      '.clinerules.template',
+      packageInfo
+    );
   }
 
   /**
@@ -838,40 +900,41 @@ Layer 3: [Project-specific testing] → [Description]
 
 GENERATE ONLY RELEVANT SECTIONS FOR THIS PROJECT. Use the EXACT formatting style, structure, and language patterns from NeuroLink. Make it project-specific but follow NeuroLink's precise formatting conventions.`;
 
-      // Use npx with --yes flag for auto-installation and better error handling  
+      // Use npx with --yes flag for auto-installation and better error handling
       const command = `npx --yes @juspay/neurolink generate "$(echo '${clinerulestPrompt.replace(/'/g, "'\\''")}' | cat)" --provider vertex --model gemini-2.0-flash-exp --max 8000`;
-      
+
       const env = {
         ...process.env,
         GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
-        GOOGLE_CLOUD_REGION: 'us-east5'
+        GOOGLE_CLOUD_REGION: 'us-east5',
       };
-      
-      const { stdout, stderr } = await execAsync(command, { 
+
+      const { stdout, stderr } = await execAsync(command, {
         cwd: '.',
         env: env,
         maxBuffer: 1024 * 1024 * 10,
-        timeout: 120000 // 2 minute timeout
+        timeout: 120000, // 2 minute timeout
       });
-      
+
       if (stderr && !stderr.includes('Generating text')) {
         console.warn('.clinerules generation stderr:', stderr);
       }
 
       const result = stdout.trim();
-      
+
       // Validate that we got comprehensive content
       if (result.length < 1000) {
-        throw new Error('Generated content too short, falling back to enhanced template');
+        throw new Error(
+          'Generated content too short, falling back to enhanced template'
+        );
       }
 
       console.log('🤖 Generated comprehensive .clinerules using neurolink');
       return result;
-
     } catch (error) {
       console.warn('.clinerules neurolink generation failed:', error.message);
       console.log('🔄 Using enhanced fallback generation...');
-      
+
       // Fallback to enhanced template-based generation
       return this.generateEnhancedClinerules(packageInfo);
     }
@@ -885,7 +948,7 @@ GENERATE ONLY RELEVANT SECTIONS FOR THIS PROJECT. Use the EXACT formatting style
   generateEnhancedClinerules(packageInfo) {
     const projectName = packageInfo.name || 'Project';
     const projectType = packageInfo.repoType || 'Node.js Project';
-    
+
     return `# ${projectName} Project Rules
 
 ### **MIGRATION PATTERNS**
@@ -1223,7 +1286,7 @@ node ../shelly/src/shelly/cli.js memory init
   generateBasicClinerules(packageInfo) {
     const projectName = packageInfo.name || 'Project';
     const projectType = packageInfo.repoType || 'Node.js Project';
-    
+
     return `# ${projectName} Project Rules
 
 ### **PROJECT MISSION**
@@ -1345,9 +1408,11 @@ memory-bank/
    */
   getArchitecturePattern(packageInfo) {
     if (packageInfo.dependencies?.react) return 'React Component Architecture';
-    if (packageInfo.dependencies?.express) return 'Express REST API Architecture';
+    if (packageInfo.dependencies?.express)
+      return 'Express REST API Architecture';
     if (packageInfo.bin) return 'CLI Tool Architecture';
-    if (packageInfo.dependencies?.typescript) return 'TypeScript Modular Architecture';
+    if (packageInfo.dependencies?.typescript)
+      return 'TypeScript Modular Architecture';
     return 'Node.js Modular Architecture';
   }
 
@@ -1358,21 +1423,21 @@ memory-bank/
    */
   generateProjectStructure(packageInfo) {
     let structure = `${packageInfo.name || 'project'}/\n├── package.json\n├── README.md`;
-    
+
     if (packageInfo.projectStructure?.hasSrc) {
       structure += '\n├── src/\n│   └── main.js';
     }
-    
+
     if (packageInfo.projectStructure?.hasTests) {
       structure += '\n├── test/';
     }
-    
+
     if (packageInfo.projectStructure?.hasDocs) {
       structure += '\n├── docs/';
     }
-    
+
     structure += '\n└── memory-bank/           # AI assistant context';
-    
+
     return structure;
   }
 
@@ -1383,7 +1448,7 @@ memory-bank/
    */
   formatDependencies(deps = {}) {
     if (Object.keys(deps).length === 0) return '- None specified';
-    
+
     return Object.entries(deps)
       .map(([name, version]) => `- **${name}**: ${version}`)
       .join('\n');
@@ -1396,7 +1461,7 @@ memory-bank/
    */
   formatScripts(scripts = {}) {
     if (Object.keys(scripts).length === 0) return '# No scripts defined';
-    
+
     return Object.entries(scripts)
       .map(([name, command]) => `npm run ${name}              # ${command}`)
       .join('\n');
@@ -1409,12 +1474,14 @@ memory-bank/
    */
   async loadRawTemplate(templateName) {
     const templatePath = path.join('src/shelly/templates', templateName);
-    
+
     try {
       const content = await fs.readFile(templatePath, 'utf8');
       return content;
     } catch (error) {
-      console.warn(`Warning: Could not load template ${templateName}: ${error.message}`);
+      console.warn(
+        `Warning: Could not load template ${templateName}: ${error.message}`
+      );
       return '';
     }
   }
@@ -1427,14 +1494,16 @@ memory-bank/
    */
   async loadTemplateWithProjectNameOnly(templateName, packageInfo) {
     const templatePath = path.join('src/shelly/templates', templateName);
-    
+
     try {
       const content = await fs.readFile(templatePath, 'utf8');
       // Only replace the project name placeholder
       const projectName = packageInfo.name || packageInfo.repoName || 'Project';
       return content.replace(/\{\{projectName\}\}/g, projectName);
     } catch (error) {
-      console.warn(`Warning: Could not load template ${templateName}: ${error.message}`);
+      console.warn(
+        `Warning: Could not load template ${templateName}: ${error.message}`
+      );
       return '';
     }
   }

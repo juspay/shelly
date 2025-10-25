@@ -3,11 +3,13 @@
 ## Actual Video Asset
 
 ### ✅ shelly-core-demo.mov
+
 **Duration**: 60 seconds (actual duration from your recording)
 **Purpose**: Demonstrates Shelly's core error analysis feature
 **Content**: Shows complete workflow from command failure to AI-powered solution
 
 **What this video demonstrates**:
+
 - Real command failure scenario (e.g., `grp` typo instead of `grep`)
 - Running `shelly` command to get AI analysis
 - Shelly's Neurolink AI providing intelligent suggestion
@@ -15,6 +17,7 @@
 - Successful command execution
 
 **Key Features Shown**:
+
 - ✅ Command error detection
 - ✅ AI-powered analysis
 - ✅ Clear fix suggestions
@@ -23,6 +26,7 @@
 **Duration**: 60-75 seconds
 **Purpose**: Show AI's intelligent pattern recognition and learning
 **Script**:
+
 ```bash
 # Scene 1: Git typo pattern (20s)
 $ git psuh origin main
@@ -66,6 +70,7 @@ Server running on port 3000...
 ```
 
 **Narration Script**:
+
 - "Shelly recognizes common typing patterns across different tools"
 - "AI learns from context to provide better suggestions"
 - "Multiple alternatives ranked by probability and context"
@@ -74,6 +79,7 @@ Server running on port 3000...
 ## Video Production Guidelines
 
 ### Technical Specifications
+
 - **Resolution**: 1080p minimum, 1440p preferred
 - **Frame Rate**: 60fps for smooth terminal interactions
 - **Audio**: Clear narration with background music (optional)
@@ -81,6 +87,7 @@ Server running on port 3000...
 - **Subtitles**: Include closed captions for accessibility
 
 ### Visual Style
+
 - **Terminal Theme**: Dark theme with good contrast
 - **Font Size**: Large enough to read clearly (14pt minimum)
 - **Screen Recording**: Full terminal window, not just command area
@@ -88,6 +95,7 @@ Server running on port 3000...
 - **Timing**: Natural typing speed, not too fast or slow
 
 ### Recording Tips
+
 - **Real Sessions**: Use actual Shelly installation, not simulated
 - **Clean Environment**: Remove personal information, clean history
 - **Smooth Workflow**: Practice commands beforehand for smooth recording
@@ -95,6 +103,7 @@ Server running on port 3000...
 - **AI Response**: Show full AI analysis, don't cut it short
 
 ### Post-Production
+
 - **Editing**: Clean cuts between scenes, smooth transitions
 - **Annotations**: Add text overlays for key features
 - **Branding**: Include Juspay/Shelly logo and branding
@@ -104,6 +113,7 @@ Server running on port 3000...
 ## Common Scenarios for Recording
 
 ### Scenario Bank
+
 ```bash
 # Typo corrections
 grp → grep
@@ -128,6 +138,7 @@ docker run (missing image)
 ```
 
 ### Error Variety
+
 - Command not found errors
 - Permission denied issues
 - Missing dependency problems

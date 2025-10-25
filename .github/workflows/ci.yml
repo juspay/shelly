@@ -44,7 +44,7 @@ jobs:
   functional-tests:
     name: Functional Testing
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -84,13 +84,13 @@ jobs:
           # Create test project
           mkdir test-project && cd test-project
           npm init -y
-          
+
           # Test organize command
           node ../src/shelly/cli.js organize --force
-          
+
           # Test status command
           node ../src/shelly/cli.js status
-          
+
           # Verify files were created
           ls -la
           test -f package.json
@@ -102,16 +102,16 @@ jobs:
       - name: 🧠 Test Memory Bank
         run: |
           cd test-project
-          
+
           # Test memory bank initialization
           node ../src/shelly/cli.js memory init --force
-          
+
           # Test memory bank status
           node ../src/shelly/cli.js memory status
-          
+
           # Test memory bank listing
           node ../src/shelly/cli.js memory list
-          
+
           # Verify memory bank structure
           test -d memory-bank
           test -f memory-bank/README.md
@@ -124,13 +124,13 @@ jobs:
         run: |
           # Test project init
           node src/shelly/cli.js init test-init-project --force
-          
+
           # Verify project structure
           cd test-init-project
           test -f package.json
           test -f README.md
           test -d memory-bank
-          
+
           # Test status in new project
           node ../src/shelly/cli.js status
         shell: ${{ matrix.shell }}
@@ -160,20 +160,20 @@ jobs:
           # Test error analysis with mock command
           echo "Testing AI integration..."
           node src/main.js "nonexistent-command" || true
-          
+
           # Test memory bank generation (without actual AI calls)
           mkdir ai-test-project && cd ai-test-project
           npm init -y
-          
+
           # Test organize with AI features
           node ../src/shelly/cli.js organize --force
-          
+
           echo "AI integration tests completed"
 
   cross-platform-tests:
     name: Cross-Platform Compatibility
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -196,14 +196,14 @@ jobs:
         run: |
           # Test main CLI
           node src/main.js --version
-          
+
           # Test secondary CLI
           node src/shelly/cli.js --help
-          
+
           # Test in different directory structures
           mkdir -p test/nested/project && cd test/nested/project
           npm init -y
-          
+
           # Test organize from nested directory
           node ../../../../src/shelly/cli.js organize --force
 
@@ -211,7 +211,7 @@ jobs:
         run: |
           # Test shell alias generation
           node src/main.js --alias
-          
+
           # Test history access mechanisms
           history || fc -l || echo "Shell history test completed"
 
@@ -262,12 +262,12 @@ jobs:
           test -f CONTRIBUTING.md
           test -f CODE_OF_CONDUCT.md
           test -f LICENSE
-          
+
           # Check docs directory
           test -d docs
           test -f docs/API.md
           test -f docs/QUICK_START.md
-          
+
           # Check Memory Bank structure
           test -d memory-bank
           test -f memory-bank/README.md
@@ -289,7 +289,8 @@ jobs:
 
   release:
     name: Release
-    needs: [quality-check, functional-tests, security-audit, documentation-tests]
+    needs:
+      [quality-check, functional-tests, security-audit, documentation-tests]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
@@ -327,7 +328,8 @@ jobs:
 
   notify-success:
     name: Success Notification
-    needs: [quality-check, functional-tests, security-audit, documentation-tests]
+    needs:
+      [quality-check, functional-tests, security-audit, documentation-tests]
     runs-on: ubuntu-latest
     if: success()
 

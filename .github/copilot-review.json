@@ -68,7 +68,7 @@
     "framework": "node.js",
     "key_features": [
       "error-analysis",
-      "repository-organization", 
+      "repository-organization",
       "memory-bank",
       "ai-integration",
       "shell-compatibility",
@@ -76,7 +76,11 @@
     ],
     "architecture": {
       "cli_tools": ["main.js", "src/shelly/cli.js"],
-      "core_services": ["analysisService", "historyService", "memoryBankService"],
+      "core_services": [
+        "analysisService",
+        "historyService",
+        "memoryBankService"
+      ],
       "ai_integration": ["@juspay/neurolink", "Google AI services"],
       "shell_support": ["bash", "zsh", "tcsh"]
     }

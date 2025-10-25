@@ -3,12 +3,15 @@
 ## Required Screenshots
 
 ### 1. memory-init.png
+
 **Purpose**: Show the Memory Bank initialization process
 **Content**:
+
 - Terminal showing `shelly memory init` command
 - Real-time output showing AI content generation
 - Progress indicators for each file being created
-**Command Output Example**:
+  **Command Output Example**:
+
 ```bash
 $ shelly memory init
 🧠 Initializing Memory Bank for AI-assisted development...
@@ -31,7 +34,7 @@ $ shelly memory init
    ✅ Created .clinerules for AI assistant integration
 
 🎉 Memory Bank initialized successfully!
-   
+
 💡 Next steps:
    - Run 'shelly memory status' to verify completeness
    - Use 'shelly memory show <file>' to view generated content
@@ -39,6 +42,7 @@ $ shelly memory init
 ```
 
 ## Technical Requirements
+
 - **File Content**: Show actual AI-generated content, not placeholders
 - **Rich Text**: Display markdown rendering where appropriate
 - **File Metadata**: Include file sizes, timestamps for authenticity

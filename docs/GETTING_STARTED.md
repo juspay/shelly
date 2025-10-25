@@ -5,6 +5,7 @@
 ## What is Shelly?
 
 Shelly is an intelligent CLI assistant that provides:
+
 - **🔍 Error Analysis**: AI-powered debugging for failed commands
 - **🏗️ Repository Organization**: Complete project scaffolding and enhancement
 - **🧠 Memory Bank**: AI-assisted development context management
@@ -42,18 +43,21 @@ npm install
 Set up shell integration for error analysis:
 
 **Bash:**
+
 ```bash
 echo 'eval "$(shelly --alias)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
 **Zsh:**
+
 ```bash
 echo 'eval "$(shelly --alias)"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 **Tcsh:**
+
 ```bash
 echo 'alias shelly "node /path/to/shelly/src/main.js"' >> ~/.tcshrc
 source ~/.tcshrc
@@ -68,6 +72,16 @@ export GOOGLE_AI_API_KEY="your-api-key-here"
 ```
 
 Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+### 3. Configure GitHub Integration (Optional)
+
+For GitHub repository automation, set up your GitHub token:
+
+```bash
+export GITHUB_TOKEN="your-github-token-here"
+```
+
+Get your token from [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens). Required scopes: `repo`, `admin:repo_hook`, `write:packages`.
 
 ## Basic Usage
 
@@ -119,6 +133,32 @@ shelly memory status
 shelly memory show projectbrief.md
 ```
 
+### GitHub Repository Setup
+
+Configure GitHub repositories with best practices:
+
+```bash
+# Set GitHub token (required)
+export GITHUB_TOKEN=your_token_here
+
+# Quick GitHub setup
+shelly gh --force
+
+# Full GitHub setup with confirmation
+shelly github setup
+
+# Complete setup (GitHub + organize)
+shelly setup --force
+```
+
+**What it configures:**
+
+- Repository merge settings (rebase-only workflow)
+- Branch protection rules for main branch
+- GitHub Pages for documentation
+- NPM token guidance for publishing
+- GitHub Actions workflow permissions
+
 ## Understanding Shelly's Architecture
 
 Shelly uses a **dual CLI architecture**:
@@ -141,6 +181,11 @@ shelly organize --force  # Overwrite existing files
 shelly organize --update # Add missing files only
 shelly status           # Check organization status
 shelly init <name>      # Create new project
+
+# GitHub Setup
+shelly gh               # Quick GitHub setup (shortcut)
+shelly github setup     # Full GitHub setup
+shelly setup           # Complete setup (GitHub + organize)
 
 # Memory Bank
 shelly memory init      # Initialize Memory Bank

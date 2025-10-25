@@ -51,22 +51,22 @@ export class MemoryCommand {
 
     // Analyze repository for context
     const repoAnalysis = await memoryBankService.analyzeRepository(this.cwd);
-    
+
     const initOptions = {
-      force: options.force || false
+      force: options.force || false,
     };
 
     // Check if Memory Bank already exists
     const status = await memoryBankService.getMemoryBankStatus();
-    
+
     if (status.exists && !options.force) {
       const { proceed } = await inquirer.prompt([
         {
           type: 'confirm',
           name: 'proceed',
           message: 'Memory Bank already exists. Reinitialize?',
-          default: false
-        }
+          default: false,
+        },
       ]);
 
       if (!proceed) {
@@ -76,8 +76,11 @@ export class MemoryCommand {
       initOptions.force = true;
     }
 
-    const results = await memoryBankService.initializeMemoryBank(repoAnalysis, initOptions);
-    
+    const results = await memoryBankService.initializeMemoryBank(
+      repoAnalysis,
+      initOptions
+    );
+
     console.log('\n📊 Memory Bank Initialization Results:');
     if (results.created.length > 0) {
       console.log(`✨ Created: ${results.created.join(', ')}`);
@@ -89,7 +92,9 @@ export class MemoryCommand {
       console.log(`⏭️ Skipped: ${results.skipped.join(', ')}`);
     }
     if (results.errors.length > 0) {
-      console.log(`❌ Errors: ${results.errors.map(e => `${e.file} (${e.error})`).join(', ')}`);
+      console.log(
+        `❌ Errors: ${results.errors.map((e) => `${e.file} (${e.error})`).join(', ')}`
+      );
     }
 
     console.log('\n✅ Memory Bank initialization complete!');
@@ -103,7 +108,7 @@ export class MemoryCommand {
 
     // Check if Memory Bank exists
     const status = await memoryBankService.getMemoryBankStatus();
-    
+
     if (!status.exists) {
       console.log('❌ Memory Bank not found. Run `shelly memory init` first.');
       return;
@@ -111,16 +116,21 @@ export class MemoryCommand {
 
     // Analyze repository for updated context
     const repoAnalysis = await memoryBankService.analyzeRepository(this.cwd);
-    
+
     const fileName = options.file || null;
-    const results = await memoryBankService.updateMemoryBank(fileName, repoAnalysis);
-    
+    const results = await memoryBankService.updateMemoryBank(
+      fileName,
+      repoAnalysis
+    );
+
     console.log('\n📊 Memory Bank Update Results:');
     if (results.updated.length > 0) {
       console.log(`🔄 Updated: ${results.updated.join(', ')}`);
     }
     if (results.errors.length > 0) {
-      console.log(`❌ Errors: ${results.errors.map(e => `${e.file} (${e.error})`).join(', ')}`);
+      console.log(
+        `❌ Errors: ${results.errors.map((e) => `${e.file} (${e.error})`).join(', ')}`
+      );
     }
 
     console.log('\n✅ Memory Bank update complete!');
@@ -131,10 +141,14 @@ export class MemoryCommand {
    */
   async showCommand(options) {
     const fileName = options.file;
-    
+
     if (!fileName) {
-      console.log('❌ Please specify a file to show. Usage: shelly memory show <filename>');
-      console.log('Available files: projectbrief.md, productContext.md, systemPatterns.md, techContext.md, activeContext.md, progress.md');
+      console.log(
+        '❌ Please specify a file to show. Usage: shelly memory show <filename>'
+      );
+      console.log(
+        'Available files: projectbrief.md, productContext.md, systemPatterns.md, techContext.md, activeContext.md, progress.md'
+      );
       return;
     }
 
@@ -161,7 +175,7 @@ export class MemoryCommand {
     console.log('🧠 Memory Bank Status\n');
 
     const status = await memoryBankService.getMemoryBankStatus();
-    
+
     if (!status.exists) {
       console.log('❌ Memory Bank not found');
       console.log('💡 Run `shelly memory init` to create Memory Bank');
@@ -170,14 +184,16 @@ export class MemoryCommand {
 
     console.log(`✅ Memory Bank exists`);
     console.log(`📈 Complete: ${status.complete ? 'Yes' : 'No'}`);
-    
+
     if (status.lastUpdated) {
-      console.log(`🕒 Last updated: ${status.lastUpdated.toISOString().split('T')[0]}`);
+      console.log(
+        `🕒 Last updated: ${status.lastUpdated.toISOString().split('T')[0]}`
+      );
     }
 
     console.log('\n📁 File Status:');
     console.log('─'.repeat(40));
-    
+
     Object.entries(status.files).forEach(([fileName, exists]) => {
       const icon = exists ? '✅' : '❌';
       console.log(`${icon} ${fileName}`);
@@ -197,7 +213,7 @@ export class MemoryCommand {
 
     try {
       const files = await memoryBankService.listMemoryBankFiles();
-      
+
       if (files.length === 0) {
         console.log('❌ No Memory Bank files found');
         console.log('💡 Run `shelly memory init` to create Memory Bank');
@@ -206,18 +222,23 @@ export class MemoryCommand {
 
       console.log('📁 Available Files:');
       console.log('─'.repeat(60));
-      
-      files.forEach(file => {
+
+      files.forEach((file) => {
         const icon = file.exists ? '✅' : '❌';
         const size = file.exists ? `(${file.size} bytes)` : '(missing)';
-        const modified = file.exists && file.lastModified ? 
-          file.lastModified.toISOString().split('T')[0] : '';
-        
-        console.log(`${icon} ${file.name.padEnd(20)} ${size.padEnd(15)} ${modified}`);
+        const modified =
+          file.exists && file.lastModified
+            ? file.lastModified.toISOString().split('T')[0]
+            : '';
+
+        console.log(
+          `${icon} ${file.name.padEnd(20)} ${size.padEnd(15)} ${modified}`
+        );
       });
 
-      console.log('\n💡 Use `shelly memory show <filename>` to view file contents');
-      
+      console.log(
+        '\n💡 Use `shelly memory show <filename>` to view file contents'
+      );
     } catch (error) {
       console.log('❌ Error listing Memory Bank files:', error.message);
     }

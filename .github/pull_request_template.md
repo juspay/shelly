@@ -42,25 +42,29 @@ Please link any related issues here:
 Please provide a detailed list of changes:
 
 ### Code Changes
-- 
-- 
-- 
+
+-
+-
+-
 
 ### Documentation Changes
-- 
-- 
-- 
+
+-
+-
+-
 
 ### Configuration/Infrastructure Changes
-- 
-- 
-- 
+
+-
+-
+-
 
 ## Testing
 
 Please describe the tests you ran to verify your changes:
 
 ### Core Functionality Testing
+
 - [ ] **Error Analysis**: Manual CLI testing with `shelly` command
 - [ ] **Repository Organization**: Tested `shelly organize` with different project types
 - [ ] **Memory Bank**: Tested `shelly memory` commands (init, update, show, status, list)
@@ -68,17 +72,20 @@ Please describe the tests you ran to verify your changes:
 - [ ] **Status Checking**: Tested `shelly status` command
 
 ### Cross-Platform Testing
+
 - [ ] **Shell Compatibility**: Tested across different shell environments (bash, zsh, tcsh)
 - [ ] **Operating Systems**: Tested on macOS and/or Linux
 - [ ] **Node.js Versions**: Tested with supported Node.js versions (≥18.0.0)
 
 ### AI Integration Testing
+
 - [ ] **Google AI Studio**: Tested with free tier AI integration
 - [ ] **Vertex AI**: Tested with enterprise AI integration (if applicable)
 - [ ] **Neurolink**: Tested AI content generation features
 - [ ] **Error Analysis**: Verified AI-powered command suggestions
 
 ### Feature-Specific Testing
+
 - [ ] **Template Generation**: Tested file and content generation
 - [ ] **GitHub Integration**: Tested workflow and template creation
 - [ ] **File Organization**: Tested smart file movement and classification
@@ -121,11 +128,13 @@ SHELLY_DEBUG=true shelly [command]
 If your changes affect the CLI output or user interface, please include screenshots or output examples.
 
 ### Before
+
 ```
 [paste output before your changes]
 ```
 
 ### After
+
 ```
 [paste output after your changes]
 ```
@@ -133,12 +142,14 @@ If your changes affect the CLI output or user interface, please include screensh
 ## Environment Details
 
 **Development Environment:**
+
 - **OS**: [e.g., macOS 13.5, Ubuntu 22.04, Windows 11]
 - **Node.js version**: [e.g., 18.17.0]
 - **Shell**: [e.g., zsh 5.8, bash 5.1, tcsh 6.22]
 - **Package Manager**: [e.g., npm 9.8.1, yarn 1.22.19]
 
 **AI Integration:**
+
 - [ ] Google AI Studio configured
 - [ ] Vertex AI configured
 - [ ] Environment variables set properly
@@ -146,6 +157,7 @@ If your changes affect the CLI output or user interface, please include screensh
 ## Checklist
 
 ### Code Quality
+
 - [ ] My code follows the project's coding standards
 - [ ] I have performed a self-review of my code
 - [ ] I have commented my code, particularly in hard-to-understand areas
@@ -153,12 +165,14 @@ If your changes affect the CLI output or user interface, please include screensh
 - [ ] I have checked my code and corrected any misspellings
 
 ### Testing
+
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] I have tested the changes across multiple environments
 - [ ] All existing functionality still works as expected
 
 ### Documentation
+
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have updated the README.md if necessary
 - [ ] I have updated API documentation if applicable
@@ -166,11 +180,13 @@ If your changes affect the CLI output or user interface, please include screensh
 - [ ] I have updated relevant docs/ files
 
 ### Version Control
+
 - [ ] My commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/) format
 - [ ] Any dependent changes have been merged and published in downstream modules
 - [ ] I have rebased/merged the latest main branch
 
 ### Features Validation
+
 - [ ] **Error Analysis**: Shell integration working properly
 - [ ] **Repository Organization**: Project scaffolding functions correctly
 - [ ] **Memory Bank**: AI context management operational
@@ -192,15 +208,19 @@ If this PR affects project context or architecture:
 If this PR introduces breaking changes, please describe them here:
 
 ### API Changes
-- 
+
+-
 
 ### Configuration Changes
-- 
+
+-
 
 ### Behavior Changes
-- 
+
+-
 
 ### Migration Guide
+
 Provide instructions for users to migrate from the previous version:
 
 ```bash
@@ -210,15 +230,19 @@ Provide instructions for users to migrate from the previous version:
 ## Additional Notes
 
 ### Performance Impact
+
 Describe any performance implications of your changes.
 
 ### Security Considerations
+
 Note any security implications or improvements.
 
 ### Future Work
+
 Mention any follow-up work or related improvements that could be made.
 
 ### Community Impact
+
 How does this change affect the user experience or community adoption?
 
 ## Reviewers

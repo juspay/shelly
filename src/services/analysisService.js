@@ -38,8 +38,8 @@ export async function analyzeError(output, history, exitCode) {
   try {
     const result = await neurolink.generate({
       input: { text: prompt },
-      provider: "googlevertex",
-      model: "gemini-2.5-flash",
+      provider: 'googlevertex',
+      model: 'gemini-2.5-flash',
     });
     return result.content;
   } catch (e) {
@@ -60,8 +60,8 @@ export async function suggestCorrections(command) {
   try {
     const result = await neurolink.generate({
       input: { text: prompt },
-      provider: "googlevertex",
-      model: "gemini-2.5-flash",
+      provider: 'googlevertex',
+      model: 'gemini-2.5-flash',
     });
     const suggestions = result.content
       .trim()

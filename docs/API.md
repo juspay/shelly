@@ -9,10 +9,10 @@ Shelly provides both command-line interfaces and programmatic APIs for AI-powere
 ## Command Line Interface (CLI)
 
 > **Important:** Shelly uses a dual CLI architecture with two distinct usage modes:
-> 
+>
 > 1. **Error Analysis Mode:** `shelly` (no arguments) - Analyzes the last failed command from your shell history
 > 2. **Repository Management Mode:** `shelly <command>` - Uses specific commands like `organize`, `memory`, `init`, `status`
-> 
+>
 > **These modes are handled by different internal systems and work completely differently.**
 
 ### Error Analysis Commands
@@ -106,6 +106,41 @@ shelly memory show projectbrief.md
 shelly memory show current/activeContext.md
 ```
 
+### GitHub Repository Setup Commands
+
+#### GitHub Configuration Management
+
+```bash
+# Full GitHub setup commands
+shelly github setup                    # Interactive setup with confirmation
+shelly github setup --force           # Skip confirmation prompts
+shelly github setup --dry-run         # Preview changes without applying
+shelly github setup --directory /path # Setup specific repository
+
+# Shortcut commands (same functionality)
+shelly gh                              # Shortcut for github setup
+shelly gh --force                      # Quick forced setup
+shelly gh --dry-run                    # Quick dry run
+
+# Complete repository setup (GitHub + organize)
+shelly setup                           # Run both GitHub setup AND organize
+shelly setup --force                   # Skip all confirmations
+shelly setup --github-only            # Only GitHub setup, skip organize
+shelly setup --organize-only          # Only organize, skip GitHub setup
+```
+
+#### GitHub Setup Prerequisites
+
+```bash
+# Required environment variable
+export GITHUB_TOKEN=your_token_here
+
+# Required scopes for classic tokens:
+# - repo (full control of private repositories)
+# - admin:repo_hook (admin access to repository hooks)
+# - write:packages (write packages to GitHub Package Registry)
+```
+
 ## Programmatic API
 
 ### Core Services
@@ -113,13 +148,16 @@ shelly memory show current/activeContext.md
 #### Analysis Service
 
 ```javascript
-import { analyzeError, suggestCorrections } from './src/services/analysisService.js';
+import {
+  analyzeError,
+  suggestCorrections,
+} from './src/services/analysisService.js';
 
 // Analyze command error
 const analysis = await analyzeError(
-  errorOutput,    // stderr or stdout
+  errorOutput, // stderr or stdout
   commandHistory, // array of previous commands
-  exitCode       // command exit code
+  exitCode // command exit code
 );
 
 // Get command suggestions
@@ -129,10 +167,10 @@ await suggestCorrections(failedCommand);
 #### History Service
 
 ```javascript
-import { 
+import {
   getLastCommandFromShellHistory,
   getCommandHistory,
-  appendCommandToHistory 
+  appendCommandToHistory,
 } from './src/services/historyService.js';
 
 // Get last command from shell
@@ -165,7 +203,7 @@ const organizer = new OrganizeCommand({
   force: false,
   update: true,
   move: false,
-  cwd: '/path/to/project'
+  cwd: '/path/to/project',
 });
 
 await organizer.execute();
@@ -177,10 +215,9 @@ await organizer.execute();
 import { memoryBankService } from './src/shelly/services/memoryBankService.js';
 
 // Initialize Memory Bank
-const results = await memoryBankService.initializeMemoryBank(
-  packageInfo, 
-  { force: false }
-);
+const results = await memoryBankService.initializeMemoryBank(packageInfo, {
+  force: false,
+});
 
 // Update Memory Bank
 await memoryBankService.updateMemoryBank(fileName, packageInfo);
@@ -193,6 +230,35 @@ const status = await memoryBankService.getMemoryBankStatus();
 
 // List Memory Bank files
 const files = await memoryBankService.listMemoryBankFiles();
+```
+
+#### GitHub Service
+
+```javascript
+import { GitHubService } from './src/shelly/services/githubService.js';
+
+const githubService = new GitHubService();
+
+// Update repository settings
+await githubService.updateRepositorySettings(owner, repo);
+
+// Create branch protection ruleset
+await githubService.createBranchProtectionRuleset(owner, repo, 'release');
+
+// Setup GitHub Pages
+await githubService.setupGitHubPages(owner, repo);
+
+// Configure GitHub Actions permissions
+await githubService.configureActionsPermissions(owner, repo);
+
+// Check NPM token setup
+const hasToken = await githubService.checkNpmTokenSetup(owner, repo);
+
+// Complete GitHub setup
+const result = await githubService.setupRepository(owner, repo, {
+  dryRun: false,
+  skipConfirmation: true,
+});
 ```
 
 ### AI Content Generation
@@ -275,6 +341,9 @@ export GOOGLE_CLOUD_PROJECT="your-project-id"        # Vertex AI (enterprise)
 export GOOGLE_CLOUD_REGION="us-east5"                # Vertex AI region
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
 
+# GitHub Integration
+export GITHUB_TOKEN="your-github-token"              # GitHub API access token
+
 # Debug Options
 export SHELLY_DEBUG=true                             # Enable debug logging
 export SHELL_OVERRIDE=bash                           # Force shell detection
@@ -335,7 +404,9 @@ trap 'shelly' ERR
 // Memory Bank provides context automatically
 
 // Custom AI integration
-const memoryBank = await memoryBankService.readMemoryBankFile('current/activeContext.md');
+const memoryBank = await memoryBankService.readMemoryBankFile(
+  'current/activeContext.md'
+);
 // Use memoryBank content as context for AI prompts
 ```
 
@@ -373,16 +444,16 @@ import { memoryBankService } from '@juspay/shelly/src/shelly/services/memoryBank
 
 async function setupProject(projectPath) {
   // Organize repository
-  const organizer = new OrganizeCommand({ 
+  const organizer = new OrganizeCommand({
     cwd: projectPath,
-    update: true 
+    update: true,
   });
   await organizer.execute();
-  
+
   // Initialize Memory Bank
   const analysis = await memoryBankService.analyzeRepository(projectPath);
   await memoryBankService.initializeMemoryBank(analysis);
-  
+
   console.log('Project setup complete!');
 }
 ```
@@ -394,12 +465,12 @@ import { analyzeError } from '@juspay/shelly/src/services/analysisService.js';
 
 async function analyzeCustomError(command, error, history = []) {
   const analysis = await analyzeError(error, history, 1);
-  
+
   return {
     command,
     error,
     analysis,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }
 ```

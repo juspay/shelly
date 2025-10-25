@@ -5,6 +5,7 @@ Welcome to Shelly! This comprehensive guide will get you up and running with AI-
 ## 🚀 What is Shelly?
 
 Shelly is a multi-purpose AI-powered CLI tool that provides:
+
 - **🔍 Error Analysis**: Intelligent debugging for failed commands
 - **🏗️ Repository Organization**: Complete project scaffolding and enhancement
 - **🧠 Memory Bank**: AI-assisted development context management
@@ -89,10 +90,10 @@ Restart your terminal after setting environment variables.
 ## 4. Understanding Shelly's Two Modes
 
 > **Important:** Shelly uses a dual CLI architecture with two distinct usage modes:
-> 
+>
 > 1. **Error Analysis Mode:** `shelly` (no arguments) - Analyzes the last failed command from your shell history
 > 2. **Repository Management Mode:** `shelly <command>` - Uses specific commands like `organize`, `memory`, `init`, `status`
-> 
+>
 > **These are completely different tools with different purposes!**
 
 ## 5. Quick Feature Tour
@@ -143,6 +144,32 @@ shelly memory status
 shelly memory show projectbrief.md
 ```
 
+### 🚀 GitHub Repository Setup
+
+Configure your GitHub repository with best practices for publishing and collaboration:
+
+```bash
+# Set up your GitHub token first
+export GITHUB_TOKEN=your_token_here
+
+# Quick GitHub setup (shortcut)
+shelly gh --force
+
+# Or use the full command
+shelly github setup
+
+# Complete setup (GitHub + organize)
+shelly setup --force
+```
+
+**What this configures:**
+
+- Repository merge settings (rebase-only workflow)
+- Branch protection rules for main branch
+- GitHub Pages for documentation
+- NPM token guidance for publishing
+- GitHub Actions workflow permissions
+
 ## 5. Common Workflows
 
 ### New Project Setup
@@ -151,7 +178,12 @@ shelly memory show projectbrief.md
 # Create and organize a new project
 mkdir my-project && cd my-project
 npm init -y
-shelly organize
+git init
+git remote add origin https://github.com/username/my-project.git
+
+# Complete setup (GitHub + organize + memory)
+export GITHUB_TOKEN=your_token_here
+shelly setup --force
 shelly memory init
 
 # Check everything is set up
@@ -168,8 +200,32 @@ cd existing-project
 shelly organize --update  # Preserve existing files
 shelly memory init
 
+# Add GitHub best practices (if needed)
+export GITHUB_TOKEN=your_token_here
+shelly gh --dry-run  # Preview first
+shelly gh --force    # Apply settings
+
 # Move misplaced files (optional)
 shelly organize --move
+```
+
+### Publishing-Ready Repository Setup
+
+```bash
+# Transform any repository into a professional, publishing-ready project
+cd your-repository
+
+# Complete transformation
+export GITHUB_TOKEN=your_token_here
+shelly setup --force  # GitHub setup + organize
+shelly memory init     # AI context
+
+# Result: Professional repository with:
+# - Branch protection rules
+# - GitHub Pages setup
+# - NPM publishing guidance
+# - Complete project structure
+# - AI-assisted development context
 ```
 
 ### Daily Development

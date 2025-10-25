@@ -5,6 +5,7 @@ An intelligent CLI assistant that analyzes your command-line history to provide 
 ## Features
 
 ### 🔍 Core Error Analysis
+
 - **Smart Error Analysis**: Uses AI to analyze command failures and suggest fixes
 - **Multi-Shell Support**: Works with bash, zsh, tcsh
 - **Real-time History Access**: Reliably gets the last command from your shell
@@ -12,13 +13,16 @@ An intelligent CLI assistant that analyzes your command-line history to provide 
 - **Cross-Platform**: macOS and Linux support
 
 ### 🏗️ Repository Organization
+
 - **AI-Powered Scaffolding**: Complete project structure generation
 - **GitHub Integration**: Automated templates, workflows, and issue templates
+- **Repository Setup**: Automated GitHub repository configuration with best practices
 - **Package Enhancement**: Automatic @juspay/ prefix and metadata optimization
 - **File Organization**: Smart file placement and cleanup with `--move` option
 - **Configuration Setup**: ESLint, Prettier, Commitlint, and more
 
 ### 🧠 Memory Bank System
+
 - **AI Context Management**: Persistent project context for AI assistants
 - **Organized Documentation**: Structured project knowledge base
 - **Neurolink Integration**: Advanced AI content generation
@@ -53,10 +57,10 @@ git clone https://github.com/juspay/shelly.git
 ## Usage
 
 > **Important:** Shelly uses a dual CLI architecture with two distinct usage modes:
-> 
+>
 > 1. **Error Analysis Mode:** `shelly` (no arguments) - Analyzes the last failed command from your shell history
 > 2. **Repository Management Mode:** `shelly <command>` - Uses specific commands like `organize`, `memory`, `init`, `status`
-> 
+>
 > These are handled by different internal systems, so the commands work differently.
 
 ### 🔍 Error Analysis (Core Feature)
@@ -139,6 +143,46 @@ shelly memory update
 shelly memory update --file progress.md
 ```
 
+### 🚀 GitHub Repository Setup
+
+Configure your GitHub repository with industry best practices for publishing and collaboration:
+
+```bash
+# Full GitHub setup commands
+shelly github setup                    # Interactive setup with confirmation
+shelly github setup --force           # Skip confirmation prompts
+shelly github setup --dry-run         # Preview changes without applying
+shelly github setup --directory /path # Setup specific repository
+
+# Shortcut commands (same functionality)
+shelly gh                              # Shortcut for github setup
+shelly gh --force                      # Quick forced setup
+shelly gh --dry-run                    # Quick dry run
+
+# Complete repository setup (GitHub + organize)
+shelly setup                           # Run both GitHub setup AND organize
+shelly setup --force                   # Skip all confirmations
+shelly setup --github-only            # Only GitHub setup, skip organize
+shelly setup --organize-only          # Only organize, skip GitHub setup
+```
+
+**Prerequisites:**
+
+- Set your GitHub token: `export GITHUB_TOKEN=your_token_here`
+- Admin access to the target repository
+- Repository must be a Git repository with GitHub remote
+- Required scopes: `repo`, `admin:repo_hook`, `write:packages` (for classic tokens)
+
+**What it configures:**
+
+- ✅ Repository merge settings (disable merge commits, disable squash merge, allow rebase only)
+- ✅ Branch management (auto-delete branches, suggest PR updates, disable auto-merge)
+- ✅ Branch protection ruleset "release" (restrict deletions, require linear history, require PR, block force pushes)
+- ✅ GitHub Copilot code review (if available)
+- ✅ GitHub Actions workflow permissions and fork PR approval settings
+- ✅ NPM token setup guidance for automated publishing
+- ✅ GitHub Pages configuration with docs folder structure
+
 ### 🔧 Advanced Error Analysis Options
 
 #### Debug Mode
@@ -209,10 +253,12 @@ SHELL_OVERRIDE=bash shelly
 
 - **Smart Scaffolding**: Creates complete project structure with industry best practices
 - **GitHub Templates**: Automated issue templates, PR templates, and workflow setup
+- **Repository Configuration**: Automated GitHub settings for merge policies, branch protection, and publishing
 - **Configuration Management**: ESLint, Prettier, Commitlint, and semantic-release setup
 - **Package Optimization**: Enhances package.json with @juspay/ scoping and metadata
 - **File Classification**: Intelligent file organization with `--move` option
 - **Project Templates**: Support for different project types (React, TypeScript, CLI tools)
+- **GitHub Pages Setup**: Automated documentation site configuration
 
 ### 🧠 Memory Bank System
 
@@ -284,6 +330,53 @@ SHELLY_DEBUG=true shelly
 ```
 
 ## Quick Reference
+
+### Command Summary
+
+**Error Analysis:**
+
+```bash
+shelly                    # Analyze last failed command
+shelly "command"          # Analyze specific command
+```
+
+**Repository Organization:**
+
+```bash
+shelly organize           # Organize repository structure
+shelly organize --force   # Overwrite existing files
+shelly organize --update  # Only add missing files
+shelly status            # Check organization status
+```
+
+**GitHub Setup:**
+
+```bash
+shelly gh                 # Quick GitHub setup (shortcut)
+shelly github setup       # Full GitHub setup
+shelly gh --dry-run       # Preview changes
+```
+
+**Complete Setup:**
+
+```bash
+shelly setup              # GitHub setup + organize
+shelly setup --force      # Skip all confirmations
+```
+
+**Memory Bank:**
+
+```bash
+shelly memory init        # Initialize project memory
+shelly memory status      # Check memory status
+shelly memory update      # Update all memory files
+```
+
+**Project Initialization:**
+
+```bash
+shelly init project-name  # Create new project
+```
 
 ### One-Time Setup Commands
 

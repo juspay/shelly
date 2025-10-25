@@ -3,9 +3,11 @@
 ## Required Videos
 
 ### 1. project-organization.mp4/.webm
+
 **Duration**: 60-75 seconds
 **Purpose**: Show complete project scaffolding transformation
 **Script**:
+
 ```bash
 # Scene 1: Messy project state (10s)
 $ ls
@@ -67,15 +69,18 @@ $ shelly status
 ```
 
 **Narration Script**:
+
 - "Transform any messy project into a professional repository"
 - "Shelly organizes files and generates industry-standard templates"
 - "Complete GitHub integration with workflows and issue templates"
 - "Professional project structure in seconds"
 
 ### 2. github-integration.mp4/.webm
+
 **Duration**: 45-60 seconds
 **Purpose**: Focus on GitHub templates and CI/CD setup
 **Script**:
+
 ```bash
 # Scene 1: Project without GitHub integration (8s)
 $ ls .github/
@@ -116,15 +121,18 @@ jobs:
 ```
 
 **Narration Script**:
+
 - "Automatic GitHub integration with professional templates"
 - "Issue templates, PR templates, and CI/CD workflows"
 - "Production-ready GitHub Actions configuration"
 - "Professional open-source project setup"
 
 ### 3. package-enhancement.mp4/.webm
+
 **Duration**: 50-65 seconds
 **Purpose**: Show package.json enhancement and metadata optimization
 **Script**:
+
 ```bash
 # Scene 1: Basic package.json (10s)
 $ cat package.json
@@ -179,6 +187,7 @@ Available scripts:
 ```
 
 **Narration Script**:
+
 - "Automatic package.json enhancement with @juspay/ scoping"
 - "Professional metadata, scripts, and repository information"
 - "Industry-standard npm scripts for development workflow"
@@ -187,12 +196,14 @@ Available scripts:
 ## Video Production Guidelines
 
 ### Technical Specifications
+
 - **Resolution**: 1080p minimum, 1440p preferred for file trees
 - **Frame Rate**: 30fps (sufficient for file/text operations)
 - **Duration**: Keep under 90 seconds for attention span
 - **Formats**: MP4 and WebM for broad compatibility
 
 ### Visual Presentation
+
 - **Split Screen**: Before/after comparisons where helpful
 - **File Explorer**: Use clean file manager views (VS Code, Finder)
 - **Text Highlighting**: Highlight key changes and improvements
@@ -201,6 +212,7 @@ Available scripts:
 ### Content Focus Areas
 
 #### Directory Structure Visualization
+
 ```bash
 # Before (messy)
 project/
@@ -227,6 +239,7 @@ project/
 ```
 
 #### Package.json Enhancement Points
+
 - **Scoping**: `my-project` → `@juspay/my-project`
 - **Scripts**: Basic → Comprehensive development scripts
 - **Metadata**: Empty → Rich project information
@@ -236,6 +249,7 @@ project/
 ### Recording Scenarios
 
 #### Scenario 1: Empty Project Bootstrap
+
 ```bash
 $ npm init -y
 $ shelly organize
@@ -243,6 +257,7 @@ $ shelly organize
 ```
 
 #### Scenario 2: Legacy Project Modernization
+
 ```bash
 # Start with old-style project
 $ ls
@@ -252,6 +267,7 @@ $ shelly organize
 ```
 
 #### Scenario 3: Multi-Type Project Support
+
 ```bash
 # React project
 $ npx create-react-app my-app
@@ -267,6 +283,7 @@ $ npm init -y && shelly organize
 ```
 
 ### Quality Checkpoints
+
 - **File Operations**: Show actual file creation, not simulated
 - **Real Content**: Display actual generated content, not placeholders
 - **Performance**: Demonstrate realistic organization timing

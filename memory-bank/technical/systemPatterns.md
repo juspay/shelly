@@ -38,30 +38,35 @@ Shelly employs a sophisticated dual CLI architecture that supports three primary
 ## **Design Patterns Implementation**
 
 ### **🎯 Command Pattern (Enhanced)**
+
 - **Primary CLI Commands**: Error analysis with shell integration
 - **Secondary CLI Commands**: Repository organization, Memory Bank management
 - **Commander.js Integration**: Professional argument parsing and validation
 - **Command Composition**: Complex operations built from atomic commands
 
 ### **📋 Strategy Pattern (Multi-layered)**
+
 - **AI Provider Strategy**: Google AI Studio vs. Vertex AI selection
 - **Shell Detection Strategy**: bash/zsh/tcsh identification and integration
 - **Content Generation Strategy**: Template-based vs. AI-generated content
 - **File Organization Strategy**: Rule-based file classification and placement
 
 ### **👁️ Observer Pattern (Extended)**
+
 - **Shell History Monitoring**: Real-time command execution tracking
 - **File System Watching**: Repository change detection
 - **Memory Bank Updates**: Context synchronization triggers
 - **AI Service Health**: Provider availability monitoring
 
 ### **🏭 Factory Pattern (Comprehensive)**
+
 - **Service Factory**: Dynamic service instantiation and dependency injection
 - **Template Factory**: Context-aware template selection and instantiation
 - **Command Factory**: CLI command creation with proper error handling
 - **Content Factory**: AI-powered content generation with fallback strategies
 
 ### **🔗 Adapter Pattern (Multi-shell)**
+
 - **Shell Adapters**: Unified interface for bash, zsh, tcsh interactions
 - **AI Provider Adapters**: Consistent interface across different AI services
 - **Template Adapters**: Format conversion for different project types
@@ -111,6 +116,9 @@ Shelly employs a sophisticated dual CLI architecture that supports three primary
 │  ┌─────────────────┐ ┌─────────────────┐ ┌───────────────────┐ │
 │  │ Template System │ │ GitHub          │ │ Configuration     │ │
 │  │ Content Gen     │ │ Integration     │ │ Management        │ │
+│  │                 │ │ • Repo Settings │ │ • ESLint/Prettier │ │
+│  │                 │ │ • Branch Protect│ │ • Commit Rules    │ │
+│  │                 │ │ • Actions Config│ │ • Semantic Release│ │
 │  └─────────────────┘ └─────────────────┘ └───────────────────┘ │
 ├─────────────────────────────────────────────────────────────────┤
 │  File Organization                                              │
@@ -179,6 +187,12 @@ Directory Structure Creation
 Template-based File Generation
          ↓
 GitHub Integration Setup
+         ↓
+Advanced GitHub Configuration
+  • Repository pull request settings
+  • Branch protection rulesets
+  • GitHub Actions permissions
+  • GitHub Pages setup
          ↓
 Configuration Management
          ↓
