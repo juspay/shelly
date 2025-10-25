@@ -30,7 +30,7 @@ repository:
   has_wiki: false
   has_pages: true
   has_downloads: true
-  default_branch: release
+  default_branch: main
 
   # Repository settings
   allow_squash_merge: true
@@ -141,7 +141,7 @@ labels:
 
 # Branch protection rules
 branches:
-  - name: release
+  - name: main
     protection:
       required_status_checks:
         strict: true
