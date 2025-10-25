@@ -197,7 +197,9 @@ export class GitHubSetupCommand {
       console.log('   📋 Applied rules:');
       console.log('      • Restrict deletions');
       console.log('      • Require linear history');
-      console.log('      • Require pull request before merging (1 approval required)');
+      console.log(
+        '      • Require pull request before merging (1 approval required)'
+      );
       console.log('      • Block force pushes');
     } catch (error) {
       if (error.message.includes('already exists')) {
@@ -281,7 +283,9 @@ export class GitHubSetupCommand {
       console.log(
         `      1. Go to: https://github.com/${owner}/${repo}/settings/pages`
       );
-      console.log(`      2. Source: Deploy from a branch → ${defaultBranch} → /docs`);
+      console.log(
+        `      2. Source: Deploy from a branch → ${defaultBranch} → /docs`
+      );
       console.log(
         '      3. Or set Build and deployment source to "GitHub Actions"'
       );
