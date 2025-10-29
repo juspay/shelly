@@ -346,7 +346,7 @@ jobs:
           echo "🧠 Updating Memory Bank with latest documentation state..."
 
           # Update Memory Bank to reflect current documentation state
-          node src/shelly/cli.js memory update --file current/activeContext.md || true
+          node dist/shelly/cli.js memory update --file current/activeContext.md || true
 
           # Check if there are changes to commit
           git config --local user.email "action@github.com"

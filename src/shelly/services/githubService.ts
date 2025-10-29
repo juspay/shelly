@@ -2,8 +2,22 @@ import { Octokit } from '@octokit/rest';
 import fs from 'fs/promises';
 import path from 'path';
 
+interface GitRemoteConfig {
+  [remoteName: string]: {
+    url?: string;
+    fetch?: string;
+  };
+}
+
+interface GitConfig {
+  remote: GitRemoteConfig;
+  [section: string]: any;
+}
+
 export class GitHubService {
-  constructor(token) {
+  octokit: Octokit;
+
+  constructor(token: string) {
     if (!token) {
       throw new Error(
         'GitHub token is required. Please set GITHUB_TOKEN environment variable.'
@@ -40,7 +54,7 @@ export class GitHubService {
   /**
    * Parse git config to get remote URL
    */
-  async parseGitConfig(cwd) {
+  async parseGitConfig(cwd: string): Promise<GitConfig> {
     try {
       const gitConfigPath = path.join(cwd, '.git', 'config');
       const gitConfig = await fs.readFile(gitConfigPath, 'utf8');
@@ -141,8 +155,8 @@ export class GitHubService {
     try {
       const rulesetData = {
         name: `${defaultBranch}-protection`,
-        target: 'branch',
-        enforcement: 'active',
+        target: 'branch' as const,
+        enforcement: 'active' as const,
         conditions: {
           ref_name: {
             include: [`refs/heads/${defaultBranch}`],
@@ -151,13 +165,13 @@ export class GitHubService {
         },
         rules: [
           {
-            type: 'deletion',
+            type: 'deletion' as const,
           },
           {
-            type: 'required_linear_history',
+            type: 'required_linear_history' as const,
           },
           {
-            type: 'pull_request',
+            type: 'pull_request' as const,
             parameters: {
               required_approving_review_count: 1,
               dismiss_stale_reviews_on_push: false,
@@ -167,15 +181,15 @@ export class GitHubService {
             },
           },
           {
-            type: 'non_fast_forward',
+            type: 'non_fast_forward' as const,
           },
         ],
       };
 
       // Attempt to add GitHub Copilot code review rule (will be ignored if not available)
       try {
-        rulesetData.rules.push({
-          type: 'copilot_code_review',
+        (rulesetData.rules as any).push({
+          type: 'copilot_code_review' as const,
         });
         console.log(
           'ℹ️  GitHub Copilot code review rule added (will be active if Copilot is available)'
@@ -438,7 +452,11 @@ You can write documentation in:
         repo,
       });
 
-      const permissions = response.data.permissions || {};
+      const permissions = response.data.permissions || {
+        admin: false,
+        push: false,
+        pull: false,
+      };
 
       return {
         admin: permissions.admin || false,

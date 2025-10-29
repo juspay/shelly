@@ -110,18 +110,18 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: 🏗️ Build package
+        run: npm run build
+
       - name: 💅 Check formatting
         run: npm run format:check
-
-      - name: 🏗️ Build package
-        run: npm run build --if-present
 
       - name: 🧪 Test Basic CLI
         shell: bash
         run: |
           # Test basic functionality only
-          node src/shelly/cli.js --version
-          node src/shelly/cli.js --help
+          node dist/shelly/cli.js --version
+          node dist/shelly/cli.js --help
 
   release:
     name: Semantic Release
@@ -153,7 +153,7 @@ jobs:
         run: npm install
 
       - name: 🏗️ Build package
-        run: npm run build --if-present
+        run: npm run build
 
       - name: 🔍 Final validation
         run: |
@@ -161,14 +161,14 @@ jobs:
           npm pack --dry-run
 
           # Test CLI commands work
-          node src/main.js --version
-          node src/shelly/cli.js --help
+          node dist/main.js --version
+          node dist/shelly/cli.js --help
 
       - name: 📊 Update Memory Bank for release
         run: |
           # Update Memory Bank with release information
           echo "Updating Memory Bank with release context..."
-          node src/shelly/cli.js memory update --file progress.md || true
+          node dist/shelly/cli.js memory update --file progress.md || true
         continue-on-error: true
 
       - name: 🚀 Semantic Release
@@ -207,10 +207,13 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: 🏗️ Build package
+        run: npm run build
+
       - name: 📊 Update project documentation
         run: |
           # Update Memory Bank with latest release information
-          node src/shelly/cli.js memory update || true
+          node dist/shelly/cli.js memory update || true
 
           # Commit any Memory Bank updates
           git config --local user.email "action@github.com"

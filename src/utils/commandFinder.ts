@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-export function getAvailableCommands() {
-  const paths = process.env.PATH.split(path.delimiter);
-  const commands = new Set();
+export function getAvailableCommands(): string[] {
+  const paths = (process.env.PATH || '').split(path.delimiter);
+  const commands = new Set<string>();
   for (const dir of paths) {
     if (!fs.existsSync(dir)) continue;
     try {

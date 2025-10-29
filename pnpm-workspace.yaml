@@ -1,0 +1,4 @@
+ignoredBuiltDependencies:
+  - node-pty
+  - protobufjs
+  - sqlite3

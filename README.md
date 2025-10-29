@@ -278,6 +278,8 @@ SHELL_OVERRIDE=bash shelly
 
 ## Troubleshooting
 
+> **📚 Detailed Troubleshooting Guide:** For comprehensive installation and runtime troubleshooting, including native module build issues, see the [Complete Troubleshooting Guide](docs/TROUBLESHOOTING.md).
+
 ### Common Issues
 
 #### "Could not retrieve the last command from history"

@@ -1,9 +1,20 @@
 import { generateText } from '@juspay/neurolink';
+import { EventEmitter } from 'events';
 
 export class AIContentGenerator {
+  generateOptions: {
+    provider: 'googlevertex';
+    model: string;
+    project: string;
+    region: string;
+  };
+
   constructor() {
+    // Increase max listeners to handle multiple concurrent AI generations
+    // Memory Bank generation requires 6+ concurrent calls
+    process.setMaxListeners(20);
     this.generateOptions = {
-      provider: 'googlevertex',
+      provider: 'googlevertex' as any,
       model: 'gemini-2.0-flash-exp',
       project: 'dev-ai-gamma',
       region: 'us-east5',
@@ -46,7 +57,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2500,
         temperature: 0.7,
         ...this.generateOptions,
-      });
+      } as any);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackReadme(packageInfo);
@@ -92,7 +103,7 @@ Start the response directly with the # title line.`;
         maxTokens: 1200,
         temperature: 0.6,
         ...this.generateOptions,
-      });
+      } as any);
 
       return response.content || this.getFallbackContributing(packageInfo);
     } catch (error) {
@@ -291,7 +302,7 @@ Return only the description text, no additional formatting.`;
         maxTokens: 100,
         temperature: 0.5,
         ...this.generateOptions,
-      });
+      } as any);
 
       return (
         response.content?.trim() ||
@@ -317,15 +328,15 @@ Return only the description text, no additional formatting.`;
         maxTokens: 50,
         temperature: 0.4,
         ...this.generateOptions,
-      });
+      } as any);
 
       const keywords =
         response.content?.split(',').map((k) => k.trim().toLowerCase()) || [];
       return keywords.length > 0
         ? keywords
-        : this.getDefaultKeywords(packageInfo);
+        : this.getDefaultKeywords(packageInfo, repoName);
     } catch (error) {
-      return this.getDefaultKeywords(packageInfo);
+      return this.getDefaultKeywords(packageInfo, repoName);
     }
   }
 
@@ -528,7 +539,7 @@ Examples: "cli, command-line, typescript, react, api, testing, automation, devel
         maxTokens: 80,
         temperature: 0.3,
         ...this.generateOptions,
-      });
+      } as any);
 
       if (response.content) {
         const keywords = response.content
@@ -786,7 +797,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2000,
         temperature: 0.6,
         ...this.generateOptions,
-      });
+      } as any);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProjectBrief(packageInfo);
@@ -830,7 +841,7 @@ Start the response directly with the # title line.`;
         maxTokens: 1800,
         temperature: 0.6,
         ...this.generateOptions,
-      });
+      } as any);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProductContext(packageInfo);
@@ -877,7 +888,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2000,
         temperature: 0.5,
         ...this.generateOptions,
-      });
+      } as any);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackSystemPatterns(packageInfo);
@@ -923,7 +934,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2000,
         temperature: 0.5,
         ...this.generateOptions,
-      });
+      } as any);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackTechContext(packageInfo);
@@ -971,7 +982,7 @@ Start the response directly with the # title line.`;
         maxTokens: 1800,
         temperature: 0.7,
         ...this.generateOptions,
-      });
+      } as any);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackActiveContext(packageInfo);
@@ -1018,7 +1029,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2200,
         temperature: 0.6,
         ...this.generateOptions,
-      });
+      } as any);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProgress(packageInfo);

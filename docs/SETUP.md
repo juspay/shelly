@@ -10,9 +10,68 @@ Shelly is a command-line tool designed to intercept errors from your last execut
 
 ## 2. Prerequisites
 
-- **Node.js** (version 12 or higher): Download from [nodejs.org](https://nodejs.org/)
-- **npm**: Comes bundled with Node.js
-- A supported shell
+### Required Software
+
+- **Node.js** (version 18.0.0 or higher): Download from [nodejs.org](https://nodejs.org/)
+- **npm** or **pnpm**: Package manager (comes bundled with Node.js)
+- A supported shell (bash, zsh, tcsh, or fish)
+
+### Build Tools (Required for Native Modules)
+
+Shelly depends on native Node.js modules (like `node-pty`) that need to be compiled for your system. You'll need:
+
+**macOS:**
+
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+
+# Install Python setuptools (required for Python 3.12+)
+python3 -m pip install setuptools
+
+# Verify installations
+xcode-select -p
+python3 --version
+which make gcc g++
+```
+
+**Linux (Ubuntu/Debian):**
+
+```bash
+# Install build essentials
+sudo apt-get update
+sudo apt-get install -y build-essential python3 python3-pip
+
+# Install Python setuptools
+python3 -m pip install setuptools
+
+# Verify installations
+which make gcc g++
+python3 --version
+```
+
+**Linux (RedHat/CentOS/Fedora):**
+
+```bash
+# Install development tools
+sudo yum groupinstall "Development Tools"
+sudo yum install -y python3 python3-pip
+
+# Install Python setuptools
+python3 -m pip install setuptools
+
+# Verify installations
+which make gcc g++
+python3 --version
+```
+
+> **💡 Important for pnpm users:** If using pnpm, ensure build scripts are enabled by creating a `.npmrc` file in the project root with:
+>
+> ```
+> enable-pre-post-scripts=true
+> ```
+
+> **🔧 Native Module Build Issues?** If you encounter errors during installation related to `node-pty` or other native modules, see the [Troubleshooting Guide](TROUBLESHOOTING.md#node-pty-build-failures) for detailed solutions.
 
 ## 3. Supported Platforms and Shells
 

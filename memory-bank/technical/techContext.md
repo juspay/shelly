@@ -4,8 +4,9 @@
 
 ### **Core Technologies**
 
-- **Programming Language**: JavaScript (ES2020+) with JSDoc for type safety
+- **Programming Language**: TypeScript (ES2022+) with full type safety
 - **Runtime Environment**: Node.js 18+ with npm package management
+- **Build System**: TypeScript compiler with automated template copying
 - **CLI Framework**: Commander.js for professional command-line interfaces
 - **AI Integration**: Google AI Studio, Vertex AI, and Neurolink platform
 - **Shell Integration**: Native support for bash, zsh, tcsh with fallback mechanisms
@@ -34,6 +35,9 @@
 
 #### **Development Dependencies**
 
+- **`typescript`**: TypeScript compiler for type-safe development
+- **`@types/node`**: Type definitions for Node.js APIs
+- **`@typescript-eslint`**: ESLint integration for TypeScript
 - **`eslint`**: Code linting and style enforcement
 - **`prettier`**: Code formatting and style consistency
 - **`husky`**: Git hooks for automated quality checks
@@ -46,19 +50,18 @@
 
 Shelly implements a sophisticated dual CLI architecture:
 
-1. **Primary CLI (`src/main.js`)**: Error analysis engine with shell integration
-2. **Secondary CLI (`src/shelly/cli.js`)**: Repository organization and Memory Bank management
+1. **Primary CLI (`src/main.ts`)**: Error analysis engine with shell integration
+2. **Secondary CLI (`src/shelly/cli.ts`)**: Repository organization and Memory Bank management
 
 ### **Service-Oriented Design**
 
-```javascript
-// Core service pattern
-const serviceFactory = {
-  analysisService: () => require('./src/services/analysisService.js'),
-  historyService: () => require('./src/services/historyService.js'),
-  memoryBankService: () =>
-    require('./src/shelly/services/memoryBankService.js'),
-  aiContentGenerator: () => require('./src/shelly/utils/aiContentGenerator.js'),
+```typescript
+// Core service pattern with TypeScript
+export const serviceFactory = {
+  analysisService: () => import('./src/services/analysisService.js'),
+  historyService: () => import('./src/services/historyService.js'),
+  memoryBankService: () => import('./src/shelly/services/memoryBankService.js'),
+  aiContentGenerator: () => import('./src/shelly/utils/aiContentGenerator.js'),
 };
 ```
 
@@ -83,9 +86,12 @@ cd shelly
 # Install dependencies
 npm install
 
+# Build the project
+npm run build
+
 # Verify installation
-node src/main.js --version
-node src/shelly/cli.js --help
+node dist/main.js --version
+node dist/shelly/cli.js --help
 ```
 
 #### **2. Environment Configuration**
@@ -121,14 +127,30 @@ npm test
 ### **Build Pipeline**
 
 ```bash
-# Development build
-npm run dev
-
-# Production build (if applicable)
+# TypeScript compilation + template copying
 npm run build
+
+# Watch mode for development
+npm run build:watch  # (if configured)
+
+# Verify build output
+ls -la dist/
 
 # Package verification
 npm pack --dry-run
+```
+
+### **Build Process**
+
+The build process consists of two steps:
+
+1. **TypeScript Compilation**: `tsc` compiles all `.ts` files from `src/` to `dist/`
+2. **Template Copying**: `scripts/copy-templates.js` copies all template files to `dist/shelly/templates/`
+
+```bash
+# Build script configuration
+"build": "tsc && npm run copy-templates"
+"copy-templates": "node scripts/copy-templates.js"
 ```
 
 ### **Release Automation**
@@ -169,18 +191,24 @@ module.exports = {
 }
 ```
 
-### **JSDoc Type Safety**
+### **TypeScript Type Safety**
 
-```javascript
+```typescript
 /**
  * Analyze command error with AI assistance
- * @param {string} errorOutput - The error message from failed command
- * @param {string[]} commandHistory - Previous commands for context
- * @param {number} exitCode - Command exit code
- * @returns {Promise<Object>} Analysis results with suggestions
  */
-async function analyzeError(errorOutput, commandHistory, exitCode) {
-  // Implementation
+async function analyzeError(
+  errorOutput: string,
+  commandHistory: string[],
+  exitCode: number
+): Promise<AnalysisResult> {
+  // Implementation with full type checking
+}
+
+interface AnalysisResult {
+  suggestions: string[];
+  confidence: number;
+  errorType: string;
 }
 ```
 
@@ -218,9 +246,11 @@ npm run test:e2e
 
 ### **Shell Detection Mechanism**
 
-```javascript
-// Shell identification strategy
-const detectShell = () => {
+```typescript
+// Shell identification strategy with type safety
+type ShellType = 'zsh' | 'bash' | 'tcsh' | 'unknown';
+
+const detectShell = (): ShellType => {
   const shell = process.env.SHELL || '';
   const parentProcess = getParentProcess();
 
@@ -242,10 +272,12 @@ const detectShell = () => {
 
 ### **Provider Abstraction**
 
-```javascript
-// AI service factory pattern
+```typescript
+// AI service factory pattern with TypeScript
+type AIProvider = 'google-ai' | 'vertex-ai' | 'neurolink' | 'auto';
+
 class AIServiceFactory {
-  static create(provider = 'auto') {
+  static create(provider: AIProvider = 'auto'): AIService {
     switch (provider) {
       case 'google-ai':
         return new GoogleAIService();
@@ -272,15 +304,20 @@ class AIServiceFactory {
 
 ### **Safe File Handling**
 
-```javascript
-// Robust file operations with error handling
-const safeFileOperation = async (operation, filePath, content) => {
+```typescript
+// Robust file operations with error handling and type safety
+const safeFileOperation = async (
+  operation: (path: string, content: string) => Promise<void>,
+  filePath: string,
+  content: string
+): Promise<void> => {
   try {
     await fs.ensureDir(path.dirname(filePath));
     await operation(filePath, content);
     console.log(`✅ ${operation.name}: ${filePath}`);
   } catch (error) {
-    console.error(`❌ Failed ${operation.name}: ${filePath}`, error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ Failed ${operation.name}: ${filePath}`, errorMessage);
     throw error;
   }
 };
@@ -302,14 +339,22 @@ const safeFileOperation = async (operation, filePath, content) => {
 
 ### **Async Operations**
 
-```javascript
-// Parallel processing for file operations
-const parallelFileOperations = async (operations) => {
+```typescript
+// Parallel processing for file operations with proper typing
+interface OperationResult<T> {
+  operation: Promise<T>;
+  success: boolean;
+  result: T | Error;
+}
+
+const parallelFileOperations = async <T>(
+  operations: Promise<T>[]
+): Promise<OperationResult<T>[]> => {
   const results = await Promise.allSettled(operations);
   return results.map((result, index) => ({
     operation: operations[index],
     success: result.status === 'fulfilled',
-    result: result.value || result.reason,
+    result: result.status === 'fulfilled' ? result.value : result.reason,
   }));
 };
 ```
@@ -318,10 +363,17 @@ const parallelFileOperations = async (operations) => {
 
 ### **Structured Error Management**
 
-```javascript
-// Custom error classes for different failure modes
+```typescript
+// Custom error classes with TypeScript type safety
+interface ErrorDetails {
+  [key: string]: any;
+}
+
 class ShellyError extends Error {
-  constructor(message, code, details = {}) {
+  public readonly code: string;
+  public readonly details: ErrorDetails;
+
+  constructor(message: string, code: string, details: ErrorDetails = {}) {
     super(message);
     this.name = 'ShellyError';
     this.code = code;
@@ -330,7 +382,7 @@ class ShellyError extends Error {
 }
 
 class AIServiceError extends ShellyError {
-  constructor(message, provider, details) {
+  constructor(message: string, provider: string, details: ErrorDetails = {}) {
     super(message, 'AI_SERVICE_ERROR', { provider, ...details });
   }
 }
@@ -339,13 +391,13 @@ class AIServiceError extends ShellyError {
 ### **Debug Mode**
 
 ```bash
-# Enable comprehensive debug logging
-SHELLY_DEBUG=true node src/main.js
-SHELLY_DEBUG=true node src/shelly/cli.js organize
+# Enable comprehensive debug logging (use dist/ after build)
+SHELLY_DEBUG=true node dist/main.js
+SHELLY_DEBUG=true node dist/shelly/cli.js organize
 
 # Debug specific components
-DEBUG=shelly:analysis node src/main.js
-DEBUG=shelly:memory node src/shelly/cli.js memory init
+DEBUG=shelly:analysis node dist/main.js
+DEBUG=shelly:memory node dist/shelly/cli.js memory init
 ```
 
 ## **Security Considerations**
@@ -371,11 +423,22 @@ DEBUG=shelly:memory node src/shelly/cli.js memory init
 {
   "name": "@juspay/shelly",
   "bin": {
-    "shelly": "./src/main.js"
+    "shelly": "./dist/main.js"
   },
-  "files": ["src/", "docs/", "memory-bank/", "README.md", "LICENSE"],
+  "files": [
+    "dist/",
+    "src/shelly/templates/",
+    "docs/",
+    "memory-bank/",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc && npm run copy-templates",
+    "copy-templates": "node scripts/copy-templates.js"
   }
 }
 ```
@@ -397,8 +460,11 @@ shelly --version
 
 1. **Fork and Clone**: Standard GitHub workflow
 2. **Branch Strategy**: Feature branches from main
-3. **Development**: Local testing with `node src/main.js`
-4. **Quality Checks**: Automated linting, formatting, and testing
+3. **Development**:
+   - Edit TypeScript files in `src/`
+   - Build with `npm run build`
+   - Test with `node dist/main.js`
+4. **Quality Checks**: Automated linting, formatting, type checking, and testing
 5. **Pull Request**: Comprehensive review process
 
 ### **Release Workflow**

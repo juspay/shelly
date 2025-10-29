@@ -9,15 +9,17 @@ const psTreeAsync = promisify(psTree);
 
 // Base Shell class
 class Shell {
-  constructor(name) {
+  name: string;
+
+  constructor(name: string) {
     this.name = name;
   }
 
-  getHistoryFilePath() {
+  getHistoryFilePath(): string {
     throw new Error('getHistoryFilePath must be implemented by subclass');
   }
 
-  parseHistory(content) {
+  parseHistory(content: string): string[] {
     throw new Error('parseHistory must be implemented by subclass');
   }
 
@@ -365,10 +367,73 @@ async function walkProcessTree(pid, debug = false, depth = 0, maxDepth = 10) {
 
 // Try to get the most recent command from the current shell session
 function getCurrentShellCommand(debug = false) {
+  // First check if command was passed via environment variable (from alias)
+  const envCommand = process.env.SHELLY_LAST_CMD;
+  if (envCommand && envCommand.trim()) {
+    if (debug) {
+      console.log(`Using command from environment: "${envCommand}"`);
+    }
+    return envCommand.trim();
+  }
+
+  // Fallback: Try to get from shell history using fc command
+  try {
+    if (debug) {
+      console.log('Attempting to get command from shell history using fc...');
+    }
+
+    // Try to detect which shell is running
+    const shell = process.env.SHELL?.toLowerCase() || '';
+    let lastCmd = '';
+
+    if (shell.includes('bash')) {
+      // Bash: get the actual last command from bash history
+      // First try to get from current session history
+      try {
+        lastCmd = execSync(`bash -c 'history -r; history 2 | head -n1'`, {
+          encoding: 'utf8',
+          stdio: ['pipe', 'pipe', 'ignore'],
+        })
+          .toString()
+          .replace(/^\s*\d+\s*/, '') // Remove history number
+          .trim();
+      } catch (e) {
+        // Fallback to fc command
+        lastCmd = execSync(`fc -ln -2 2>/dev/null | head -n1`, {
+          encoding: 'utf8',
+          stdio: ['pipe', 'pipe', 'ignore'],
+          shell: '/bin/bash',
+        })
+          .toString()
+          .trim();
+      }
+    } else if (shell.includes('zsh')) {
+      // Zsh: get second to last command
+      lastCmd = execSync(`fc -ln -2 2>/dev/null | tail -n1`, {
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'ignore'],
+        shell: '/bin/zsh',
+      })
+        .toString()
+        .trim();
+    }
+
+    if (lastCmd && !lastCmd.includes('shelly') && lastCmd !== 'shelly') {
+      if (debug) {
+        console.log(`Retrieved command from fc: "${lastCmd}"`);
+      }
+      return lastCmd;
+    }
+  } catch (error) {
+    if (debug) {
+      console.log(
+        'Failed to get command using fc, will fall back to history file'
+      );
+    }
+  }
+
   if (debug) {
-    console.log(
-      'Skipping real-time history methods, using fallback to history file for reliability'
-    );
+    console.log('No real-time command found, will fall back to history file');
   }
   return null;
 }

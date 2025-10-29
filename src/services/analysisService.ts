@@ -1,8 +1,13 @@
 import { NeuroLink } from '@juspay/neurolink';
 import { getAvailableCommands } from '../utils/commandFinder.js';
 import { extractCodeFromStacktrace } from './fileService.js';
+import type { HistoryEntry } from './historyService.js';
 
-export async function analyzeError(output, history, exitCode) {
+export async function analyzeError(
+  output: string,
+  history: HistoryEntry[],
+  exitCode: number
+): Promise<string> {
   const neurolink = new NeuroLink();
   const codeSnippet = extractCodeFromStacktrace(output);
 
@@ -21,7 +26,7 @@ export async function analyzeError(output, history, exitCode) {
     \`\`\`
     Here is the command history:
     \`\`\`
-    ${history.map((h) => `[${h.timestamp}] ${h.command} (exit code: ${h.exitCode})`).join('\n')}
+    ${history.map((h: HistoryEntry) => `[${h.timestamp}] ${h.command} (exit code: ${h.exitCode})`).join('\n')}
     \`\`\`
     `
       : `The following error occurred with exit code ${exitCode}:
@@ -31,7 +36,7 @@ export async function analyzeError(output, history, exitCode) {
     ${codeSnippet ? `The error appears to be in the following code snippet:\n${codeSnippet}` : ''}
     Here is the command history:
     \`\`\`
-    ${history.map((h) => `[${h.timestamp}] ${h.command} (exit code: ${h.exitCode})`).join('\n')}
+    ${history.map((h: HistoryEntry) => `[${h.timestamp}] ${h.command} (exit code: ${h.exitCode})`).join('\n')}
     \`\`\`
     Please analyze the error and provide a solution. If the error is in the code, suggest a fix.
   `;
@@ -47,7 +52,7 @@ export async function analyzeError(output, history, exitCode) {
   }
 }
 
-export async function suggestCorrections(command) {
+export async function suggestCorrections(command: string): Promise<void> {
   const availableCommands = getAvailableCommands();
   const neurolink = new NeuroLink();
   const prompt = `
