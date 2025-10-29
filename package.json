@@ -2,17 +2,19 @@
   "name": "@juspay/shelly",
   "version": "1.0.0",
   "description": "An intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity with advanced repository organization, GitHub repository setup, and AI-assisted development features.",
-  "main": "src/main.js",
+  "main": "dist/main.js",
   "bin": {
-    "shelly": "src/main.js"
+    "shelly": "dist/main.js"
   },
   "scripts": {
-    "start": "node src/main.js",
-    "test": "node --test src/tests/*.test.js",
-    "prepublishOnly": "echo 'Skipping lint for release - will be addressed in next version'",
+    "build": "tsc && npm run copy-templates",
+    "copy-templates": "node scripts/copy-templates.js",
+    "start": "npm run build && node dist/main.js",
+    "test": "npm run build && node --test dist/tests/*.test.js",
+    "prepublishOnly": "npm run build",
     "semantic-release": "semantic-release",
-    "lint": "eslint . --ext .js",
-    "lint:fix": "eslint . --ext .js --fix",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",
@@ -61,7 +63,8 @@
     "npm": ">=8.0.0"
   },
   "files": [
-    "src/",
+    "dist/",
+    "src/shelly/templates/",
     "README.md",
     "package.json",
     "LICENSE"
@@ -79,7 +82,11 @@
     "@semantic-release/github": "^9.0.0",
     "@semantic-release/npm": "^11.0.0",
     "@semantic-release/release-notes-generator": "^12.0.0",
+    "@types/inquirer": "^9.0.9",
     "@types/node": "^24.5.2",
+    "@types/ps-tree": "^1.1.6",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
     "eslint": "^8.57.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.5",
@@ -93,7 +100,7 @@
     "@octokit/rest": "^20.0.2",
     "commander": "^11.0.0",
     "inquirer": "^12.9.6",
-    "node-pty": "^1.0.0",
+    "node-pty": "0.10.1",
     "ps-tree": "^1.2.0"
   },
   "prettier": {
@@ -104,7 +111,7 @@
     "trailingComma": "es5"
   },
   "lint-staged": {
-    "src/**/*.js": [
+    "src/**/*.{js,ts}": [
       "eslint --fix",
       "prettier --write"
     ],

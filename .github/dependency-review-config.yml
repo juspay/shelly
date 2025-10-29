@@ -6,18 +6,13 @@ vulnerability-check: true
 license-check: true
 
 # License configuration
+# Using allow-list approach (cannot use both allow and deny together)
 allow-licenses:
   - MIT
   - Apache-2.0
   - ISC
   - BSD-2-Clause
   - BSD-3-Clause
-
-deny-licenses:
-  - GPL-2.0
-  - GPL-3.0
-  - AGPL-1.0
-  - AGPL-3.0
 
 # Severity configuration
 fail-on-severity: moderate

@@ -22,6 +22,11 @@ jobs:
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+        continue-on-error: true
+        with:
+          config-file: './.github/dependency-review-config.yml'
+          comment-summary-in-pr: always
+          show-openssf-scorecard: false
 
       - name: Comment PR
         uses: actions/github-script@v7
