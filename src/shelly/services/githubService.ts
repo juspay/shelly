@@ -3,7 +3,9 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export class GitHubService {
-  constructor(token) {
+  octokit: Octokit;
+
+  constructor(token: string) {
     if (!token) {
       throw new Error(
         'GitHub token is required. Please set GITHUB_TOKEN environment variable.'
@@ -22,7 +24,7 @@ export class GitHubService {
     try {
       const gitConfig = await this.parseGitConfig(cwd);
       const { owner, repo } = this.parseRemoteUrl(
-        gitConfig.remote?.origin?.url
+        (gitConfig.remote as any)?.origin?.url
       );
 
       if (!owner || !repo) {
@@ -139,9 +141,9 @@ export class GitHubService {
    */
   async createBranchProtectionRuleset(owner, repo, defaultBranch) {
     try {
-      const rulesetData = {
+      const rulesetData: any = {
         name: `${defaultBranch}-protection`,
-        target: 'branch',
+        target: 'branch' as const,
         enforcement: 'active',
         conditions: {
           ref_name: {
@@ -438,7 +440,7 @@ You can write documentation in:
         repo,
       });
 
-      const permissions = response.data.permissions || {};
+      const permissions = (response.data.permissions as any) || {};
 
       return {
         admin: permissions.admin || false,

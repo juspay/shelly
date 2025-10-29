@@ -1,22 +1,29 @@
 import pty from 'node-pty';
 import os from 'os';
 
-export function runCommand(command) {
-  return new Promise((resolve) => {
+interface CommandResult {
+  stdout: string;
+  stderr: string;
+  code: number;
+  timedOut?: boolean;
+}
+
+export function runCommand(command: string): Promise<CommandResult> {
+  return new Promise<CommandResult>((resolve) => {
     const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
     const term = pty.spawn(shell, ['-c', command], {
       name: 'xterm-color',
       cols: 80,
       rows: 30,
       cwd: process.cwd(),
-      env: process.env,
-    });
+      env: process.env as any,
+    }) as any;
 
     let output = '';
     let resolved = false;
 
     // Capture all output from the pseudo-terminal
-    term.on('data', (data) => {
+    term.on('data', (data: string) => {
       output += data;
     });
 
@@ -30,7 +37,7 @@ export function runCommand(command) {
     }, 15000); // 15-second timeout
 
     // Handle process exit
-    term.on('exit', (code) => {
+    term.on('exit', (code: number) => {
       if (!resolved) {
         clearTimeout(timeout);
         resolved = true;

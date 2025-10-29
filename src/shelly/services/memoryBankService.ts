@@ -11,6 +11,13 @@ const execAsync = promisify(exec);
  * Implements Cline's Memory Bank protocol for persistent project context
  */
 export class MemoryBankService {
+  aiGenerator: AIContentGenerator;
+  templatesPath: string;
+  targetPath: string;
+  structure: any;
+  rootFiles: any;
+  coreFiles: string[];
+
   constructor() {
     this.aiGenerator = new AIContentGenerator();
     this.templatesPath = 'src/shelly/templates/memory-bank';
@@ -62,7 +69,7 @@ export class MemoryBankService {
    * @param {Object} options - Options for initialization
    * @returns {Promise<Object>} Initialization results
    */
-  async initializeMemoryBank(packageInfo, options = {}) {
+  async initializeMemoryBank(packageInfo, options: { force?: boolean } = {}) {
     const results = {
       created: [],
       updated: [],
@@ -442,7 +449,7 @@ This Memory Bank integrates with:
         path.join(repositoryPath, 'docs')
       );
 
-      analysis.projectStructure = {
+      (analysis as any).projectStructure = {
         hasSrc: srcExists,
         hasTests: testExists,
         hasDocs: docsExists,

@@ -9,15 +9,17 @@ const psTreeAsync = promisify(psTree);
 
 // Base Shell class
 class Shell {
-  constructor(name) {
+  name: string;
+
+  constructor(name: string) {
     this.name = name;
   }
 
-  getHistoryFilePath() {
+  getHistoryFilePath(): string {
     throw new Error('getHistoryFilePath must be implemented by subclass');
   }
 
-  parseHistory(content) {
+  parseHistory(content: string): string[] {
     throw new Error('parseHistory must be implemented by subclass');
   }
 

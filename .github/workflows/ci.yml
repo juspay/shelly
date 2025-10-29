@@ -32,11 +32,11 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: 🏗️ Build TypeScript
+        run: npm run build
+
       - name: 💅 Check Prettier formatting
         run: npm run format:check
-
-      - name: 📋 Validate package.json
-        run: npm run build --if-present
 
   functional-tests:
     name: Functional Testing
@@ -64,6 +64,9 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: 🏗️ Build TypeScript
+        run: npm run build
+
       - name: 🔧 Setup test shell (${{ matrix.shell }})
         if: matrix.shell == 'zsh'
         run: |
@@ -72,8 +75,8 @@ jobs:
 
       - name: 🧪 Test CLI availability
         run: |
-          node src/shelly/cli.js --version
-          node src/shelly/cli.js --help
+          node dist/shelly/cli.js --version
+          node dist/shelly/cli.js --help
         shell: ${{ matrix.shell }}
 
   ai-integration-tests:
@@ -94,20 +97,23 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: 🏗️ Build TypeScript
+        run: npm run build
+
       - name: 🤖 Test AI Integration (Mock)
         env:
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
         run: |
           # Test error analysis with mock command
           echo "Testing AI integration..."
-          node src/main.js "nonexistent-command" || true
+          node dist/main.js "nonexistent-command" || true
 
           # Test memory bank generation (without actual AI calls)
           mkdir ai-test-project && cd ai-test-project
           npm init -y
 
           # Test organize with AI features
-          node ../src/shelly/cli.js organize --force
+          node ../dist/shelly/cli.js organize --force
 
           echo "AI integration tests completed"
 
@@ -133,25 +139,28 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: 🏗️ Build TypeScript
+        run: npm run build
+
       - name: 🧪 Test core functionality
         run: |
           # Test main CLI
-          node src/main.js --version
+          node dist/main.js --version
 
           # Test secondary CLI
-          node src/shelly/cli.js --help
+          node dist/shelly/cli.js --help
 
           # Test in different directory structures
           mkdir -p test/nested/project && cd test/nested/project
           npm init -y
 
           # Test organize from nested directory
-          node ../../../../src/shelly/cli.js organize --force
+          node ../../../../dist/shelly/cli.js organize --force
 
       - name: 🐚 Test shell integration
         run: |
           # Test shell alias generation
-          node src/main.js --alias
+          node dist/main.js --alias
 
           # Test history access mechanisms
           history || fc -l || echo "Shell history test completed"
@@ -252,7 +261,7 @@ jobs:
         run: npm install
 
       - name: 🏗️ Build package
-        run: npm run build --if-present
+        run: npm run build
 
       - name: 🚀 Semantic Release
         env:
@@ -264,7 +273,7 @@ jobs:
         if: success()
         run: |
           # Update Memory Bank with latest release information
-          node src/shelly/cli.js memory update --file progress.md || true
+          node dist/shelly/cli.js memory update --file progress.md || true
         continue-on-error: true
 
   notify-success:

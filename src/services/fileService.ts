@@ -1,6 +1,10 @@
 import fs from 'fs';
 
-function getCodeSnippet(filePath, lineNumber, context = 5) {
+function getCodeSnippet(
+  filePath: string,
+  lineNumber: number,
+  context: number = 5
+): string | null {
   try {
     if (!fs.existsSync(filePath)) {
       return null;
@@ -22,7 +26,7 @@ function getCodeSnippet(filePath, lineNumber, context = 5) {
   }
 }
 
-export function extractCodeFromStacktrace(error) {
+export function extractCodeFromStacktrace(error: string): string | null {
   const stacktraceRegex = /(?:at\s|file:\/\/)?([\/].*?):(\d+):(\d+)/g;
   let match;
   while ((match = stacktraceRegex.exec(error)) !== null) {

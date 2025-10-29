@@ -6,7 +6,9 @@ import inquirer from 'inquirer';
  * Provides subcommands for Memory Bank operations
  */
 export class MemoryCommand {
-  constructor(options = {}) {
+  cwd: string;
+
+  constructor(options: { cwd?: string } = {}) {
     this.cwd = options.cwd || process.cwd();
   }
 
