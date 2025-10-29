@@ -5,8 +5,24 @@ import { AIContentGenerator } from '../utils/aiContentGenerator.js';
 import { memoryBankService } from '../services/memoryBankService.js';
 import inquirer from 'inquirer';
 
+interface OrganizeOptions {
+  force?: boolean;
+  update?: boolean;
+  move?: boolean;
+  cwd?: string;
+}
+
 export class OrganizeCommand {
-  constructor(options = {}) {
+  force: boolean;
+  update: boolean;
+  move: boolean;
+  preserveDocs: boolean;
+  preserveTests: boolean;
+  cwd: string;
+  aiGenerator: AIContentGenerator;
+  templatesDir: string;
+
+  constructor(options: OrganizeOptions = {}) {
     this.force = options.force || false;
     this.update = options.update || false;
     this.move = options.move || false;
@@ -18,7 +34,7 @@ export class OrganizeCommand {
     // Handle directory access safely
     try {
       this.cwd = options.cwd || process.cwd();
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'EPERM' || error.code === 'ENOENT') {
         throw new Error(
           `❌ Cannot access current directory: ${error.message}\n\n` +
@@ -33,10 +49,15 @@ export class OrganizeCommand {
     }
 
     this.aiGenerator = new AIContentGenerator();
-    this.templatesDir = path.join(
-      path.dirname(fileURLToPath(import.meta.url)),
-      '../templates'
-    );
+
+    // Calculate templates directory - works for both dev (src/) and prod (dist/)
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
+    // In production, compiled files are in dist/shelly/commands/
+    // Templates should be in dist/shelly/templates/
+    // In development, source files are in src/shelly/commands/
+    // Templates are in src/shelly/templates/
+    this.templatesDir = path.join(currentDir, '../templates');
   }
 
   /**
@@ -527,13 +548,13 @@ export class OrganizeCommand {
   classifyFile(fileName, rules) {
     for (const [category, rule] of Object.entries(rules)) {
       // Check if file is explicitly excluded
-      if (rule.exclude && rule.exclude.includes(fileName)) {
+      if ((rule as any).exclude && (rule as any).exclude.includes(fileName)) {
         continue;
       }
 
       // Check extension matches
-      if (rule.extensions) {
-        for (const ext of rule.extensions) {
+      if ((rule as any).extensions) {
+        for (const ext of (rule as any).extensions) {
           if (fileName.endsWith(ext)) {
             return category;
           }
@@ -541,8 +562,8 @@ export class OrganizeCommand {
       }
 
       // Check pattern matches
-      if (rule.patterns) {
-        for (const pattern of rule.patterns) {
+      if ((rule as any).patterns) {
+        for (const pattern of (rule as any).patterns) {
           if (pattern.test(fileName)) {
             return category;
           }
@@ -833,10 +854,10 @@ export class OrganizeCommand {
 
       if (scriptsWithCommand.length > 0) {
         // Remove any equivalent named scripts
-        equivalentNames.forEach((equivName) => {
+        (equivalentNames as any).forEach((equivName) => {
           if (
             merged[equivName] &&
-            scriptsWithCommand.some(([name]) => name !== equivName)
+            (scriptsWithCommand as any).some(([name]) => name !== equivName)
           ) {
             console.log(
               `🧹 Removing equivalent script: ${equivName} (command '${command}' exists)`
@@ -890,12 +911,12 @@ export class OrganizeCommand {
     )) {
       if (scriptCommand === command) {
         // This script has a command that makes other scripts redundant
-        if (equivalentNames.some((name) => existing[name])) {
+        if ((equivalentNames as any).some((name) => existing[name])) {
           return true;
         }
       }
 
-      if (equivalentNames.includes(scriptName)) {
+      if ((equivalentNames as any).includes(scriptName)) {
         // This script name is equivalent to an existing command
         const hasEquivalentCommand = Object.values(existing).includes(command);
         if (hasEquivalentCommand) {
@@ -1090,7 +1111,7 @@ export class OrganizeCommand {
    */
   async createConfigFiles(repoAnalysis) {
     // ESLint configuration
-    const eslintConfig = {
+    const eslintConfig: any = {
       env: {
         browser: true,
         es2021: true,

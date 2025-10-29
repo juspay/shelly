@@ -107,7 +107,12 @@ async function main() {
         return;
       }
       console.log(`Analyzing previous command: "${lastCommand}"`);
-      const { stdout, stderr, code } = await runCommand(lastCommand);
+      const result = await runCommand(lastCommand);
+      const { stdout, stderr, code } = result as {
+        stdout: string;
+        stderr: string;
+        code: number;
+      };
       for (const rule of rules) {
         if (rule.match({ script: lastCommand }, stdout, stderr, code)) {
           const newCommand = rule.get_new_command({ script: lastCommand });
@@ -135,7 +140,12 @@ async function main() {
       return;
     }
     const command = userArgs.join(' ');
-    const { stdout, stderr, code } = await runCommand(command);
+    const result = await runCommand(command);
+    const { stdout, stderr, code } = result as {
+      stdout: string;
+      stderr: string;
+      code: number;
+    };
     appendCommandToHistory(command, code);
     for (const rule of rules) {
       if (rule.match({ script: command }, stdout, stderr, code)) {

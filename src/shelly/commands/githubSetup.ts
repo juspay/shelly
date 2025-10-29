@@ -1,13 +1,24 @@
 import { GitHubService } from '../services/githubService.js';
 import inquirer from 'inquirer';
 
+interface GitHubSetupOptions {
+  cwd?: string;
+  force?: boolean;
+  dryRun?: boolean;
+}
+
 export class GitHubSetupCommand {
-  constructor(options = {}) {
+  options: {
+    cwd: string;
+    force: boolean;
+    dryRun: boolean;
+  };
+
+  constructor(options: GitHubSetupOptions = {}) {
     this.options = {
       cwd: options.cwd || process.cwd(),
       force: options.force || false,
       dryRun: options.dryRun || false,
-      ...options,
     };
   }
 
@@ -133,7 +144,7 @@ export class GitHubSetupCommand {
       const repoInfo = await githubService.octokit.repos.get({ owner, repo });
       const isOrgOwned = repoInfo.data.owner.type === 'Organization';
 
-      const settings = {
+      const settings: any = {
         // Merge options
         allow_merge_commit: false,
         allow_squash_merge: false,
