@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/juspay/Shelly/compare/v1.0.0...v1.1.0) (2025-11-03)
+
+
+### Features
+
+* **migration:** migrate entire codebase to TypeScript with enhanced build system ([bd3c2ba](https://github.com/juspay/Shelly/commit/bd3c2baba4831ccd61df6cadde805b8c50fafed7))
+
 # 1.0.0 (2025-10-25)
 
 ### Bug Fixes
