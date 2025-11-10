@@ -167,7 +167,7 @@ jobs:
         run: npm install
 
       - name: 🐍 Setup Python for MkDocs
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
