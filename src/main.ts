@@ -18,6 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function generateShellAlias() {
+  /* eslint-disable no-useless-escape */
   const scriptPath = path.resolve(__filename);
   const cliPath = path.resolve(__dirname, 'shelly', 'cli.js');
 
@@ -85,6 +86,7 @@ shelly() {
         log_helper
     fi
 }`;
+  /* eslint-enable no-useless-escape */
 }
 
 async function main() {

@@ -11,8 +11,24 @@ interface GitRemoteConfig {
 
 interface GitConfig {
   remote: GitRemoteConfig;
-  [section: string]: any;
+  [section: string]: GitRemoteConfig | Record<string, string>;
 }
+
+type RulesetRule =
+  | { type: 'deletion' }
+  | { type: 'required_linear_history' }
+  | {
+      type: 'pull_request';
+      parameters: {
+        required_approving_review_count: number;
+        dismiss_stale_reviews_on_push: boolean;
+        require_code_owner_review: boolean;
+        require_last_push_approval: boolean;
+        required_review_thread_resolution: boolean;
+      };
+    }
+  | { type: 'non_fast_forward' }
+  | { type: 'copilot_code_review' };
 
 export class GitHubService {
   octokit: Octokit;
@@ -99,7 +115,7 @@ export class GitHubService {
       }
 
       return config;
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Not a git repository or unable to read git config');
     }
   }
@@ -114,7 +130,7 @@ export class GitHubService {
 
     // Handle HTTPS URLs: https://github.com/owner/repo.git
     const httpsMatch = url.match(
-      /https:\/\/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?$/
+      /https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/
     );
     if (httpsMatch) {
       return { owner: httpsMatch[1], repo: httpsMatch[2] };
@@ -122,7 +138,7 @@ export class GitHubService {
 
     // Handle SSH URLs: git@github.com:owner/repo.git
     const sshMatch = url.match(
-      /git@github\.com:([^\/]+)\/([^\/]+?)(?:\.git)?$/
+      /git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/
     );
     if (sshMatch) {
       return { owner: sshMatch[1], repo: sshMatch[2] };
@@ -188,13 +204,13 @@ export class GitHubService {
 
       // Attempt to add GitHub Copilot code review rule (will be ignored if not available)
       try {
-        (rulesetData.rules as any).push({
+        (rulesetData.rules as RulesetRule[]).push({
           type: 'copilot_code_review' as const,
         });
         console.log(
           'ℹ️  GitHub Copilot code review rule added (will be active if Copilot is available)'
         );
-      } catch (error) {
+      } catch (_error) {
         console.log('ℹ️  GitHub Copilot code review rule could not be added');
       }
 
@@ -248,7 +264,7 @@ export class GitHubService {
         name: packageJson.name,
         content: packageJson,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         exists: false,
         isPublic: false,
@@ -378,7 +394,7 @@ You can write documentation in:
             console.log(
               `✅ GitHub Pages settings updated: ${defaultBranch} branch /docs folder`
             );
-          } catch (updateError) {
+          } catch (_updateError) {
             console.log('✅ GitHub Pages already configured');
           }
           console.log(
@@ -389,7 +405,7 @@ You can write documentation in:
         }
         throw error;
       }
-    } catch (error) {
+    } catch (_error) {
       console.log('ℹ️  Could not configure GitHub Pages automatically');
       console.log(
         `💡 Manual setup: Go to https://github.com/${owner}/${repo}/settings/pages`
@@ -408,7 +424,12 @@ You can write documentation in:
           'utf8'
         );
         console.log('📁 Created docs folder structure');
-      } catch (fsError) {}
+      } catch (fsError) {
+        // Docs folder creation failed, but this is optional - silently continue
+        if (process.env.SHELLY_DEBUG) {
+          console.error('Debug: Failed to create docs folder:', fsError.message);
+        }
+      }
 
       return null;
     }
@@ -508,7 +529,7 @@ You can write documentation in:
       console.log('   ⚠️  This setting cannot be automated via GitHub API');
 
       return response.data;
-    } catch (error) {
+    } catch (_error) {
       // Provide manual instructions if API call fails
       console.log(
         'ℹ️  Could not configure Actions workflow permissions automatically'

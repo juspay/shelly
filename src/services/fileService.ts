@@ -21,13 +21,13 @@ function getCodeSnippet(
       })
       .join('\n');
     return `\n--- Code from ${filePath}:${lineNumber} ---\n${snippet}\n--------------------------------------\n`;
-  } catch (e) {
+  } catch (_e) {
     return null; // Could not read or parse the file
   }
 }
 
 export function extractCodeFromStacktrace(error: string): string | null {
-  const stacktraceRegex = /(?:at\s|file:\/\/)?([\/].*?):(\d+):(\d+)/g;
+  const stacktraceRegex = /(?:at\s|file:\/\/)?([/].*?):(\d+):(\d+)/g;
   let match;
   while ((match = stacktraceRegex.exec(error)) !== null) {
     const [_, filePath, lineNumberStr] = match;

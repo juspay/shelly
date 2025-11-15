@@ -20,7 +20,7 @@ async function getPackageInfo() {
     const packagePath = path.join(__dirname, '../../package.json');
     const packageContent = await fs.readFile(packagePath, 'utf8');
     return JSON.parse(packageContent);
-  } catch (error) {
+  } catch (_error) {
     return {
       version: '1.0.0',
       description: 'AI-assisted repository organization tool',
@@ -432,7 +432,7 @@ async function checkRepositoryStatus(targetDir) {
       console.log('\n⚠️  Package name is not prefixed with @juspay/');
       console.log('   Run "shelly organize" to fix this');
     }
-  } catch (error) {
+  } catch (_error) {
     console.log('\n❌ Could not read package.json');
   }
 }

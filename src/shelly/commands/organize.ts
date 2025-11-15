@@ -12,6 +12,34 @@ interface OrganizeOptions {
   cwd?: string;
 }
 
+interface ClassificationRule {
+  extensions?: string[];
+  patterns?: RegExp[];
+  exclude?: string[];
+}
+
+interface ClassificationRules {
+  [category: string]: ClassificationRule;
+}
+
+interface RedundancyRules {
+  duplicates: [string, string][];
+  commandEquivalents: Record<string, string[]>;
+  complexRedundants: string[];
+}
+
+interface ESLintConfig {
+  env?: Record<string, boolean>;
+  extends?: string[];
+  parserOptions?: {
+    ecmaVersion?: string | number;
+    sourceType?: 'script' | 'module';
+  };
+  parser?: string;
+  plugins?: string[];
+  rules?: Record<string, unknown>;
+}
+
 export class OrganizeCommand {
   force: boolean;
   update: boolean;
@@ -34,15 +62,16 @@ export class OrganizeCommand {
     // Handle directory access safely
     try {
       this.cwd = options.cwd || process.cwd();
-    } catch (error: any) {
-      if (error.code === 'EPERM' || error.code === 'ENOENT') {
+    } catch (error: unknown) {
+      const nodeError = error as NodeJS.ErrnoException;
+      if (nodeError.code === 'EPERM' || nodeError.code === 'ENOENT') {
         throw new Error(
-          `❌ Cannot access current directory: ${error.message}\n\n` +
+          `❌ Cannot access current directory: ${nodeError.message}\n\n` +
             `💡 Solutions:\n` +
             `   1. Use: shelly organize --directory /path/to/your/project\n` +
             `   2. Navigate to a directory you have access to\n` +
             `   3. Check directory permissions\n\n` +
-            `📁 Current directory issue: ${error.code === 'EPERM' ? 'Permission denied' : 'Directory not found'}`
+            `📁 Current directory issue: ${nodeError.code === 'EPERM' ? 'Permission denied' : 'Directory not found'}`
         );
       }
       throw error;
@@ -226,7 +255,7 @@ export class OrganizeCommand {
   /**
    * Move misplaced files to their correct directories
    */
-  async moveMisplacedFiles(repoAnalysis) {
+  async moveMisplacedFiles(_repoAnalysis) {
     if (!this.move) {
       return; // Only run if --move flag is specified
     }
@@ -545,16 +574,16 @@ export class OrganizeCommand {
   /**
    * Classify a file based on its name and extension
    */
-  classifyFile(fileName, rules) {
+  classifyFile(fileName: string, rules: ClassificationRules): string | null {
     for (const [category, rule] of Object.entries(rules)) {
       // Check if file is explicitly excluded
-      if ((rule as any).exclude && (rule as any).exclude.includes(fileName)) {
+      if (rule.exclude && rule.exclude.includes(fileName)) {
         continue;
       }
 
       // Check extension matches
-      if ((rule as any).extensions) {
-        for (const ext of (rule as any).extensions) {
+      if (rule.extensions) {
+        for (const ext of rule.extensions) {
           if (fileName.endsWith(ext)) {
             return category;
           }
@@ -562,8 +591,8 @@ export class OrganizeCommand {
       }
 
       // Check pattern matches
-      if ((rule as any).patterns) {
-        for (const pattern of (rule as any).patterns) {
+      if (rule.patterns) {
+        for (const pattern of rule.patterns) {
           if (pattern.test(fileName)) {
             return category;
           }
@@ -599,9 +628,15 @@ export class OrganizeCommand {
     const directories = [
       '.github/ISSUE_TEMPLATE',
       '.github/workflows',
+      '.changeset',
+      '.husky',
+      'config',
       'src',
       'scripts',
       'docs',
+      'examples',
+      'tools',
+      'todos',
       `${repoAnalysis.repoName}-demo`,
       'test',
     ];
@@ -788,12 +823,15 @@ export class OrganizeCommand {
   /**
    * Merge scripts with intelligent deduplication
    */
-  mergeScriptsWithDeduplication(existing, enhanced) {
+  mergeScriptsWithDeduplication(
+    existing: Record<string, string>,
+    enhanced: Record<string, string>
+  ): Record<string, string> {
     // Start with existing scripts
     const merged = { ...existing };
 
     // Define script equivalence and redundancy rules
-    const redundancyRules = {
+    const redundancyRules: RedundancyRules = {
       // Exact duplicates (same command, different name)
       duplicates: [
         ['release', 'semantic-release'], // Both typically run 'semantic-release'
@@ -849,15 +887,15 @@ export class OrganizeCommand {
     )) {
       // Find scripts that have this exact command
       const scriptsWithCommand = Object.entries(merged).filter(
-        ([name, cmd]) => cmd === command
+        ([_name, cmd]) => cmd === command
       );
 
       if (scriptsWithCommand.length > 0) {
         // Remove any equivalent named scripts
-        (equivalentNames as any).forEach((equivName) => {
+        equivalentNames.forEach((equivName) => {
           if (
             merged[equivName] &&
-            (scriptsWithCommand as any).some(([name]) => name !== equivName)
+            scriptsWithCommand.some(([_name]) => _name !== equivName)
           ) {
             console.log(
               `🧹 Removing equivalent script: ${equivName} (command '${command}' exists)`
@@ -893,7 +931,12 @@ export class OrganizeCommand {
   /**
    * Check if adding a script would create redundancy
    */
-  wouldCreateRedundancy(scriptName, scriptCommand, existing, redundancyRules) {
+  wouldCreateRedundancy(
+    scriptName: string,
+    scriptCommand: string,
+    existing: Record<string, string>,
+    redundancyRules: RedundancyRules
+  ): boolean {
     // Check against complex redundants
     if (redundancyRules.complexRedundants.includes(scriptName)) {
       return true;
@@ -911,12 +954,12 @@ export class OrganizeCommand {
     )) {
       if (scriptCommand === command) {
         // This script has a command that makes other scripts redundant
-        if ((equivalentNames as any).some((name) => existing[name])) {
+        if (equivalentNames.some((name) => existing[name])) {
           return true;
         }
       }
 
-      if ((equivalentNames as any).includes(scriptName)) {
+      if (equivalentNames.includes(scriptName)) {
         // This script name is equivalent to an existing command
         const hasEquivalentCommand = Object.values(existing).includes(command);
         if (hasEquivalentCommand) {
@@ -995,13 +1038,107 @@ export class OrganizeCommand {
           this.loadTemplate('.env.example.template', repoAnalysis),
       },
       {
+        name: '.env.test',
+        generator: () =>
+          this.loadTemplate('.env.test.template', repoAnalysis),
+      },
+      {
+        name: '.editorconfig',
+        generator: () => this.loadTemplateRaw('.editorconfig.template'),
+      },
+      {
+        name: '.nvmrc',
+        generator: () => this.loadTemplateRaw('.nvmrc.template'),
+      },
+      {
+        name: '.gitattributes',
+        generator: () => this.loadTemplateRaw('.gitattributes.template'),
+      },
+      {
         name: 'mkdocs.yml',
         generator: () => this.loadTemplate('mkdocs.yml.template', repoAnalysis),
+      },
+      {
+        name: 'biome.json',
+        generator: () =>
+          this.loadTemplate('biome.json.template', repoAnalysis),
+      },
+      {
+        name: 'eslint.config.js',
+        generator: () =>
+          this.loadTemplate('eslint.config.js.template', repoAnalysis),
+      },
+      {
+        name: '.prettierignore',
+        generator: () =>
+          this.loadTemplate('.prettierignore.template', repoAnalysis),
+      },
+      {
+        name: '.gitleaksrc.json',
+        generator: () =>
+          this.loadTemplate('.gitleaksrc.json.template', repoAnalysis),
+      },
+      {
+        name: '.mcp-servers.example.json',
+        generator: () =>
+          this.loadTemplate('.mcp-servers.example.json.template', repoAnalysis),
+      },
+      {
+        name: '.releaserc.json',
+        generator: () =>
+          this.loadTemplate('.releaserc.json.template', repoAnalysis),
+      },
+      {
+        name: 'tsconfig.json',
+        generator: () =>
+          this.loadTemplate('tsconfig.json.template', repoAnalysis),
+      },
+      {
+        name: 'tsconfig.cli.json',
+        generator: () =>
+          this.loadTemplate('tsconfig.cli.json.template', repoAnalysis),
+      },
+      {
+        name: 'vite.config.ts',
+        generator: () =>
+          this.loadTemplate('vite.config.ts.template', repoAnalysis),
+      },
+      {
+        name: 'vitest.config.ts',
+        generator: () =>
+          this.loadTemplate('vitest.config.ts.template', repoAnalysis),
+      },
+      {
+        name: 'svelte.config.js',
+        generator: () =>
+          this.loadTemplate('svelte.config.js.template', repoAnalysis),
+      },
+      {
+        name: 'requirements.txt',
+        generator: () =>
+          this.loadTemplate('requirements.txt.template', repoAnalysis),
+      },
+      {
+        name: 'scripts/pre-commit.sh',
+        generator: () =>
+          this.loadTemplate('pre-commit.sh.template', repoAnalysis),
       },
     ];
 
     for (const file of files) {
       await this.createOrUpdateFile(file.name, file.generator, repoAnalysis);
+    }
+
+    // Make scripts executable
+    try {
+      const preCommitScript = path.join(this.cwd, 'scripts/pre-commit.sh');
+      if (await this.fileExists(preCommitScript)) {
+        await fs.chmod(preCommitScript, 0o755);
+      }
+    } catch (error) {
+      console.warn(
+        `⚠️ Could not make pre-commit.sh executable: ${error.message}`
+      );
     }
   }
 
@@ -1104,6 +1241,87 @@ export class OrganizeCommand {
 /.github/ @juspay/devops-team
 `;
     await this.writeFileIfNeeded('.github/CODEOWNERS', codeownersContent);
+
+    // Create directory template files
+    await this.createDirectoryTemplateFiles(repoAnalysis);
+  }
+
+  /**
+   * Create template files for development directories
+   */
+  async createDirectoryTemplateFiles(repoAnalysis) {
+    const directoryTemplates = [
+      // Changeset templates
+      {
+        source: '.changeset/README.md.template',
+        target: '.changeset/README.md',
+      },
+      {
+        source: '.changeset/config.json.template',
+        target: '.changeset/config.json',
+      },
+      // Husky templates
+      {
+        source: '.husky/README.md.template',
+        target: '.husky/README.md',
+      },
+      {
+        source: '.husky/pre-commit.template',
+        target: '.husky/pre-commit',
+      },
+      {
+        source: '.husky/commit-msg.template',
+        target: '.husky/commit-msg',
+      },
+      // Config templates
+      {
+        source: 'config/README.md.template',
+        target: 'config/README.md',
+      },
+      {
+        source: 'config/default.json.template',
+        target: 'config/default.json',
+      },
+      // Examples templates
+      {
+        source: 'examples/README.md.template',
+        target: 'examples/README.md',
+      },
+      {
+        source: 'examples/basic-example.js.template',
+        target: 'examples/basic-example.js',
+      },
+      // Tools templates
+      {
+        source: 'tools/README.md.template',
+        target: 'tools/README.md',
+      },
+      // Todos templates
+      {
+        source: 'todos/ROADMAP.md.template',
+        target: 'todos/ROADMAP.md',
+      },
+    ];
+
+    for (const template of directoryTemplates) {
+      const content = await this.loadTemplate(template.source, repoAnalysis);
+      await this.writeFileIfNeeded(template.target, content);
+    }
+
+    // Make husky hooks executable
+    try {
+      const huskyHooks = [
+        path.join(this.cwd, '.husky/pre-commit'),
+        path.join(this.cwd, '.husky/commit-msg'),
+      ];
+      for (const hook of huskyHooks) {
+        if (await this.fileExists(hook)) {
+          await fs.chmod(hook, 0o755);
+        }
+      }
+    } catch (error) {
+      console.warn(`⚠️ Could not make husky hooks executable: ${error.message}`);
+    }
   }
 
   /**
@@ -1111,7 +1329,7 @@ export class OrganizeCommand {
    */
   async createConfigFiles(repoAnalysis) {
     // ESLint configuration
-    const eslintConfig: any = {
+    const eslintConfig: ESLintConfig = {
       env: {
         browser: true,
         es2021: true,
@@ -1327,7 +1545,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   /**
    * Create or update a file with confirmation
    */
-  async createOrUpdateFile(filename, contentGenerator, repoAnalysis) {
+  async createOrUpdateFile(filename, contentGenerator, _repoAnalysis) {
     const filePath = path.join(this.cwd, filename);
     const exists = await this.fileExists(filePath);
 

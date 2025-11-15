@@ -48,7 +48,7 @@ export async function analyzeError(
     });
     return result.content;
   } catch (e) {
-    return 'Could not analyze the error with Neurolink.';
+    return 'Could not analyze the error with Neurolink.'+ e;
   }
 }
 
@@ -78,7 +78,7 @@ export async function suggestCorrections(command: string): Promise<void> {
     } else {
       console.log('\nCould not find any similar commands.');
     }
-  } catch (e) {
+  } catch (_e) {
     console.log('\nCould not suggest a correction.');
   }
 }

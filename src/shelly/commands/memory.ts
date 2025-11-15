@@ -173,7 +173,7 @@ export class MemoryCommand {
   /**
    * Show Memory Bank status command
    */
-  async statusCommand(options) {
+  async statusCommand(_options) {
     console.log('🧠 Memory Bank Status\n');
 
     const status = await memoryBankService.getMemoryBankStatus();
@@ -210,7 +210,7 @@ export class MemoryCommand {
   /**
    * List Memory Bank files command
    */
-  async listCommand(options) {
+  async listCommand(_options) {
     console.log('🧠 Memory Bank Files\n');
 
     try {

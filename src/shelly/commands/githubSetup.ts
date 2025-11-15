@@ -7,6 +7,17 @@ interface GitHubSetupOptions {
   dryRun?: boolean;
 }
 
+interface RepoUpdateSettings {
+  allow_merge_commit?: boolean;
+  allow_squash_merge?: boolean;
+  allow_rebase_merge?: boolean;
+  allow_update_branch?: boolean;
+  delete_branch_on_merge?: boolean;
+  allow_auto_merge?: boolean;
+  web_commit_signoff_required?: boolean;
+  allow_forking?: boolean;
+}
+
 export class GitHubSetupCommand {
   options: {
     cwd: string;
@@ -144,7 +155,7 @@ export class GitHubSetupCommand {
       const repoInfo = await githubService.octokit.repos.get({ owner, repo });
       const isOrgOwned = repoInfo.data.owner.type === 'Organization';
 
-      const settings: any = {
+      const settings: RepoUpdateSettings = {
         // Merge options
         allow_merge_commit: false,
         allow_squash_merge: false,
