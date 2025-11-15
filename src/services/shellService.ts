@@ -19,7 +19,7 @@ class Shell {
     throw new Error('getHistoryFilePath must be implemented by subclass');
   }
 
-  parseHistory(content: string): string[] {
+  parseHistory(_content: string): string[] {
     throw new Error('parseHistory must be implemented by subclass');
   }
 
@@ -397,7 +397,7 @@ function getCurrentShellCommand(debug = false) {
           .toString()
           .replace(/^\s*\d+\s*/, '') // Remove history number
           .trim();
-      } catch (e) {
+      } catch (_e) {
         // Fallback to fc command
         lastCmd = execSync(`fc -ln -2 2>/dev/null | head -n1`, {
           encoding: 'utf8',
@@ -424,7 +424,7 @@ function getCurrentShellCommand(debug = false) {
       }
       return lastCmd;
     }
-  } catch (error) {
+  } catch (_error) {
     if (debug) {
       console.log(
         'Failed to get command using fc, will fall back to history file'

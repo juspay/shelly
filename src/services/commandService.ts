@@ -1,4 +1,4 @@
-import pty from 'node-pty';
+import pty, { IPty } from 'node-pty';
 import os from 'os';
 
 interface CommandResult {
@@ -21,13 +21,13 @@ export function runCommand(command: string): Promise<CommandResult> {
     const env = Object.fromEntries(
       Object.entries(process.env).filter(([, v]) => v !== undefined)
     ) as Record<string, string>;
-    const term = pty.spawn(shell, args, {
+    const term: IPty = pty.spawn(shell, args, {
       name: 'xterm-color',
       cols: 80,
       rows: 30,
       cwd: process.cwd(),
       env,
-    }) as any;
+    });
 
     let output = '';
     let resolved = false;

@@ -1,5 +1,11 @@
-import { generateText } from '@juspay/neurolink';
-import { EventEmitter } from 'events';
+import { generateText, type TextGenerationOptions } from '@juspay/neurolink';
+
+interface PackageExport {
+  types?: string;
+  import?: string;
+  default?: string;
+  svelte?: string;
+}
 
 export class AIContentGenerator {
   generateOptions: {
@@ -14,7 +20,7 @@ export class AIContentGenerator {
     // Memory Bank generation requires 6+ concurrent calls
     process.setMaxListeners(20);
     this.generateOptions = {
-      provider: 'googlevertex' as any,
+      provider: 'googlevertex',
       model: 'gemini-2.0-flash-exp',
       project: 'dev-ai-gamma',
       region: 'us-east5',
@@ -57,7 +63,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2500,
         temperature: 0.7,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackReadme(packageInfo);
@@ -103,7 +109,7 @@ Start the response directly with the # title line.`;
         maxTokens: 1200,
         temperature: 0.6,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       return response.content || this.getFallbackContributing(packageInfo);
     } catch (error) {
@@ -181,12 +187,37 @@ Start the response directly with the # title line.`;
       enhanced.engines = {
         node: '>=18.0.0',
         npm: '>=8.0.0',
+        pnpm: '>=8.0.0',
       };
     }
 
     // Add files array
     if (!enhanced.files) {
       enhanced.files = ['src/', 'README.md', 'package.json', 'LICENSE'];
+    }
+
+    // Add PNPM configuration for security and build optimization (only if using pnpm)
+    // Check if pnpm is the package manager by looking for pnpm-lock.yaml or pnpm in packageManager field
+    const isPnpmProject = enhanced.packageManager?.startsWith('pnpm') ||
+                          (typeof process !== 'undefined' &&
+                           require('fs').existsSync('pnpm-lock.yaml'));
+
+    if (isPnpmProject && !enhanced.pnpm) {
+      enhanced.pnpm = {
+        onlyBuiltDependencies: [
+          'esbuild',
+          'protobufjs',
+          'puppeteer',
+          'sqlite3',
+        ],
+        overrides: {
+          'esbuild@<=0.24.2': '>=0.25.0',
+          'cookie@<0.7.0': '>=0.7.0',
+          '@eslint/plugin-kit@<0.3.4': '>=0.3.4',
+          'tmp@<=0.2.3': '>=0.2.4',
+          'axios@<1.8.2': '>=1.8.2',
+        },
+      };
     }
 
     // Ensure essential dev dependencies
@@ -200,10 +231,17 @@ Start the response directly with the # title line.`;
       '@semantic-release/github': '^9.0.0',
       '@semantic-release/npm': '^11.0.0',
       '@semantic-release/release-notes-generator': '^12.0.0',
-      eslint: '^8.57.0',
+      '@types/node': '^20.0.0',
+      '@typescript-eslint/eslint-plugin': '^8.0.0',
+      '@typescript-eslint/parser': '^8.0.0',
+      '@eslint/js': '^9.0.0',
+      eslint: '^9.0.0',
+      globals: '^15.0.0',
       prettier: '^3.0.0',
       husky: '^9.1.7',
       'lint-staged': '^16.1.5',
+      tsx: '^4.0.0',
+      typescript: '^5.0.0',
       '@commitlint/cli': '^17.0.0',
       '@commitlint/config-conventional': '^17.0.0',
     };
@@ -215,22 +253,44 @@ Start the response directly with the # title line.`;
       }
     });
 
-    // Add scripts if missing
-    enhanced.scripts = enhanced.scripts || {};
-    const essentialScripts = {
-      lint: 'eslint .',
-      'lint:fix': 'eslint . --fix',
-      format: 'prettier --write .',
-      'format:check': 'prettier --check .',
-      prepare: 'husky install',
-      release: 'semantic-release',
+    // Add scripts with comment-based organization
+    const organizedScripts = {
+      // Development & Build
+      'build': enhanced.scripts?.build || 'tsc',
+      'dev': enhanced.scripts?.dev || 'tsc --watch',
+      'build:watch': enhanced.scripts?.['build:watch'] || 'tsc --watch',
+      'clean': enhanced.scripts?.clean || 'rm -rf dist node_modules/.cache',
+
+      // Testing
+      'test': enhanced.scripts?.test || 'vitest run',
+      'test:watch': enhanced.scripts?.['test:watch'] || 'vitest',
+      'test:coverage': enhanced.scripts?.['test:coverage'] || 'vitest run --coverage',
+
+      // Code Quality
+      'lint': enhanced.scripts?.lint || 'eslint .',
+      'lint:fix': enhanced.scripts?.['lint:fix'] || 'eslint . --fix',
+      'format': enhanced.scripts?.format || 'prettier --write .',
+      'format:check': enhanced.scripts?.['format:check'] || 'prettier --check .',
+
+      // Documentation
+      'docs:build': enhanced.scripts?.['docs:build'] || 'mkdocs build --strict --clean',
+      'docs:serve': enhanced.scripts?.['docs:serve'] || 'mkdocs serve',
+      'docs:gh-deploy': enhanced.scripts?.['docs:gh-deploy'] || 'mkdocs gh-deploy --force',
+
+      // Validation
+      'validate': enhanced.scripts?.validate || 'npm run lint && npm run format:check',
+      'validate:all': enhanced.scripts?.['validate:all'] || 'npm run validate && npm run test',
+
+      // Git Hooks
+      'prepare': enhanced.scripts?.prepare || 'husky install',
+      'pre-push': enhanced.scripts?.['pre-push'] || 'npm run validate:all',
+
+      // Release
+      'release': enhanced.scripts?.release || 'semantic-release'
     };
 
-    Object.entries(essentialScripts).forEach(([script, command]) => {
-      if (!enhanced.scripts[script]) {
-        enhanced.scripts[script] = command;
-      }
-    });
+    // Merge scripts: preserve all existing scripts and add/update with organized scripts
+    enhanced.scripts = { ...(enhanced.scripts || {}), ...organizedScripts };
 
     // Add prettier configuration
     if (!enhanced.prettier) {
@@ -246,10 +306,50 @@ Start the response directly with the # title line.`;
     // Add lint-staged configuration
     if (!enhanced['lint-staged']) {
       enhanced['lint-staged'] = {
-        'src/**/*.js': ['eslint --fix', 'prettier --write'],
+        'src/**/*.{js,ts,jsx,tsx}': ['eslint --fix', 'prettier --write'],
         '*.{json,md}': ['prettier --write'],
       };
     }
+
+    // Add modern package exports configuration
+    // Merge with existing exports to preserve custom entrypoints
+    const mainExport: PackageExport = {
+      types: './dist/index.d.ts',
+      import: './dist/index.js',
+      default: './dist/index.js',
+    };
+
+    // Add svelte field if Svelte is in dependencies
+    if (
+      enhanced.dependencies?.svelte ||
+      enhanced.devDependencies?.svelte ||
+      enhanced.peerDependencies?.svelte
+    ) {
+      mainExport.svelte = './dist/index.js';
+    }
+
+    // Build new exports object without overwriting existing ones
+    const newExports: Record<string, PackageExport | string> = {
+      '.': mainExport,
+      './types': {
+        types: './dist/types/index.d.ts',
+        import: './dist/types/index.js',
+        default: './dist/types/index.js',
+      },
+      './package.json': './package.json',
+    };
+
+    // If the project has a CLI (check for bin field), add CLI export
+    if (enhanced.bin) {
+      newExports['./cli'] = {
+        types: './dist/cli/index.d.ts',
+        import: './dist/cli/index.js',
+        default: './dist/cli/index.js',
+      };
+    }
+
+    // Merge with existing exports, preserving any custom entrypoints
+    enhanced.exports = { ...(enhanced.exports || {}), ...newExports };
 
     return enhanced;
   }
@@ -302,13 +402,13 @@ Return only the description text, no additional formatting.`;
         maxTokens: 100,
         temperature: 0.5,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       return (
         response.content?.trim() ||
         `A ${this.extractTechnologies(packageInfo)} project`
       );
-    } catch (error) {
+    } catch (_error) {
       return `A ${this.extractTechnologies(packageInfo)} project`;
     }
   }
@@ -328,14 +428,14 @@ Return only the description text, no additional formatting.`;
         maxTokens: 50,
         temperature: 0.4,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const keywords =
         response.content?.split(',').map((k) => k.trim().toLowerCase()) || [];
       return keywords.length > 0
         ? keywords
         : this.getDefaultKeywords(packageInfo, repoName);
-    } catch (error) {
+    } catch (_error) {
       return this.getDefaultKeywords(packageInfo, repoName);
     }
   }
@@ -539,7 +639,7 @@ Examples: "cli, command-line, typescript, react, api, testing, automation, devel
         maxTokens: 80,
         temperature: 0.3,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       if (response.content) {
         const keywords = response.content
@@ -797,7 +897,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2000,
         temperature: 0.6,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProjectBrief(packageInfo);
@@ -841,7 +941,7 @@ Start the response directly with the # title line.`;
         maxTokens: 1800,
         temperature: 0.6,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProductContext(packageInfo);
@@ -888,7 +988,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2000,
         temperature: 0.5,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackSystemPatterns(packageInfo);
@@ -934,7 +1034,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2000,
         temperature: 0.5,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackTechContext(packageInfo);
@@ -982,7 +1082,7 @@ Start the response directly with the # title line.`;
         maxTokens: 1800,
         temperature: 0.7,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackActiveContext(packageInfo);
@@ -1029,7 +1129,7 @@ Start the response directly with the # title line.`;
         maxTokens: 2200,
         temperature: 0.6,
         ...this.generateOptions,
-      } as any);
+      } as unknown as TextGenerationOptions);
 
       const cleanContent = this.cleanAIContent(response.content);
       return cleanContent || this.getFallbackProgress(packageInfo);
@@ -1178,7 +1278,6 @@ Initial development and core feature implementation
 
   getFallbackSystemPatterns(packageInfo) {
     const name = packageInfo.name || 'Project';
-    const type = packageInfo.repoType || 'Node.js Project';
 
     return `# System Patterns: ${name}
 
@@ -1467,7 +1566,6 @@ Implementing Memory Bank functionality to enhance project context management and
 
   getFallbackProgress(packageInfo) {
     const name = packageInfo.name || 'Project';
-    const version = packageInfo.version || '1.0.0';
 
     return `# Progress: ${name}
 

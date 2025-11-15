@@ -6,6 +6,17 @@ import fs from 'fs/promises';
 
 const execAsync = promisify(exec);
 
+interface MemoryBankFile {
+  template?: string;
+  generator?: string | null;
+}
+
+interface ProjectStructure {
+  hasSrc: boolean;
+  hasTests: boolean;
+  hasDocs: boolean;
+}
+
 /**
  * Memory Bank Service - Manages the creation, updating, and maintenance of project memory bank
  * Implements Cline's Memory Bank protocol for persistent project context
@@ -14,8 +25,8 @@ export class MemoryBankService {
   aiGenerator: AIContentGenerator;
   templatesPath: string;
   targetPath: string;
-  structure: any;
-  rootFiles: any;
+  structure: Record<string, MemoryBankFile>;
+  rootFiles: Record<string, MemoryBankFile>;
   coreFiles: string[];
 
   constructor() {
@@ -88,7 +99,7 @@ export class MemoryBankService {
     await fs.mkdir(path.join(this.targetPath, 'current'), { recursive: true });
 
     // Create or update each file in the structure
-    for (const [filePath, fileConfig] of Object.entries(this.structure)) {
+    for (const [filePath, _fileConfig] of Object.entries(this.structure)) {
       try {
         const fullPath = path.join(this.targetPath, filePath);
         const exists = await this.fileExists(fullPath);
@@ -119,7 +130,7 @@ export class MemoryBankService {
     }
 
     // Generate .clinerules in root directory
-    for (const [fileName, fileConfig] of Object.entries(this.rootFiles)) {
+    for (const [fileName, _fileConfig] of Object.entries(this.rootFiles)) {
       try {
         const exists = await this.fileExists(fileName);
 
@@ -400,7 +411,12 @@ This Memory Bank integrates with:
       author: '',
       repository: '',
       lastUpdated: new Date().toISOString(),
-      neurolinkContent: null,
+      neurolinkContent: null as Record<string, string> | null,
+      projectStructure: {
+        hasSrc: false,
+        hasTests: false,
+        hasDocs: false,
+      } as ProjectStructure,
     };
 
     try {
@@ -449,7 +465,7 @@ This Memory Bank integrates with:
         path.join(repositoryPath, 'docs')
       );
 
-      (analysis as any).projectStructure = {
+      analysis.projectStructure = {
         hasSrc: srcExists,
         hasTests: testExists,
         hasDocs: docsExists,
@@ -954,7 +970,6 @@ GENERATE ONLY RELEVANT SECTIONS FOR THIS PROJECT. Use the EXACT formatting style
    */
   generateEnhancedClinerules(packageInfo) {
     const projectName = packageInfo.name || 'Project';
-    const projectType = packageInfo.repoType || 'Node.js Project';
 
     return `# ${projectName} Project Rules
 
@@ -1098,7 +1113,7 @@ npm version patch|minor|major
 ### **Phase 6: Release & Deploy**
 \`\`\`bash
 # 1. Tag and release
-git tag v\$(npm pkg get version | tr -d '"')
+git tag v$(npm pkg get version | tr -d '"')
 git push origin main --tags
 
 # 2. NPM publishing (if applicable)

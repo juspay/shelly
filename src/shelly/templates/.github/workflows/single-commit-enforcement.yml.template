@@ -34,27 +34,25 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_BRANCH="origin/${{ github.base_ref }}"
             BRANCH_NAME="${{ github.head_ref }}"
-            
+
             # Handle external vs internal contributors differently using repository IDs for security
             if [ "${{ github.event.pull_request.head.repo.id }}" != "${{ github.event.repository.id }}" ]; then
               # External contributor - use the PR head SHA directly
-              CURRENT_BRANCH="HEAD"
               echo "📡 External contributor detected"
               echo "🔍 Head repository ID: ${{ github.event.pull_request.head.repo.id }}"
               echo "🔍 Base repository ID: ${{ github.event.repository.id }}"
               echo "🔍 Using PR head SHA: ${{ github.event.pull_request.head.sha }}"
-              
-              # For external PRs, checkout the actual PR commit (not the merge commit)
-              echo "🔄 Checking out PR head commit for validation..."
-              git checkout "${{ github.event.pull_request.head.sha }}"
-              CURRENT_BRANCH="HEAD"
             else
-              # Internal branch - can checkout the actual branch
+              # Internal contributor - use the PR head SHA for reliable checkout
               echo "🏠 Internal contributor detected"
-              echo "🔄 Switching to actual PR head branch for validation..."
-              git checkout "origin/${{ github.head_ref }}"
-              CURRENT_BRANCH="origin/${{ github.head_ref }}"
+              echo "🔍 Using PR head SHA: ${{ github.event.pull_request.head.sha }}"
             fi
+
+            # For all PRs, checkout the actual PR commit (not the merge commit)
+            # This works reliably with actions/checkout@v4 regardless of contributor type
+            echo "🔄 Checking out PR head commit for validation..."
+            git checkout "${{ github.event.pull_request.head.sha }}"
+            CURRENT_BRANCH="HEAD"
           else
             BASE_BRANCH="origin/release"
             CURRENT_BRANCH="HEAD"

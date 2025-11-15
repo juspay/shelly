@@ -28,7 +28,7 @@ export function getCommandHistory(): HistoryEntry[] {
     try {
       const data = fs.readFileSync(historyFilePath, 'utf-8');
       return JSON.parse(data);
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }

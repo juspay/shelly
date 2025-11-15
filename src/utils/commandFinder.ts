@@ -15,11 +15,11 @@ export function getAvailableCommands(): string[] {
           if (stat.isFile() && (stat.mode & 0o111) !== 0) {
             commands.add(file);
           }
-        } catch (e) {
+        } catch (_e) {
           // ignore stat errors
         }
       }
-    } catch (e) {
+    } catch (_e) {
       // ignore readdir errors
     }
   }
