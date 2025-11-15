@@ -1,0 +1,20 @@
+# Python Requirements for {{projectName}}
+# This file lists Python dependencies if your project uses Python alongside Node.js
+
+# Common Python tools for development
+black>=24.0.0
+flake8>=7.0.0
+pytest>=8.0.0
+pytest-cov>=4.1.0
+mypy>=1.8.0
+
+# Documentation
+sphinx>=7.2.0
+sphinx-rtd-theme>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+requests>=2.31.0
+
+# Add your project-specific Python dependencies below
