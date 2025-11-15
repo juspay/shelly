@@ -599,9 +599,15 @@ export class OrganizeCommand {
     const directories = [
       '.github/ISSUE_TEMPLATE',
       '.github/workflows',
+      '.changeset',
+      '.husky',
+      'config',
       'src',
       'scripts',
       'docs',
+      'examples',
+      'tools',
+      'todos',
       `${repoAnalysis.repoName}-demo`,
       'test',
     ];
@@ -995,8 +1001,63 @@ export class OrganizeCommand {
           this.loadTemplate('.env.example.template', repoAnalysis),
       },
       {
+        name: '.env.test',
+        generator: () =>
+          this.loadTemplate('.env.test.template', repoAnalysis),
+      },
+      {
         name: 'mkdocs.yml',
         generator: () => this.loadTemplate('mkdocs.yml.template', repoAnalysis),
+      },
+      {
+        name: 'biome.json',
+        generator: () =>
+          this.loadTemplate('biome.json.template', repoAnalysis),
+      },
+      {
+        name: 'eslint.config.js',
+        generator: () =>
+          this.loadTemplate('eslint.config.js.template', repoAnalysis),
+      },
+      {
+        name: '.prettierignore',
+        generator: () =>
+          this.loadTemplate('.prettierignore.template', repoAnalysis),
+      },
+      {
+        name: '.gitleaksrc.json',
+        generator: () =>
+          this.loadTemplate('.gitleaksrc.json.template', repoAnalysis),
+      },
+      {
+        name: '.mcp-servers.example.json',
+        generator: () =>
+          this.loadTemplate('.mcp-servers.example.json.template', repoAnalysis),
+      },
+      {
+        name: 'tsconfig.cli.json',
+        generator: () =>
+          this.loadTemplate('tsconfig.cli.json.template', repoAnalysis),
+      },
+      {
+        name: 'vite.config.ts',
+        generator: () =>
+          this.loadTemplate('vite.config.ts.template', repoAnalysis),
+      },
+      {
+        name: 'vitest.config.ts',
+        generator: () =>
+          this.loadTemplate('vitest.config.ts.template', repoAnalysis),
+      },
+      {
+        name: 'svelte.config.js',
+        generator: () =>
+          this.loadTemplate('svelte.config.js.template', repoAnalysis),
+      },
+      {
+        name: 'requirements.txt',
+        generator: () =>
+          this.loadTemplate('requirements.txt.template', repoAnalysis),
       },
     ];
 
@@ -1104,6 +1165,87 @@ export class OrganizeCommand {
 /.github/ @juspay/devops-team
 `;
     await this.writeFileIfNeeded('.github/CODEOWNERS', codeownersContent);
+
+    // Create directory template files
+    await this.createDirectoryTemplateFiles(repoAnalysis);
+  }
+
+  /**
+   * Create template files for development directories
+   */
+  async createDirectoryTemplateFiles(repoAnalysis) {
+    const directoryTemplates = [
+      // Changeset templates
+      {
+        source: '.changeset/README.md.template',
+        target: '.changeset/README.md',
+      },
+      {
+        source: '.changeset/config.json.template',
+        target: '.changeset/config.json',
+      },
+      // Husky templates
+      {
+        source: '.husky/README.md.template',
+        target: '.husky/README.md',
+      },
+      {
+        source: '.husky/pre-commit.template',
+        target: '.husky/pre-commit',
+      },
+      {
+        source: '.husky/commit-msg.template',
+        target: '.husky/commit-msg',
+      },
+      // Config templates
+      {
+        source: 'config/README.md.template',
+        target: 'config/README.md',
+      },
+      {
+        source: 'config/default.json.template',
+        target: 'config/default.json',
+      },
+      // Examples templates
+      {
+        source: 'examples/README.md.template',
+        target: 'examples/README.md',
+      },
+      {
+        source: 'examples/basic-example.js.template',
+        target: 'examples/basic-example.js',
+      },
+      // Tools templates
+      {
+        source: 'tools/README.md.template',
+        target: 'tools/README.md',
+      },
+      // Todos templates
+      {
+        source: 'todos/ROADMAP.md.template',
+        target: 'todos/ROADMAP.md',
+      },
+    ];
+
+    for (const template of directoryTemplates) {
+      const content = await this.loadTemplate(template.source, repoAnalysis);
+      await this.writeFileIfNeeded(template.target, content);
+    }
+
+    // Make husky hooks executable
+    try {
+      const huskyHooks = [
+        path.join(this.cwd, '.husky/pre-commit'),
+        path.join(this.cwd, '.husky/commit-msg'),
+      ];
+      for (const hook of huskyHooks) {
+        if (await this.fileExists(hook)) {
+          await fs.chmod(hook, 0o755);
+        }
+      }
+    } catch (error) {
+      console.warn(`⚠️ Could not make husky hooks executable: ${error.message}`);
+    }
   }
 
   /**
