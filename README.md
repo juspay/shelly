@@ -171,7 +171,27 @@ shelly setup --organize-only          # Only organize, skip GitHub setup
 - Set your GitHub token: `export GITHUB_TOKEN=your_token_here`
 - Admin access to the target repository
 - Repository must be a Git repository with GitHub remote
-- Required scopes: `repo`, `admin:repo_hook`, `write:packages` (for classic tokens)
+
+**⚠️ Important for Enterprise Users:**
+
+If you're in a GitHub Enterprise organization that restricts Classic Personal Access Tokens, you have two options:
+
+1. **Fine-Grained Token (Recommended):** Create a fine-grained token with these repository permissions:
+   - `Administration`: Read and write (for repository settings)
+   - `Contents`: Read and write (for creating docs folder)
+   - `Metadata`: Read-only (automatically included)
+   - Generate at: https://github.com/settings/tokens?type=beta
+
+2. **SSH Authentication:** Configure your repository to use SSH:
+   ```bash
+   git remote set-url origin git@github.com:owner/repo.git
+   ```
+   Then use a Fine-Grained token or Classic token for API operations only.
+
+**Classic Token Scopes (if allowed by your organization):**
+- `repo` (Full control of private repositories)
+- `admin:repo_hook` (Full control of repository hooks)
+- `write:packages` (Upload packages to GitHub Package Registry)
 
 **What it configures:**
 
@@ -301,6 +321,31 @@ echo 'SAVEHIST=1000' >> ~/.zshrc
 echo 'set history = 1000' >> ~/.tcshrc
 echo 'set savehist = 1000' >> ~/.tcshrc
 ```
+
+#### GitHub Setup Authentication Failures (403 Forbidden)
+
+**Cause:** Enterprise GitHub organizations often block Classic Personal Access Tokens.
+
+**Solutions:**
+
+1. **Use Fine-Grained Token (Recommended):**
+   - Go to: https://github.com/settings/tokens?type=beta
+   - Click "Generate new token"
+   - Select repository access and grant these permissions:
+     - `Administration`: Read and write
+     - `Contents`: Read and write
+     - `Metadata`: Read-only (automatic)
+   - Export: `export GITHUB_TOKEN=github_pat_your_token`
+
+2. **Use SSH for Git Operations:**
+   ```bash
+   git remote set-url origin git@github.com:owner/repo.git
+   ```
+   Then use a Fine-Grained token for API operations.
+
+3. **Check with your GitHub Admin:**
+   - Ask if Classic tokens are allowed in your organization
+   - Request appropriate permissions for Fine-Grained tokens
 
 #### "shelly: command not found"
 

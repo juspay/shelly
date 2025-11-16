@@ -162,6 +162,23 @@ shelly github setup
 shelly setup --force
 ```
 
+**⚠️ Token Type Requirements:**
+
+Shelly supports both Classic and Fine-Grained GitHub tokens. However, **Enterprise organizations often block Classic tokens**.
+
+**Fine-Grained Token (Recommended for Enterprise):**
+1. Go to: https://github.com/settings/tokens?type=beta
+2. Click "Generate new token"
+3. Select your repository and grant these permissions:
+   - **Administration**: Read and write
+   - **Contents**: Read and write
+   - **Metadata**: Read-only (automatic)
+4. Export: `export GITHUB_TOKEN=github_pat_...`
+
+**Classic Token (If Allowed):**
+- Required scopes: `repo`, `admin:repo_hook`, `write:packages`
+- Generate at: https://github.com/settings/tokens
+
 **What this configures:**
 
 - Repository merge settings (rebase-only workflow)
