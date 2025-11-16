@@ -165,6 +165,88 @@ export GOOGLE_AI_API_KEY=your-api-key-here
 
 **Note:** The `.env` file is already included in `.gitignore` to prevent accidentally committing your credentials.
 
+### Step 4: Configure GitHub Token (For Repository Management Features)
+
+If you plan to use Shelly's GitHub repository setup features (`shelly gh`, `shelly setup`), you need a GitHub token.
+
+#### Understanding GitHub Token Types
+
+GitHub offers two types of Personal Access Tokens:
+
+**1. Fine-Grained Tokens (Recommended for Enterprise):**
+
+- More secure with granular permissions
+- Required by organizations that block Classic tokens
+- Better for specific repository access
+
+**2. Classic Tokens:**
+
+- Broader permissions across all repositories
+- May be blocked by enterprise security policies
+- Simpler to set up but less secure
+
+#### Setting Up a Fine-Grained Token
+
+1. **Generate the token:**
+   - Go to: https://github.com/settings/tokens?type=beta
+   - Click "Generate new token"
+   - Name it (e.g., "Shelly Repository Setup")
+   - Set expiration (e.g., 90 days)
+
+2. **Configure repository access:**
+   - Select "Only select repositories"
+   - Choose the repositories you want to manage
+
+3. **Set permissions (Required):**
+   - **Administration**: Read and write (for repository settings)
+   - **Contents**: Read and write (for creating docs folder)
+   - **Metadata**: Read-only (automatically included)
+
+4. **Generate and copy the token**
+   - Token format: `github_pat_...`
+
+5. **Export the token:**
+   ```bash
+   # Add to .env file
+   export GITHUB_TOKEN=github_pat_your_token_here
+   ```
+
+#### Setting Up a Classic Token (If Allowed)
+
+1. **Generate the token:**
+   - Go to: https://github.com/settings/tokens
+   - Click "Generate new token (classic)"
+   - Name it (e.g., "Shelly Repository Setup")
+   - Set expiration
+
+2. **Select scopes (Required):**
+   - ✅ `repo` (Full control of private repositories)
+   - ✅ `admin:repo_hook` (Full control of repository hooks)
+   - ✅ `write:packages` (Upload packages to GitHub Package Registry)
+
+3. **Generate and copy the token**
+   - Token format: `ghp_...`
+
+4. **Export the token:**
+   ```bash
+   # Add to .env file
+   export GITHUB_TOKEN=ghp_your_token_here
+   ```
+
+#### Troubleshooting Token Issues
+
+**403 Forbidden Error:**
+
+- Your organization may be blocking Classic tokens
+- Solution: Use a Fine-Grained token instead
+- Alternative: Use SSH for git operations: `git remote set-url origin git@github.com:owner/repo.git`
+
+**Insufficient Permissions:**
+
+- Ensure you have admin access to the repository
+- Check that all required permissions are granted in the token
+- For Classic tokens, verify all required scopes are selected
+
 ## 5. Shell-Specific Configuration
 
 ### For Bash Users

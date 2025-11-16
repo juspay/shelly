@@ -41,12 +41,18 @@ export class GitHubSetupCommand {
       // Validate GitHub token
       const token = process.env.GITHUB_TOKEN;
       if (!token) {
-        console.error('❌ GITHUB_TOKEN environment variable is required');
+        console.error('❌ GITHUB_TOKEN environment variable is required\n');
+        console.error('📖 Token Generation Options:\n');
+        console.error('   Fine-Grained Token (Recommended for Enterprise):');
+        console.error('   • URL: https://github.com/settings/tokens?type=beta');
+        console.error('   • Required permissions:');
+        console.error('     - Administration: Read and write');
+        console.error('     - Contents: Read and write');
+        console.error('     - Metadata: Read-only\n');
+        console.error('   Classic Token (If Allowed):');
+        console.error('   • URL: https://github.com/settings/tokens');
         console.error(
-          '💡 Get your token from: https://github.com/settings/tokens'
-        );
-        console.error(
-          '💡 Required scopes: repo, admin:repo_hook, write:packages'
+          '   • Required scopes: repo, admin:repo_hook, write:packages\n'
         );
         process.exit(1);
       }
@@ -57,6 +63,15 @@ export class GitHubSetupCommand {
       console.log('🔍 Validating GitHub token...');
       const tokenInfo = await githubService.validateToken();
       console.log(`✅ Authenticated as: ${tokenInfo.user}`);
+      if (tokenInfo.tokenType !== 'unknown') {
+        const tokenTypeLabel =
+          tokenInfo.tokenType === 'fine-grained'
+            ? 'Fine-Grained Token'
+            : tokenInfo.tokenType === 'classic'
+              ? 'Classic Token'
+              : tokenInfo.tokenType;
+        console.log(`📋 Token type: ${tokenTypeLabel}`);
+      }
 
       // Get repository information
       console.log('📂 Detecting repository...');

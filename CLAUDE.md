@@ -5,18 +5,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Building
+
 ```bash
 npm run build              # Compile TypeScript and copy templates
 npm run copy-templates     # Copy template files to dist/
 ```
 
 ### Testing
+
 ```bash
 npm test                   # Build and run all tests in dist/tests/
 npm run test               # Same as above
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint               # Run ESLint on .js and .ts files
 npm run lint:fix           # Auto-fix linting issues
@@ -25,6 +28,7 @@ npm run format:check       # Check formatting without changes
 ```
 
 ### Local Development
+
 ```bash
 npm start                  # Build and run the CLI
 node dist/main.js          # Run error analysis mode directly
@@ -38,6 +42,7 @@ node dist/shelly/cli.js    # Run repository management mode directly
 Shelly has **two distinct entry points** that handle different use cases:
 
 #### 1. Error Analysis Mode (`src/main.ts`)
+
 - **Entry Point**: `dist/main.js`
 - **Usage**: `shelly` (no arguments) or `shelly "command"`
 - **Purpose**: Analyzes failed shell commands and provides AI-powered suggestions
@@ -49,6 +54,7 @@ Shelly has **two distinct entry points** that handle different use cases:
   - `rules/` - Pattern-based command correction rules
 
 #### 2. Repository Management Mode (`src/shelly/cli.ts`)
+
 - **Entry Point**: `dist/shelly/cli.js`
 - **Usage**: `shelly <command>` (organize, memory, github, etc.)
 - **Purpose**: Project scaffolding, GitHub setup, Memory Bank management
@@ -75,6 +81,7 @@ The codebase follows a service-oriented architecture:
 ### Key Integration: Neurolink
 
 All AI operations use `@juspay/neurolink` (Google Vertex AI wrapper):
+
 - Error analysis and suggestions
 - Memory Bank content generation
 - AI-assisted scaffolding
@@ -84,18 +91,23 @@ The package provides unified AI capabilities across both CLI modes.
 ## Important Architectural Patterns
 
 ### Shell Alias Function
+
 The shell integration (`generateShellAlias()` in src/main.ts:20) generates POSIX-compatible shell functions that:
+
 - Work across bash, zsh, and other shells
 - Capture real-time command history using `fc` and `history` commands
 - Route to appropriate CLI mode based on arguments
 
 ### Template System
+
 Repository scaffolding uses a template directory (`src/shelly/templates/`) that:
+
 - Contains project structure templates (GitHub workflows, configs, etc.)
 - Is copied to `dist/` during build via `scripts/copy-templates.js`
 - Must be included in the published package (see package.json "files" field)
 
 ### Environment Variables
+
 - `SHELLY_DEBUG=true` - Enable detailed logging in error analysis mode
 - `SHELL_OVERRIDE=<shell>` - Force specific shell detection
 - `GITHUB_TOKEN` - Required for GitHub repository setup commands
@@ -117,6 +129,7 @@ Repository scaffolding uses a template directory (`src/shelly/templates/`) that:
 ## Publishing Workflow
 
 The project uses semantic-release for automated publishing:
+
 - Conventional commits trigger version bumps
 - CI/CD via GitHub Actions (see .github/workflows/)
 - Requires `NPM_TOKEN` for publishing to npm registry

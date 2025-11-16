@@ -48,7 +48,7 @@ export async function analyzeError(
     });
     return result.content;
   } catch (e) {
-    return 'Could not analyze the error with Neurolink.'+ e;
+    return 'Could not analyze the error with Neurolink.' + e;
   }
 }
 

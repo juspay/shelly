@@ -137,9 +137,7 @@ export class GitHubService {
     }
 
     // Handle SSH URLs: git@github.com:owner/repo.git
-    const sshMatch = url.match(
-      /git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/
-    );
+    const sshMatch = url.match(/git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/);
     if (sshMatch) {
       return { owner: sshMatch[1], repo: sshMatch[2] };
     }
@@ -427,7 +425,10 @@ You can write documentation in:
       } catch (fsError) {
         // Docs folder creation failed, but this is optional - silently continue
         if (process.env.SHELLY_DEBUG) {
-          console.error('Debug: Failed to create docs folder:', fsError.message);
+          console.error(
+            'Debug: Failed to create docs folder:',
+            fsError.message
+          );
         }
       }
 
@@ -457,10 +458,63 @@ You can write documentation in:
         valid: true,
         user: response.data.login,
         scopes: response.headers['x-oauth-scopes']?.split(', ') || [],
+        tokenType: this.detectTokenType(this.octokit.auth),
       };
     } catch (error) {
-      throw new Error(`Invalid GitHub token: ${error.message}`);
+      this.handleAuthError(error);
     }
+  }
+
+  /**
+   * Detect the type of GitHub token being used
+   */
+  private detectTokenType(auth: unknown): string {
+    if (typeof auth === 'string') {
+      if (auth.startsWith('github_pat_')) {
+        return 'fine-grained';
+      } else if (auth.startsWith('ghp_')) {
+        return 'classic';
+      } else if (auth.startsWith('gho_')) {
+        return 'oauth';
+      } else if (auth.startsWith('ghs_')) {
+        return 'installation';
+      }
+    }
+    return 'unknown';
+  }
+
+  /**
+   * Handle authentication errors with helpful guidance
+   */
+  private handleAuthError(error: unknown): never {
+    const apiError = error as { status?: number; message?: string };
+    if (apiError.status === 403 || apiError.status === 401) {
+      const errorMessage = (apiError.message || '').toLowerCase();
+      if (
+        errorMessage.includes('token') ||
+        errorMessage.includes('credential') ||
+        errorMessage.includes('authentication') ||
+        errorMessage.includes('forbidden')
+      ) {
+        throw new Error(
+          `GitHub authentication failed (${apiError.status}): ${apiError.message}\n\n` +
+            `⚠️  Enterprise Token Restriction Detected!\n\n` +
+            `Your organization may be blocking Classic Personal Access Tokens.\n\n` +
+            `Solutions:\n` +
+            `1. Use a Fine-Grained Token (Recommended):\n` +
+            `   • Go to: https://github.com/settings/tokens?type=beta\n` +
+            `   • Generate a token with these permissions:\n` +
+            `     - Administration: Read and write\n` +
+            `     - Contents: Read and write\n` +
+            `     - Metadata: Read-only\n` +
+            `   • Export: export GITHUB_TOKEN=github_pat_...\n\n` +
+            `2. Use SSH Authentication:\n` +
+            `   • git remote set-url origin git@github.com:owner/repo.git\n\n` +
+            `3. Contact your GitHub organization admin for guidance.`
+        );
+      }
+    }
+    throw error;
   }
 
   /**
@@ -485,6 +539,9 @@ You can write documentation in:
         pull: permissions.pull || false,
       };
     } catch (error) {
+      if (error.status === 403 || error.status === 401) {
+        this.handleAuthError(error);
+      }
       throw new Error(
         `Failed to check repository permissions: ${error.message}`
       );
