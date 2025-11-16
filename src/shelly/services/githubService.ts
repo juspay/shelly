@@ -137,9 +137,7 @@ export class GitHubService {
     }
 
     // Handle SSH URLs: git@github.com:owner/repo.git
-    const sshMatch = url.match(
-      /git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/
-    );
+    const sshMatch = url.match(/git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/);
     if (sshMatch) {
       return { owner: sshMatch[1], repo: sshMatch[2] };
     }
@@ -427,7 +425,10 @@ You can write documentation in:
       } catch (fsError) {
         // Docs folder creation failed, but this is optional - silently continue
         if (process.env.SHELLY_DEBUG) {
-          console.error('Debug: Failed to create docs folder:', fsError.message);
+          console.error(
+            'Debug: Failed to create docs folder:',
+            fsError.message
+          );
         }
       }
 
