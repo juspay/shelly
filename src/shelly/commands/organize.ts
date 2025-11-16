@@ -1039,8 +1039,7 @@ export class OrganizeCommand {
       },
       {
         name: '.env.test',
-        generator: () =>
-          this.loadTemplate('.env.test.template', repoAnalysis),
+        generator: () => this.loadTemplate('.env.test.template', repoAnalysis),
       },
       {
         name: '.editorconfig',
@@ -1060,8 +1059,7 @@ export class OrganizeCommand {
       },
       {
         name: 'biome.json',
-        generator: () =>
-          this.loadTemplate('biome.json.template', repoAnalysis),
+        generator: () => this.loadTemplate('biome.json.template', repoAnalysis),
       },
       {
         name: 'eslint.config.js',
@@ -1320,7 +1318,9 @@ export class OrganizeCommand {
         }
       }
     } catch (error) {
-      console.warn(`⚠️ Could not make husky hooks executable: ${error.message}`);
+      console.warn(
+        `⚠️ Could not make husky hooks executable: ${error.message}`
+      );
     }
   }
 

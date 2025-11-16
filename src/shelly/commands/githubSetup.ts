@@ -43,12 +43,8 @@ export class GitHubSetupCommand {
       if (!token) {
         console.error('❌ GITHUB_TOKEN environment variable is required\n');
         console.error('📖 Token Generation Options:\n');
-        console.error(
-          '   Fine-Grained Token (Recommended for Enterprise):'
-        );
-        console.error(
-          '   • URL: https://github.com/settings/tokens?type=beta'
-        );
+        console.error('   Fine-Grained Token (Recommended for Enterprise):');
+        console.error('   • URL: https://github.com/settings/tokens?type=beta');
         console.error('   • Required permissions:');
         console.error('     - Administration: Read and write');
         console.error('     - Contents: Read and write');

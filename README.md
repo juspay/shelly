@@ -189,6 +189,7 @@ If you're in a GitHub Enterprise organization that restricts Classic Personal Ac
    Then use a Fine-Grained token or Classic token for API operations only.
 
 **Classic Token Scopes (if allowed by your organization):**
+
 - `repo` (Full control of private repositories)
 - `admin:repo_hook` (Full control of repository hooks)
 - `write:packages` (Upload packages to GitHub Package Registry)
@@ -338,9 +339,11 @@ echo 'set savehist = 1000' >> ~/.tcshrc
    - Export: `export GITHUB_TOKEN=github_pat_your_token`
 
 2. **Use SSH for Git Operations:**
+
    ```bash
    git remote set-url origin git@github.com:owner/repo.git
    ```
+
    Then use a Fine-Grained token for API operations.
 
 3. **Check with your GitHub Admin:**

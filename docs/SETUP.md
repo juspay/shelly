@@ -174,11 +174,13 @@ If you plan to use Shelly's GitHub repository setup features (`shelly gh`, `shel
 GitHub offers two types of Personal Access Tokens:
 
 **1. Fine-Grained Tokens (Recommended for Enterprise):**
+
 - More secure with granular permissions
 - Required by organizations that block Classic tokens
 - Better for specific repository access
 
 **2. Classic Tokens:**
+
 - Broader permissions across all repositories
 - May be blocked by enterprise security policies
 - Simpler to set up but less secure
@@ -234,11 +236,13 @@ GitHub offers two types of Personal Access Tokens:
 #### Troubleshooting Token Issues
 
 **403 Forbidden Error:**
+
 - Your organization may be blocking Classic tokens
 - Solution: Use a Fine-Grained token instead
 - Alternative: Use SSH for git operations: `git remote set-url origin git@github.com:owner/repo.git`
 
 **Insufficient Permissions:**
+
 - Ensure you have admin access to the repository
 - Check that all required permissions are granted in the token
 - For Classic tokens, verify all required scopes are selected

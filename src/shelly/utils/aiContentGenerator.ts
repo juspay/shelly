@@ -198,9 +198,10 @@ Start the response directly with the # title line.`;
 
     // Add PNPM configuration for security and build optimization (only if using pnpm)
     // Check if pnpm is the package manager by looking for pnpm-lock.yaml or pnpm in packageManager field
-    const isPnpmProject = enhanced.packageManager?.startsWith('pnpm') ||
-                          (typeof process !== 'undefined' &&
-                           require('fs').existsSync('pnpm-lock.yaml'));
+    const isPnpmProject =
+      enhanced.packageManager?.startsWith('pnpm') ||
+      (typeof process !== 'undefined' &&
+        require('fs').existsSync('pnpm-lock.yaml'));
 
     if (isPnpmProject && !enhanced.pnpm) {
       enhanced.pnpm = {
@@ -256,37 +257,44 @@ Start the response directly with the # title line.`;
     // Add scripts with comment-based organization
     const organizedScripts = {
       // Development & Build
-      'build': enhanced.scripts?.build || 'tsc',
-      'dev': enhanced.scripts?.dev || 'tsc --watch',
+      build: enhanced.scripts?.build || 'tsc',
+      dev: enhanced.scripts?.dev || 'tsc --watch',
       'build:watch': enhanced.scripts?.['build:watch'] || 'tsc --watch',
-      'clean': enhanced.scripts?.clean || 'rm -rf dist node_modules/.cache',
+      clean: enhanced.scripts?.clean || 'rm -rf dist node_modules/.cache',
 
       // Testing
-      'test': enhanced.scripts?.test || 'vitest run',
+      test: enhanced.scripts?.test || 'vitest run',
       'test:watch': enhanced.scripts?.['test:watch'] || 'vitest',
-      'test:coverage': enhanced.scripts?.['test:coverage'] || 'vitest run --coverage',
+      'test:coverage':
+        enhanced.scripts?.['test:coverage'] || 'vitest run --coverage',
 
       // Code Quality
-      'lint': enhanced.scripts?.lint || 'eslint .',
+      lint: enhanced.scripts?.lint || 'eslint .',
       'lint:fix': enhanced.scripts?.['lint:fix'] || 'eslint . --fix',
-      'format': enhanced.scripts?.format || 'prettier --write .',
-      'format:check': enhanced.scripts?.['format:check'] || 'prettier --check .',
+      format: enhanced.scripts?.format || 'prettier --write .',
+      'format:check':
+        enhanced.scripts?.['format:check'] || 'prettier --check .',
 
       // Documentation
-      'docs:build': enhanced.scripts?.['docs:build'] || 'mkdocs build --strict --clean',
+      'docs:build':
+        enhanced.scripts?.['docs:build'] || 'mkdocs build --strict --clean',
       'docs:serve': enhanced.scripts?.['docs:serve'] || 'mkdocs serve',
-      'docs:gh-deploy': enhanced.scripts?.['docs:gh-deploy'] || 'mkdocs gh-deploy --force',
+      'docs:gh-deploy':
+        enhanced.scripts?.['docs:gh-deploy'] || 'mkdocs gh-deploy --force',
 
       // Validation
-      'validate': enhanced.scripts?.validate || 'npm run lint && npm run format:check',
-      'validate:all': enhanced.scripts?.['validate:all'] || 'npm run validate && npm run test',
+      validate:
+        enhanced.scripts?.validate || 'npm run lint && npm run format:check',
+      'validate:all':
+        enhanced.scripts?.['validate:all'] ||
+        'npm run validate && npm run test',
 
       // Git Hooks
-      'prepare': enhanced.scripts?.prepare || 'husky install',
+      prepare: enhanced.scripts?.prepare || 'husky install',
       'pre-push': enhanced.scripts?.['pre-push'] || 'npm run validate:all',
 
       // Release
-      'release': enhanced.scripts?.release || 'semantic-release'
+      release: enhanced.scripts?.release || 'semantic-release',
     };
 
     // Merge scripts: preserve all existing scripts and add/update with organized scripts
