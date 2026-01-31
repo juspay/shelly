@@ -1,14 +1,12 @@
 # [1.2.0](https://github.com/juspay/Shelly/compare/v1.1.0...v1.2.0) (2025-11-16)
 
-
 ### Bug Fixes
 
-* **release:** resolve formatting, ESM compatibility, error handling, and pnpm detection bugs ([f2e4819](https://github.com/juspay/Shelly/commit/f2e48191b4131fd276c5a2b21d66a4748bd4e723))
-
+- **release:** resolve formatting, ESM compatibility, error handling, and pnpm detection bugs ([f2e4819](https://github.com/juspay/Shelly/commit/f2e48191b4131fd276c5a2b21d66a4748bd4e723))
 
 ### Features
 
-* **organize:** add critical infrastructure templates and fix all linting issues ([c41debf](https://github.com/juspay/Shelly/commit/c41debfd5e60067873c7ab6ecfdfcfa530b7f397)), closes [#45](https://github.com/juspay/Shelly/issues/45)
+- **organize:** add critical infrastructure templates and fix all linting issues ([c41debf](https://github.com/juspay/Shelly/commit/c41debfd5e60067873c7ab6ecfdfcfa530b7f397)), closes [#45](https://github.com/juspay/Shelly/issues/45)
 
 # [1.1.0](https://github.com/juspay/Shelly/compare/v1.0.0...v1.1.0) (2025-11-03)
 

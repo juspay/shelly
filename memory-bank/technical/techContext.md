@@ -270,7 +270,75 @@ const detectShell = (): ShellType => {
 
 ## **AI Integration Architecture**
 
-### **Provider Abstraction**
+### **Multi-Provider Configuration Service**
+
+Shelly now supports multiple AI providers with automatic detection and fallback:
+
+```typescript
+// AI Configuration Service (src/services/aiConfigService.ts)
+export type AIProvider =
+  | 'google'
+  | 'ollama'
+  | 'openrouter'
+  | 'openai'
+  | 'mistral';
+export type AITier = 'free' | 'paid';
+
+// Provider priority for auto-detection (free tier first)
+const FREE_TIER_PRIORITY: AIProvider[] = [
+  'ollama',
+  'openrouter',
+  'google',
+  'mistral',
+  'openai',
+];
+
+// Provider configurations
+const PROVIDER_CONFIGS: Record<AIProvider, ProviderConfig> = {
+  google: {
+    model: 'gemini-2.0-flash',
+    apiKeyEnvVar: 'GOOGLE_GENERATIVE_AI_API_KEY',
+  },
+  ollama: { model: 'llama3.2', baseUrl: 'http://localhost:11434' },
+  openrouter: {
+    model: 'meta-llama/llama-3.2-3b-instruct:free',
+    apiKeyEnvVar: 'OPENROUTER_API_KEY',
+  },
+  mistral: { model: 'mistral-small-latest', apiKeyEnvVar: 'MISTRAL_API_KEY' },
+  openai: { model: 'gpt-4o-mini', apiKeyEnvVar: 'OPENAI_API_KEY' },
+};
+```
+
+### **Environment Variables**
+
+```bash
+# AI Provider Selection
+SHELLY_AI_PROVIDER=google|ollama|openrouter|mistral|openai
+SHELLY_AI_MODEL=<custom-model-name>
+SHELLY_AI_TIER=free|paid
+SHELLY_AI_DISABLED=true  # Disable AI completely
+
+# API Keys (provider-specific)
+GOOGLE_GENERATIVE_AI_API_KEY  # Google Gemini
+OPENROUTER_API_KEY            # OpenRouter (has free models)
+MISTRAL_API_KEY               # Mistral AI
+OPENAI_API_KEY                # OpenAI
+OLLAMA_HOST                   # Custom Ollama host (default: localhost:11434)
+```
+
+### **Fallback Mode**
+
+When AI is unavailable, Shelly uses template-based generation:
+
+```typescript
+// Fallback analysis without AI
+function getBasicErrorAnalysis(output: string, exitCode: number): string {
+  const cleanOutput = stripAnsi(output); // Strip terminal colors
+  // Pattern matching for common errors: npm, git, permission, etc.
+}
+```
+
+### **Provider Abstraction (Legacy)**
 
 ```typescript
 // AI service factory pattern with TypeScript
@@ -482,9 +550,17 @@ shelly --version
 ```bash
 # Verify all systems operational
 shelly --version                    # Basic functionality
+shelly config                       # AI configuration status
+shelly config providers             # Available AI providers
 shelly organize --dry-run          # Repository organization
 shelly memory status               # Memory Bank system
 SHELLY_DEBUG=true shelly           # Debug mode verification
+
+# Test fallback mode (no AI)
+SHELLY_AI_DISABLED=true shelly "npm run nonexistent"
+
+# Test with specific provider
+SHELLY_AI_PROVIDER=ollama shelly "failing-command"
 ```
 
 ### **Maintenance Tasks**

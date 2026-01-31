@@ -26,6 +26,31 @@
 
 **Recent Major Changes:**
 
+### 🆓 **Free Tier AI Support & Multi-Provider Configuration (Jan 31, 2026)**
+
+- **Multi-Provider Support**: Added support for 5 AI providers: Google, Ollama, OpenRouter, Mistral, OpenAI
+- **AI Configuration Service**: New centralized `aiConfigService.ts` for managing AI provider settings
+- **Fallback Mode**: Template-based generation when no AI is available (`SHELLY_AI_DISABLED=true`)
+- **Auto-Detection**: Automatic provider detection based on available API keys/services
+- **Free Tier Priority**: Ollama (local, free) → OpenRouter (free models) → Google → Mistral → OpenAI
+- **New Config Command**: `shelly config` and `shelly config providers` for AI configuration management
+- **Shell Alias Routing Fix**: Fixed routing between CLI commands and error analysis mode
+- **ANSI Stripping**: Fixed pattern matching for colored terminal output (npm, git errors)
+- **Enhanced Error Detection**: Added patterns for git commands, invalid commands, unknown options
+- **Files Changed**:
+  - Added `src/services/aiConfigService.ts` - Central AI configuration management
+  - Updated `src/services/analysisService.ts` - Free tier support with fallback
+  - Updated `src/shelly/cli.ts` - Added `config` command
+  - Updated `src/shelly/services/memoryBankService.ts` - Multi-provider support
+  - Updated `src/shelly/utils/aiContentGenerator.ts` - Fallback template generation
+  - Updated `src/main.ts` - Fixed shell alias routing
+- **Environment Variables**:
+  - `SHELLY_AI_PROVIDER` - Select provider (google|ollama|openrouter|mistral|openai)
+  - `SHELLY_AI_MODEL` - Custom model selection
+  - `SHELLY_AI_TIER` - free|paid tier selection
+  - `SHELLY_AI_DISABLED` - Disable AI completely
+  - Provider-specific API keys (GOOGLE_GENERATIVE_AI_API_KEY, OPENROUTER_API_KEY, etc.)
+
 ### 🐛 **node-pty Native Module Fix (Jan 19, 2026)**
 
 - **Issue**: `posix_spawnp failed` error on Apple Silicon (ARM64) Macs due to missing executable permissions on `spawn-helper` binary
@@ -94,8 +119,10 @@
 - ✅ **TypeScript Migration**: Complete migration to TypeScript
 - ✅ **Build System**: Automated template copying implemented
 - ✅ **Documentation Updates**: Updated CHANGELOG and technical context
-- ⏳ **Memory Bank Refresh**: Updating all Memory Bank files with migration details
-- ⏳ **Final Testing**: Comprehensive validation post-migration
+- ✅ **Free Tier AI Support**: Multi-provider configuration with fallback mode
+- ✅ **AI Config Command**: `shelly config` for AI configuration management
+- ✅ **Memory Bank Refresh**: Updating all Memory Bank files with new features
+- ⏳ **Final Testing**: Comprehensive validation of free tier features
 - ⏳ **Publication Preparation**: Final review with TypeScript codebase
 
 ### 🔄 **Ongoing Development**
@@ -109,15 +136,17 @@
 
 ### 📊 **Feature Completion Status**
 
-- **TypeScript Migration**: ✅ Complete (JUST COMPLETED - Oct 28, 2025)
+- **TypeScript Migration**: ✅ Complete (Oct 28, 2025)
 - **Build System**: ✅ Complete (automated template copying)
-- **Error Analysis Engine**: ✅ Mature (migrated to TypeScript)
+- **Error Analysis Engine**: ✅ Mature (with fallback mode)
+- **Free Tier AI Support**: ✅ Complete (Jan 31, 2026) - Multi-provider with auto-detection
+- **AI Configuration**: ✅ Complete - `shelly config` command
 - **Repository Organization**: ✅ Complete (migrated to TypeScript)
 - **GitHub Repository Automation**: ✅ Complete (migrated to TypeScript)
-- **Memory Bank System**: ✅ Complete (migrated to TypeScript)
+- **Memory Bank System**: ✅ Complete (with AI fallback support)
 - **GitHub Integration**: ✅ Complete (templates and workflows)
-- **Documentation**: ✅ Updated (reflecting TypeScript architecture)
-- **Shell Integration**: ✅ Enhanced (migrated to TypeScript)
+- **Documentation**: ✅ Updated (reflecting free tier features)
+- **Shell Integration**: ✅ Enhanced (fixed routing for CLI vs error analysis)
 
 ### 🧪 **Quality Assurance**
 

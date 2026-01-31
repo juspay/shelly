@@ -7,6 +7,8 @@ An intelligent CLI assistant that analyzes your command-line history to provide 
 ### 🔍 Core Error Analysis
 
 - **Smart Error Analysis**: Uses AI to analyze command failures and suggest fixes
+- **Multi-Provider AI**: Supports Google, Ollama, OpenRouter, Mistral, and OpenAI
+- **Free Tier Options**: Works with Ollama (local), OpenRouter free models, or Google AI free tier
 - **Multi-Shell Support**: Works with bash, zsh, tcsh
 - **Real-time History Access**: Reliably gets the last command from your shell
 - **Command Suggestions**: Suggests similar commands when you mistype
@@ -59,7 +61,7 @@ git clone https://github.com/juspay/shelly.git
 > **Important:** Shelly uses a dual CLI architecture with two distinct usage modes:
 >
 > 1. **Error Analysis Mode:** `shelly` (no arguments) - Analyzes the last failed command from your shell history
-> 2. **Repository Management Mode:** `shelly <command>` - Uses specific commands like `organize`, `memory`, `init`, `status`
+> 2. **Repository Management Mode:** `shelly <command>` - Uses specific commands like `organize`, `memory`, `github/gh`, `setup`, `config`, `init`, `status`
 >
 > These are handled by different internal systems, so the commands work differently.
 
@@ -238,7 +240,7 @@ SHELL_OVERRIDE=bash shelly
 
 1. **Shell Integration**: Captures your last command directly from shell memory or history
 2. **Command Analysis**: Analyzes the failed command and its error output
-3. **AI-Powered Suggestions**: Uses advanced analysis to suggest corrections and alternatives
+3. **AI-Powered Suggestions**: Uses your configured AI provider (or falls back to pattern-based templates if no AI is available)
 
 ## Features in Detail
 
@@ -374,6 +376,15 @@ shelly memory status      # Check memory status
 shelly memory update      # Update all memory files
 ```
 
+**AI Configuration:**
+
+```bash
+shelly config             # View current AI configuration
+shelly config providers   # List available AI providers
+shelly config --disable-ai # Use template-based fallback
+shelly config --enable-ai  # Re-enable AI features
+```
+
 **Project Initialization:**
 
 ```bash
@@ -410,6 +421,68 @@ echo 'shelly --alias | source' >> ~/.config/fish/config.fish && source ~/.config
 ## Configuration
 
 The tool automatically detects your shell and adapts its behavior accordingly. No additional configuration is required for basic usage.
+
+### 🤖 AI Configuration
+
+Shelly supports multiple AI providers with automatic detection and fallback. View and manage AI settings:
+
+```bash
+# View current AI configuration
+shelly config
+
+# List available AI providers and their status
+shelly config providers
+
+# Disable AI (use template-based fallback)
+shelly config --disable-ai
+
+# Re-enable AI
+shelly config --enable-ai
+```
+
+#### Supported AI Providers
+
+| Provider       | Free Tier                  | Setup                                                               |
+| -------------- | -------------------------- | ------------------------------------------------------------------- |
+| **Ollama**     | ✅ Completely free (local) | Install from [ollama.ai](https://ollama.ai)                         |
+| **OpenRouter** | ✅ Has free models         | Get API key from [openrouter.ai](https://openrouter.ai)             |
+| **Google AI**  | ✅ Free tier available     | Get API key from [aistudio.google.com](https://aistudio.google.com) |
+| **Mistral**    | Limited free tier          | Get API key from [mistral.ai](https://mistral.ai)                   |
+| **OpenAI**     | Paid only                  | Get API key from [openai.com](https://openai.com)                   |
+
+#### Environment Variables
+
+```bash
+# Select specific provider
+export SHELLY_AI_PROVIDER=google  # google|ollama|openrouter|mistral|openai
+
+# Use custom model
+export SHELLY_AI_MODEL=gemini-2.0-flash
+
+# Select tier (free or paid models)
+export SHELLY_AI_TIER=free  # free|paid
+
+# Disable AI completely (use templates only)
+export SHELLY_AI_DISABLED=true
+
+# Provider-specific API keys
+export GOOGLE_GENERATIVE_AI_API_KEY=your-key
+export OPENROUTER_API_KEY=your-key
+export MISTRAL_API_KEY=your-key
+export OPENAI_API_KEY=your-key
+```
+
+#### Auto-Detection Priority
+
+When no provider is explicitly set, Shelly auto-detects available providers in this order:
+
+1. **Ollama** (local, free) - if running at localhost:11434
+2. **OpenRouter** - if `OPENROUTER_API_KEY` is set
+3. **Google** - if `GOOGLE_GENERATIVE_AI_API_KEY` is set
+4. **Mistral** - if `MISTRAL_API_KEY` is set
+5. **OpenAI** - if `OPENAI_API_KEY` is set
+
+If no AI provider is available, Shelly falls back to template-based analysis.
 
 ## Contributing
 

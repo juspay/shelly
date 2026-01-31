@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs/promises';
 import path from 'path';
+import { aiConfigService } from '../services/aiConfigService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -343,6 +344,100 @@ async function setupCLI() {
         if (process.env.DEBUG) {
           console.error(error.stack);
         }
+        process.exit(1);
+      }
+    });
+
+  // AI Config command
+  program
+    .command('config')
+    .description('View and manage AI configuration for Shelly')
+    .argument('[subcommand]', 'config subcommand (show, providers)', 'show')
+    .option('--disable-ai', 'disable AI features (use templates only)')
+    .option('--enable-ai', 'enable AI features')
+    .action(async (subcommand, options) => {
+      try {
+        if (options.disableAi) {
+          aiConfigService.disableAI();
+          console.log(
+            '✅ AI features disabled. Shelly will use template-based generation.'
+          );
+          return;
+        }
+
+        if (options.enableAi) {
+          aiConfigService.enableAI();
+          console.log('✅ AI features enabled.');
+          return;
+        }
+
+        if (subcommand === 'providers') {
+          console.log('🤖 Available AI Providers:\n');
+          const providers = aiConfigService.getAvailableProviders();
+
+          for (const p of providers) {
+            const status = p.available ? '✅' : '❌';
+            console.log(`   ${status} ${p.provider.padEnd(10)} - ${p.reason}`);
+          }
+
+          console.log(
+            '\n💡 To use a specific provider, set environment variables:'
+          );
+          console.log(
+            '   SHELLY_AI_PROVIDER=google|ollama|openrouter|mistral|openai'
+          );
+          console.log('   SHELLY_AI_MODEL=<model-name>');
+          console.log('   SHELLY_AI_TIER=free|paid');
+          console.log('\n🔑 API Key environment variables:');
+          console.log('   GOOGLE_GENERATIVE_AI_API_KEY - for Google Gemini');
+          console.log(
+            '   OPENROUTER_API_KEY - for OpenRouter (has free models)'
+          );
+          console.log('   MISTRAL_API_KEY - for Mistral AI');
+          console.log('   OPENAI_API_KEY - for OpenAI');
+          console.log('   (Ollama runs locally - no API key needed)');
+        } else {
+          // Default: show current config
+          console.log('🤖 Current AI Configuration:\n');
+          console.log(`   ${aiConfigService.getConfigDescription()}`);
+
+          const config = aiConfigService.getConfig();
+          console.log(`\n📋 Details:`);
+          console.log(`   Provider: ${config.provider}`);
+          console.log(`   Model: ${config.model}`);
+          console.log(`   Tier: ${config.tier}`);
+          console.log(
+            `   AI Enabled: ${aiConfigService.isAIEnabled() ? 'Yes' : 'No'}`
+          );
+          console.log(
+            `   API Key Set: ${aiConfigService.hasValidApiKey() ? 'Yes' : 'No'}`
+          );
+
+          if (
+            !aiConfigService.hasValidApiKey() &&
+            config.provider !== 'ollama'
+          ) {
+            console.log(
+              '\n⚠️  No API key configured. AI features will use fallback templates.'
+            );
+            console.log(
+              '   Run "shelly config providers" to see setup instructions.'
+            );
+          }
+
+          console.log('\n💡 Free tier options:');
+          console.log(
+            '   1. Ollama (local, completely free): Install from ollama.ai'
+          );
+          console.log(
+            '   2. OpenRouter (has free models): Get API key from openrouter.ai'
+          );
+          console.log(
+            '   3. Google AI (free tier): Get API key from aistudio.google.com'
+          );
+        }
+      } catch (error) {
+        console.error('❌ Error executing config command:', error.message);
         process.exit(1);
       }
     });

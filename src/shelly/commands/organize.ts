@@ -1484,10 +1484,9 @@ export class OrganizeCommand {
 
     let result = content;
     Object.entries(replacements).forEach(([placeholder, value]) => {
-      result = result.replace(
-        new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'),
-        value
-      );
+      // Use split/join for safe string replacement without regex
+      // This avoids any regex special character handling issues
+      result = result.split(placeholder).join(value);
     });
 
     return result;

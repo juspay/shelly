@@ -1,6 +1,7 @@
 import { generateText, type TextGenerationOptions } from '@juspay/neurolink';
 import fs from 'fs';
 import path from 'path';
+import { aiConfigService } from '../../services/aiConfigService.js';
 
 interface PackageExport {
   types?: string;
@@ -11,22 +12,30 @@ interface PackageExport {
 
 export class AIContentGenerator {
   generateOptions: {
-    provider: 'googlevertex';
+    provider: string;
     model: string;
-    project: string;
-    region: string;
+    baseURL?: string;
   };
 
   constructor() {
     // Increase max listeners to handle multiple concurrent AI generations
     // Memory Bank generation requires 6+ concurrent calls
     process.setMaxListeners(20);
+
+    // Get AI configuration from the config service
+    const aiConfig = aiConfigService.getNeuroLinkOptions();
     this.generateOptions = {
-      provider: 'googlevertex',
-      model: 'gemini-2.0-flash-exp',
-      project: 'dev-ai-gamma',
-      region: 'us-east5',
+      provider: aiConfig.provider,
+      model: aiConfig.model,
+      ...(aiConfig.baseURL && { baseURL: aiConfig.baseURL }),
     };
+  }
+
+  /**
+   * Check if AI is enabled and available
+   */
+  isAIAvailable(): boolean {
+    return aiConfigService.isAIEnabled() && aiConfigService.hasValidApiKey();
   }
 
   /**
@@ -35,6 +44,12 @@ export class AIContentGenerator {
    * @returns {Promise<string>} Enhanced README content
    */
   async generateReadme(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log('AI not available, using template-based README generation');
+      return this.getFallbackReadme(packageInfo);
+    }
+
     const prompt = `Generate ONLY the markdown content for a professional README.md file for "${packageInfo.name}".
 
 Project Details:
@@ -84,6 +99,14 @@ Start the response directly with the # title line.`;
    * @returns {Promise<string>} Enhanced CONTRIBUTING content
    */
   async generateContributing(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log(
+        'AI not available, using template-based CONTRIBUTING generation'
+      );
+      return this.getFallbackContributing(packageInfo);
+    }
+
     const prompt = `Generate ONLY the markdown content for a comprehensive CONTRIBUTING.md file for "${packageInfo.name}".
 
 Project details:
@@ -95,7 +118,7 @@ IMPORTANT: Return ONLY the raw markdown content starting with the # title. Do no
 
 Include:
 - Welcoming introduction
-- Code of conduct reference  
+- Code of conduct reference
 - Ways to contribute (bugs, features, documentation)
 - Development setup instructions
 - Pull request process
@@ -398,6 +421,11 @@ Start the response directly with the # title line.`;
    * @returns {Promise<string>}
    */
   async generateProjectDescription(packageInfo, repoName) {
+    // If AI is not available, use basic description
+    if (!this.isAIAvailable()) {
+      return `A ${this.extractTechnologies(packageInfo)} project`;
+    }
+
     const prompt = `Generate a concise, professional description for a project named "${repoName}" based on these details:
 - Technologies: ${this.extractTechnologies(packageInfo)}
 - Main file: ${packageInfo.main || 'index.js'}
@@ -431,6 +459,11 @@ Return only the description text, no additional formatting.`;
    * @returns {Promise<string[]>}
    */
   async generateKeywords(packageInfo, repoName) {
+    // If AI is not available, use default keywords
+    if (!this.isAIAvailable()) {
+      return this.getDefaultKeywords(packageInfo, repoName);
+    }
+
     const prompt = `Generate 5-8 relevant keywords for a project named "${repoName}" with technologies: ${this.extractTechnologies(packageInfo)}. Return as comma-separated values only.`;
 
     try {
@@ -619,6 +652,11 @@ npm run lint
    * @returns {Promise<string[]>}
    */
   async generateRepoSpecificKeywords(packageInfo, repoName) {
+    // If AI is not available, use default keywords
+    if (!this.isAIAvailable()) {
+      return this.getDefaultKeywords(packageInfo, repoName);
+    }
+
     const deps = {
       ...packageInfo.dependencies,
       ...packageInfo.devDependencies,
@@ -880,6 +918,14 @@ const result = await main({
    * @returns {Promise<string>} Generated project brief content
    */
   async generateProjectBrief(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log(
+        'AI not available, using template-based Project Brief generation'
+      );
+      return this.getFallbackProjectBrief(packageInfo);
+    }
+
     const prompt = `Generate ONLY the markdown content for a comprehensive Project Brief for "${packageInfo.name}".
 
 Project Details:
@@ -927,6 +973,14 @@ Start the response directly with the # title line.`;
    * @returns {Promise<string>} Generated product context content
    */
   async generateProductContext(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log(
+        'AI not available, using template-based Product Context generation'
+      );
+      return this.getFallbackProductContext(packageInfo);
+    }
+
     const prompt = `Generate ONLY the markdown content for a Product Context document for "${packageInfo.name}".
 
 Project Details:
@@ -971,6 +1025,14 @@ Start the response directly with the # title line.`;
    * @returns {Promise<string>} Generated system patterns content
    */
   async generateSystemPatterns(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log(
+        'AI not available, using template-based System Patterns generation'
+      );
+      return this.getFallbackSystemPatterns(packageInfo);
+    }
+
     const prompt = `Generate ONLY the markdown content for a System Patterns document for "${packageInfo.name}".
 
 Project Details:
@@ -1018,6 +1080,14 @@ Start the response directly with the # title line.`;
    * @returns {Promise<string>} Generated tech context content
    */
   async generateTechContext(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log(
+        'AI not available, using template-based Tech Context generation'
+      );
+      return this.getFallbackTechContext(packageInfo);
+    }
+
     const prompt = `Generate ONLY the markdown content for a Technical Context document for "${packageInfo.name}".
 
 Project Details:
@@ -1064,6 +1134,14 @@ Start the response directly with the # title line.`;
    * @returns {Promise<string>} Generated active context content
    */
   async generateActiveContext(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log(
+        'AI not available, using template-based Active Context generation'
+      );
+      return this.getFallbackActiveContext(packageInfo);
+    }
+
     const currentDate = new Date().toISOString().split('T')[0];
 
     const prompt = `Generate ONLY the markdown content for an Active Context document for "${packageInfo.name}".
@@ -1112,6 +1190,12 @@ Start the response directly with the # title line.`;
    * @returns {Promise<string>} Generated progress content
    */
   async generateProgress(packageInfo) {
+    // If AI is not available, use fallback directly
+    if (!this.isAIAvailable()) {
+      console.log('AI not available, using template-based Progress generation');
+      return this.getFallbackProgress(packageInfo);
+    }
+
     const prompt = `Generate ONLY the markdown content for a Progress document for "${packageInfo.name}".
 
 Project Details:

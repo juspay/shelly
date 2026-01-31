@@ -100,7 +100,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@juspay/neurolink": "^7.40.1",
+    "@juspay/neurolink": "^8.41.0",
     "@octokit/rest": "^20.0.2",
     "commander": "^11.0.0",
     "inquirer": "^12.9.6",

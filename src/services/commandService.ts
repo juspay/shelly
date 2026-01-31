@@ -33,7 +33,7 @@ export function runCommand(command: string): Promise<CommandResult> {
     let resolved = false;
 
     // Capture all output from the pseudo-terminal
-    term.on('data', (data: string) => {
+    term.onData((data: string) => {
       output += data;
     });
 
@@ -47,7 +47,7 @@ export function runCommand(command: string): Promise<CommandResult> {
     }, 15000); // 15-second timeout
 
     // Handle process exit
-    term.on('exit', (code: number) => {
+    term.onExit(({ exitCode: code }) => {
       if (!resolved) {
         clearTimeout(timeout);
         resolved = true;

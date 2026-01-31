@@ -3,8 +3,33 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
+import os from 'os';
+import { aiConfigService } from '../../services/aiConfigService.js';
 
 const execAsync = promisify(exec);
+
+/**
+ * Escape a string for safe use in shell commands
+ * Uses single quotes and escapes embedded single quotes
+ */
+function shellEscape(str: string): string {
+  // Replace single quotes with escaped version: ' -> '\''
+  return `'${str.replace(/'/g, "'\\''")}'`;
+}
+
+/**
+ * Validate that a file path is safe for shell interpolation
+ * Must be an absolute path with no shell special characters except / and .
+ */
+function isValidTempFilePath(filePath: string): boolean {
+  // Must start with / (absolute) or temp directory
+  const tempDir = os.tmpdir();
+  if (!filePath.startsWith(tempDir) && !filePath.startsWith('/tmp')) {
+    return false;
+  }
+  // Only allow alphanumeric, slashes, dots, hyphens, underscores
+  return /^[a-zA-Z0-9/_.-]+$/.test(filePath);
+}
 
 interface MemoryBankFile {
   template?: string;
@@ -491,6 +516,22 @@ This Memory Bank integrates with:
    * @returns {Promise<Object>} Parsed neurolink content by file
    */
   async generateNeurolinkContent(repositoryPath = '.') {
+    // Check if AI is enabled and has valid API key
+    if (!aiConfigService.isAIEnabled()) {
+      console.log('AI is disabled, using template-based generation...');
+      return null;
+    }
+
+    if (!aiConfigService.hasValidApiKey()) {
+      console.log(
+        'No AI API key configured, using template-based generation...'
+      );
+      console.log(
+        '💡 Tip: Set GOOGLE_GENERATIVE_AI_API_KEY, OPENROUTER_API_KEY, or use Ollama for AI features.'
+      );
+      return null;
+    }
+
     try {
       // Step 1: Analyze repository structure and understand the project
       console.log(
@@ -525,6 +566,7 @@ This Memory Bank integrates with:
    */
   async analyzeRepositoryWithNeurolink(repositoryPath = '.') {
     try {
+      const aiConfig = aiConfigService.getNeuroLinkOptions();
       const analysisPrompt = `REPOSITORY ANALYSIS REQUEST:
 
 Please thoroughly analyze this repository (pwd: ${process.cwd()}) and provide a comprehensive understanding of the project.
@@ -567,25 +609,51 @@ ANALYZE ALL ASPECTS:
 
 Please provide a detailed, comprehensive analysis that covers all these aspects. Be specific and include actual details from the codebase, not generic statements.`;
 
-      const command = `npx @juspay/neurolink generate "${analysisPrompt}" --provider vertex --model gemini-2.0-flash-exp`;
+      // Write prompt to temporary file to avoid shell injection
+      const tempDir = os.tmpdir();
+      const tempPromptFile = path.join(
+        tempDir,
+        `shelly-analysis-${Date.now()}.txt`
+      );
 
-      const env = {
-        ...process.env,
-        GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
-        GOOGLE_CLOUD_REGION: 'us-east5',
-      };
-
-      const { stdout, stderr } = await execAsync(command, {
-        cwd: repositoryPath,
-        env: env,
-        maxBuffer: 1024 * 1024 * 10,
-      });
-
-      if (stderr) {
-        console.warn('Repository analysis stderr:', stderr);
+      // Validate temp file path for safety
+      if (!isValidTempFilePath(tempPromptFile)) {
+        throw new Error('Invalid temporary file path');
       }
 
-      return stdout.trim();
+      await fs.writeFile(tempPromptFile, analysisPrompt, 'utf8');
+
+      try {
+        // Build command with configured provider and model
+        // Provider and model are validated by aiConfigService
+        let command = `npx @juspay/neurolink generate "$(cat ${shellEscape(tempPromptFile)})" --provider ${shellEscape(aiConfig.provider)} --model ${shellEscape(aiConfig.model)}`;
+        if (aiConfig.baseURL) {
+          command += ` --baseURL ${shellEscape(aiConfig.baseURL)}`;
+        }
+
+        const env = {
+          ...process.env,
+        };
+
+        const { stdout, stderr } = await execAsync(command, {
+          cwd: repositoryPath,
+          env: env,
+          maxBuffer: 1024 * 1024 * 10,
+        });
+
+        if (stderr) {
+          console.warn('Repository analysis stderr:', stderr);
+        }
+
+        return stdout.trim();
+      } finally {
+        // Clean up temporary file
+        try {
+          await fs.unlink(tempPromptFile);
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
     } catch (error) {
       console.warn('Repository analysis failed:', error.message);
       return null;
@@ -679,12 +747,21 @@ CRITICAL REMINDER: Your response MUST contain ALL 6 files with the exact markers
       // Write prompt to temporary file
       await fs.writeFile(tempPromptFile, memoryBankPrompt, 'utf8');
 
-      const command = `npx @juspay/neurolink generate "$(cat ${tempPromptFile})" --provider vertex --model gemini-2.0-flash-exp --max 8000`;
+      // Validate temp file path for safety
+      if (!isValidTempFilePath(tempPromptFile)) {
+        throw new Error('Invalid temporary file path');
+      }
+
+      // Build command with configured provider and model
+      // Provider and model are validated by aiConfigService
+      const aiConfig = aiConfigService.getNeuroLinkOptions();
+      let command = `npx @juspay/neurolink generate "$(cat ${shellEscape(tempPromptFile)})" --provider ${shellEscape(aiConfig.provider)} --model ${shellEscape(aiConfig.model)} --max 8000`;
+      if (aiConfig.baseURL) {
+        command += ` --baseURL ${shellEscape(aiConfig.baseURL)}`;
+      }
 
       const env = {
         ...process.env,
-        GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
-        GOOGLE_CLOUD_REGION: 'us-east5',
       };
 
       const { stdout, stderr } = await execAsync(command, {
@@ -923,37 +1000,63 @@ Layer 3: [Project-specific testing] → [Description]
 
 GENERATE ONLY RELEVANT SECTIONS FOR THIS PROJECT. Use the EXACT formatting style, structure, and language patterns from NeuroLink. Make it project-specific but follow NeuroLink's precise formatting conventions.`;
 
-      // Use npx with --yes flag for auto-installation and better error handling
-      const command = `npx --yes @juspay/neurolink generate "$(echo '${clinerulestPrompt.replace(/'/g, "'\\''")}' | cat)" --provider vertex --model gemini-2.0-flash-exp --max 8000`;
+      // Write prompt to temporary file to avoid shell injection
+      const tempDir = os.tmpdir();
+      const tempClinerulestFile = path.join(
+        tempDir,
+        `shelly-clinerules-${Date.now()}.txt`
+      );
 
-      const env = {
-        ...process.env,
-        GOOGLE_CLOUD_PROJECT: 'dev-ai-gamma',
-        GOOGLE_CLOUD_REGION: 'us-east5',
-      };
-
-      const { stdout, stderr } = await execAsync(command, {
-        cwd: '.',
-        env: env,
-        maxBuffer: 1024 * 1024 * 10,
-        timeout: 120000, // 2 minute timeout
-      });
-
-      if (stderr && !stderr.includes('Generating text')) {
-        console.warn('.clinerules generation stderr:', stderr);
+      // Validate temp file path for safety
+      if (!isValidTempFilePath(tempClinerulestFile)) {
+        throw new Error('Invalid temporary file path');
       }
 
-      const result = stdout.trim();
+      await fs.writeFile(tempClinerulestFile, clinerulestPrompt, 'utf8');
 
-      // Validate that we got comprehensive content
-      if (result.length < 1000) {
-        throw new Error(
-          'Generated content too short, falling back to enhanced template'
-        );
+      try {
+        // Build command with configured provider and model
+        // Provider and model are validated by aiConfigService
+        const aiConfig = aiConfigService.getNeuroLinkOptions();
+        let command = `npx --yes @juspay/neurolink generate "$(cat ${shellEscape(tempClinerulestFile)})" --provider ${shellEscape(aiConfig.provider)} --model ${shellEscape(aiConfig.model)} --max 8000`;
+        if (aiConfig.baseURL) {
+          command += ` --baseURL ${shellEscape(aiConfig.baseURL)}`;
+        }
+
+        const env = {
+          ...process.env,
+        };
+
+        const { stdout, stderr } = await execAsync(command, {
+          cwd: '.',
+          env: env,
+          maxBuffer: 1024 * 1024 * 10,
+          timeout: 120000, // 2 minute timeout
+        });
+
+        if (stderr && !stderr.includes('Generating text')) {
+          console.warn('.clinerules generation stderr:', stderr);
+        }
+
+        const result = stdout.trim();
+
+        // Validate that we got comprehensive content
+        if (result.length < 1000) {
+          throw new Error(
+            'Generated content too short, falling back to enhanced template'
+          );
+        }
+
+        console.log('🤖 Generated comprehensive .clinerules using neurolink');
+        return result;
+      } finally {
+        // Clean up temporary file
+        try {
+          await fs.unlink(tempClinerulestFile);
+        } catch {
+          // Ignore cleanup errors
+        }
       }
-
-      console.log('🤖 Generated comprehensive .clinerules using neurolink');
-      return result;
     } catch (error) {
       console.warn('.clinerules neurolink generation failed:', error.message);
       console.log('🔄 Using enhanced fallback generation...');
@@ -1162,10 +1265,8 @@ node src/shelly/cli.js memory init --debug
 
 ### **Neurolink Integration (CRITICAL)**
 \`\`\`bash
-# Environment variables for Vertex AI
-export GOOGLE_CLOUD_PROJECT=dev-ai-gamma
-export GOOGLE_CLOUD_REGION=us-east5
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+# Environment variable for Google AI (free tier)
+export GOOGLE_GENERATIVE_AI_API_KEY=your-api-key-here
 \`\`\`
 
 ### **Shell Environment Integration**

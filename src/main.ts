@@ -78,9 +78,18 @@ function generateShellAlias() {
 
 # Create shelly function that handles both CLI commands and error analysis
 shelly() {
-    # If arguments are provided, use the CLI tool
+    # If arguments are provided, check if it's a CLI command or a shell command to analyze
     if [ \$# -gt 0 ]; then
-        node "${cliPath}" "\$@"
+        case "\$1" in
+            organize|memory|github|gh|setup|init|status|config|help|--help|-h|--version|-v|--alias)
+                # Known CLI commands - route to CLI tool
+                node "${cliPath}" "\$@"
+                ;;
+            *)
+                # Unknown command - treat as shell command to run and analyze
+                node "${scriptPath}" "\$@"
+                ;;
+        esac
     else
         # No arguments, run error analysis on last command
         log_helper

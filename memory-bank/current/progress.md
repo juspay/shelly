@@ -6,6 +6,19 @@ Shelly has successfully evolved from a simple CLI error analysis tool into a com
 
 ## 🎯 **Completed Features**
 
+### ✅ **Free Tier AI Support & Multi-Provider Configuration (Jan 31, 2026)**
+
+- **Multi-Provider Support**: 5 AI providers supported (Google, Ollama, OpenRouter, Mistral, OpenAI)
+- **AI Configuration Service**: Centralized management via `aiConfigService.ts`
+- **Fallback Mode**: Template-based generation when AI unavailable
+- **Auto-Detection**: Automatic best provider selection based on available credentials
+- **Free Tier Options**: Ollama (local), OpenRouter (free models), Google AI free tier
+- **Config Command**: New `shelly config` and `shelly config providers` commands
+- **Environment Variables**: `SHELLY_AI_PROVIDER`, `SHELLY_AI_MODEL`, `SHELLY_AI_TIER`, `SHELLY_AI_DISABLED`
+- **Shell Alias Fix**: Proper routing between CLI commands and error analysis
+- **ANSI Stripping**: Fixed pattern matching for colored terminal output
+- **Enhanced Patterns**: Better error detection for git, npm, and other commands
+
 ### ✅ **node-pty Native Module Fix (Jan 19, 2026)**
 
 - **Bug Fix**: Resolved `posix_spawnp failed` error on Apple Silicon Macs
@@ -98,7 +111,7 @@ Shelly has successfully evolved from a simple CLI error analysis tool into a com
 | **GitHub Repository Automation** | ✅ Complete | 100%       | Migrated to TypeScript        |
 | **Memory Bank**                  | ✅ Complete | 100%       | Migrated to TypeScript        |
 | **GitHub Integration**           | ✅ Complete | 100%       | Templates and workflows       |
-| **AI Integration**               | ✅ Complete | 100%       | Migrated to TypeScript        |
+| **AI Integration**               | ✅ Enhanced | 100%       | Multi-provider + Free tier    |
 | **CLI Architecture**             | ✅ Complete | 100%       | TypeScript with Commander.js  |
 | **Documentation**                | ✅ Complete | 100%       | Updated for TypeScript        |
 | **Shell Support**                | ✅ Enhanced | 100%       | Migrated to TypeScript        |

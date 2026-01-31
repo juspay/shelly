@@ -63,12 +63,16 @@ async function fixPermissions() {
       // Check if already executable
       try {
         await access(helperPath, constants.X_OK);
-        console.log(`[fix-node-pty] spawn-helper already executable: ${helperPath}`);
+        console.log(
+          `[fix-node-pty] spawn-helper already executable: ${helperPath}`
+        );
         return;
       } catch {
         // Not executable, fix it
         await chmod(helperPath, 0o755);
-        console.log(`[fix-node-pty] Fixed spawn-helper permissions: ${helperPath}`);
+        console.log(
+          `[fix-node-pty] Fixed spawn-helper permissions: ${helperPath}`
+        );
         return;
       }
     } catch {
