@@ -90,6 +90,9 @@ public
 tmp/
 temp/
 
+# Husky
+.husky/_
+
 # Logs
 logs
 *.log
