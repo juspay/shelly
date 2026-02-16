@@ -2,6 +2,14 @@
 
 **Current Work Focus:**
 
+### 🔐 **NPM Trusted Publishing / OIDC Automation (NEW)**
+
+- **OIDC Setup Command**: `shelly npm trusted-publishing setup` with interactive workflow
+- **Workflow Analysis**: Automatic detection of semantic-release and npm publish patterns
+- **Smart Updates**: Adds `id-token: write`, `NPM_CONFIG_PROVENANCE: true` automatically
+- **Interactive UI**: Beautiful CLI with step-by-step npmjs.com configuration guide
+- **Browser Integration**: Auto-opens package settings with values to copy
+
 ### 🔄 **TypeScript Migration & Build System Enhancement**
 
 - **TypeScript Migration**: Complete conversion from JavaScript to TypeScript (COMPLETE)
@@ -60,6 +68,21 @@
   - Added `scripts/fix-node-pty-permissions.js` - Cross-platform permission fixer
   - Updated `package.json` - Added `postinstall` script and included fix script in `files` array
 - **Impact**: Shelly now works correctly on all platforms without manual intervention
+
+### 🔐 **NPM Trusted Publishing (NEW - Feb 2026)**
+
+- **New Command**: `shelly npm trusted-publishing setup` - Interactive OIDC configuration
+- **New Command**: `shelly npm trusted-publishing status` - Check OIDC readiness
+- **New Service**: `src/shelly/services/npmService.ts` - NPM workflow analysis and updates
+- **New Command Handler**: `src/shelly/commands/npmTrustedPublishing.ts` - CLI implementation
+- **Features**:
+  - Detects semantic-release vs direct npm publish workflows
+  - Adds `id-token: write` permission for GitHub OIDC
+  - Adds `NPM_CONFIG_PROVENANCE: true` for semantic-release
+  - Adds `--provenance` flag for direct npm publish commands
+  - Comments out `NODE_AUTH_TOKEN` (replaced by OIDC)
+  - Interactive UI with browser auto-open for npmjs.com setup
+  - Visual step-by-step guide with copy-paste values
 
 ### 🔄 **TypeScript Migration (JUST COMPLETED - Oct 28, 2025)**
 
@@ -136,6 +159,7 @@
 
 ### 📊 **Feature Completion Status**
 
+- **NPM Trusted Publishing**: ✅ Complete (NEW - Feb 2026) - OIDC automation
 - **TypeScript Migration**: ✅ Complete (Oct 28, 2025)
 - **Build System**: ✅ Complete (automated template copying)
 - **Error Analysis Engine**: ✅ Mature (with fallback mode)

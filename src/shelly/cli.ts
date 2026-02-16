@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { OrganizeCommand } from './commands/organize.js';
 import { MemoryCommand } from './commands/memory.js';
 import { GitHubSetupCommand } from './commands/githubSetup.js';
+import { NpmTrustedPublishingCommand } from './commands/npmTrustedPublishing.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs/promises';
@@ -298,6 +299,101 @@ async function setupCLI() {
           '❌ Error executing GitHub setup command:',
           error.message
         );
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // NPM trusted publishing command
+  program
+    .command('npm')
+    .description('NPM package management commands')
+    .argument(
+      '<subcommand>',
+      'npm subcommand (trusted-publishing)'
+    )
+    .argument('[action]', 'action for the subcommand (setup, status)')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be changed without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .action(async (subcommand, action, options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        if (subcommand === 'trusted-publishing' || subcommand === 'tp') {
+          const npmCommand = new NpmTrustedPublishingCommand({
+            cwd: targetDir,
+            force: options.force,
+            dryRun: options.dryRun,
+          });
+
+          switch (action) {
+            case 'setup':
+              await npmCommand.executeSetup();
+              break;
+            case 'status':
+              await npmCommand.executeStatus();
+              break;
+            case undefined:
+            case 'help':
+              npmCommand.displayHelp();
+              break;
+            default:
+              console.error(`❌ Unknown action: ${action}`);
+              console.error('Available actions: setup, status');
+              process.exit(1);
+          }
+        } else {
+          console.error(`❌ Unknown subcommand: ${subcommand}`);
+          console.error('Available subcommands: trusted-publishing (or tp)');
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error('❌ Error executing npm command:', error.message);
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // OIDC shortcut - top-level command for quick access
+  program
+    .command('oidc')
+    .description('Quick setup for NPM trusted publishing (alias for "npm tp setup")')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be changed without making changes')
+    .option('--status', 'check current OIDC configuration status')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .action(async (options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        const npmCommand = new NpmTrustedPublishingCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+        });
+
+        if (options.status) {
+          await npmCommand.executeStatus();
+        } else {
+          await npmCommand.executeSetup();
+        }
+      } catch (error) {
+        console.error('❌ Error executing OIDC setup:', error.message);
         if (process.env.DEBUG) {
           console.error(error.stack);
         }
