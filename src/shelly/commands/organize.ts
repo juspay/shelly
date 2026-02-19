@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { AIContentGenerator } from '../utils/aiContentGenerator.js';
 import { memoryBankService } from '../services/memoryBankService.js';
+import { PlatformDetector, type Platform } from '../services/platformDetector.js';
 import inquirer from 'inquirer';
 
 interface OrganizeOptions {
@@ -12,6 +13,7 @@ interface OrganizeOptions {
   move?: boolean;
   cwd?: string;
   githubAction?: boolean;
+  platform?: Platform;
 }
 
 interface ClassificationRule {
@@ -52,12 +54,16 @@ export class OrganizeCommand {
   cwd: string;
   aiGenerator: AIContentGenerator;
   templatesDir: string;
+  platform: Platform | null;
+  platformOverride: Platform | undefined;
 
   constructor(options: OrganizeOptions = {}) {
     this.force = options.force || false;
     this.update = options.update || false;
     this.move = options.move || false;
     this.githubAction = options.githubAction || false;
+    this.platformOverride = options.platform;
+    this.platform = null;
 
     // Initialize preservation flags
     this.preserveDocs = false;
@@ -100,6 +106,9 @@ export class OrganizeCommand {
     console.log('🚀 Starting repository organization...');
 
     try {
+      // Step 0: Detect platform
+      await this.detectPlatform();
+
       // Step 1: Analyze current repository and set preservation flags
       const repoAnalysis = await this.analyzeRepository();
       await this.setPreservationFlags();
@@ -120,9 +129,10 @@ export class OrganizeCommand {
       await this.createProjectFiles(repoAnalysis);
       console.log('📝 Created/enhanced project files');
 
-      // Step 5: Create GitHub templates and workflows
-      await this.createGitHubTemplates(repoAnalysis);
-      console.log('🔧 Created GitHub templates and workflows');
+      // Step 5: Create platform templates and workflows
+      await this.createPlatformTemplates(repoAnalysis);
+      const platformName = this.platform === 'bitbucket' ? 'Bitbucket' : 'GitHub';
+      console.log(`🔧 Created ${platformName} templates and workflows`);
 
       // Step 6: Create configuration files
       await this.createConfigFiles(repoAnalysis);
@@ -139,6 +149,26 @@ export class OrganizeCommand {
     } catch (error) {
       console.error('❌ Error during organization:', error.message);
       process.exit(1);
+    }
+  }
+
+  /**
+   * Detect the platform (GitHub or Bitbucket) from git remote
+   */
+  async detectPlatform() {
+    try {
+      const platformInfo = await PlatformDetector.detect(
+        this.cwd,
+        this.platformOverride
+      );
+      this.platform = platformInfo.platform;
+      const platformName = this.platform === 'bitbucket' ? 'Bitbucket' : 'GitHub';
+      console.log(`🔗 Detected platform: ${platformName} (${platformInfo.owner}/${platformInfo.repo})`);
+    } catch {
+      // Fallback to GitHub if detection fails
+      this.platform = this.platformOverride || 'github';
+      const platformName = this.platform === 'bitbucket' ? 'Bitbucket' : 'GitHub';
+      console.log(`🔗 Using platform: ${platformName} (no git remote detected)`);
     }
   }
 
@@ -392,10 +422,14 @@ export class OrganizeCommand {
 
         // GitHub configuration (these should stay in root, not be moved to .github)
         '.github',
+
+        // Bitbucket Pipelines
+        'bitbucket-pipelines.yml',
       ];
 
       // GitHub-specific files that should be moved to .github directory
-      const githubFiles = new Map([
+      // Skip for Bitbucket repos
+      const githubFiles = this.platform === 'bitbucket' ? new Map() : new Map([
         // Workflow files
         ['ci.yml', '.github/workflows'],
         ['build.yml', '.github/workflows'],
@@ -629,9 +663,11 @@ export class OrganizeCommand {
    * Create standard directory structure
    */
   async createDirectoryStructure(repoAnalysis) {
+    const isBitbucket = this.platform === 'bitbucket';
+
     const directories = [
-      '.github/ISSUE_TEMPLATE',
-      '.github/workflows',
+      // Skip .github dirs for Bitbucket
+      ...(isBitbucket ? [] : ['.github/ISSUE_TEMPLATE', '.github/workflows']),
       '.changeset',
       '.husky',
       '.ai/workflows',
@@ -1273,6 +1309,47 @@ export class OrganizeCommand {
   }
 
   /**
+   * Create platform-specific templates and workflows (GitHub or Bitbucket)
+   */
+  async createPlatformTemplates(repoAnalysis) {
+    if (this.platform === 'bitbucket') {
+      await this.createBitbucketTemplates(repoAnalysis);
+    } else {
+      await this.createGitHubTemplates(repoAnalysis);
+    }
+  }
+
+  /**
+   * Create Bitbucket templates and pipelines
+   */
+  async createBitbucketTemplates(repoAnalysis) {
+    const templates = [
+      // Bitbucket Pipeline
+      {
+        source: 'bitbucket/bitbucket-pipelines.yml.template',
+        target: 'bitbucket-pipelines.yml',
+      },
+      // Documentation files (same as GitHub)
+      {
+        source: 'docs/API.md.template',
+        target: 'docs/API.md',
+      },
+      {
+        source: 'docs/GETTING_STARTED.md.template',
+        target: 'docs/GETTING_STARTED.md',
+      },
+    ];
+
+    for (const template of templates) {
+      const content = await this.loadTemplate(template.source, repoAnalysis);
+      await this.writeFileIfNeeded(template.target, content);
+    }
+
+    // Create directory template files
+    await this.createDirectoryTemplateFiles(repoAnalysis);
+  }
+
+  /**
    * Create GitHub templates and workflows
    */
   async createGitHubTemplates(repoAnalysis) {
@@ -1708,6 +1785,10 @@ export class OrganizeCommand {
     const projectName = repoAnalysis.name || repoAnalysis.repoName;
     const binName = projectName.replace('@juspay/', '').replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
 
+    // Platform-aware repository URL
+    const repoHost = this.platform === 'bitbucket' ? 'bitbucket.org' : 'github.com';
+    const repositoryUrl = `https://${repoHost}/juspay/${repoAnalysis.repoName}`;
+
     const replacements = {
       '{{projectName}}': projectName,
       '{{packageName}}':
@@ -1715,7 +1796,7 @@ export class OrganizeCommand {
       '{{repoName}}': repoAnalysis.repoName,
       '{{description}}': repoAnalysis.description || 'A JavaScript project',
       '{{license}}': repoAnalysis.license || 'ISC',
-      '{{repositoryUrl}}': `https://github.com/juspay/${repoAnalysis.repoName}`,
+      '{{repositoryUrl}}': repositoryUrl,
       '{{owner}}': 'juspay',
       '{{maintainerUsername}}': 'juspay-maintainers',
       '{{contactEmail}}': 'opensource@juspay.in',
@@ -1732,6 +1813,8 @@ export class OrganizeCommand {
       '{{repoType}}': 'public',
       '{{binName}}': binName,
       '{{packageManager}}': this.detectPackageManager(),
+      '{{platform}}': this.platform || 'github',
+      '{{platformName}}': this.platform === 'bitbucket' ? 'Bitbucket' : 'GitHub',
     };
 
     let result = content;

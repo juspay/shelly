@@ -66,6 +66,17 @@ Shelly has successfully evolved from a simple CLI error analysis tool into a com
 - **NPM Publishing Guidance**: Automated NPM token setup instructions for publishing workflows
 - **Complete Setup Command**: `shelly setup` combining GitHub automation with repository organization
 
+### ✅ **NPM Trusted Publishing / OIDC Automation (NEW - Complete)**
+
+- **OIDC Setup Automation**: `shelly npm trusted-publishing setup` with interactive workflow configuration
+- **Workflow Analysis**: Automatic detection of release workflows, semantic-release, and npm publish commands
+- **Smart Workflow Updates**: Adds `id-token: write` permission, `NPM_CONFIG_PROVENANCE: true` for semantic-release
+- **Interactive Setup Guide**: Beautiful CLI UI with step-by-step guidance for npmjs.com configuration
+- **Browser Integration**: Auto-opens npmjs.com package settings page with configuration values
+- **Status Checking**: `shelly npm trusted-publishing status` to verify OIDC configuration
+- **Cross-Platform Support**: Works with direct `npm publish` and semantic-release workflows
+- **Security Enhancement**: Enables token-less publishing using GitHub OIDC authentication
+
 ### ✅ **Memory Bank System (NEW - Complete)**
 
 - **AI Context Management**: Comprehensive project documentation for AI assistants
@@ -109,6 +120,7 @@ Shelly has successfully evolved from a simple CLI error analysis tool into a com
 | **Error Analysis**               | ✅ Mature   | 100%       | Migrated to TypeScript        |
 | **Repository Organization**      | ✅ Complete | 100%       | Migrated to TypeScript        |
 | **GitHub Repository Automation** | ✅ Complete | 100%       | Migrated to TypeScript        |
+| **NPM Trusted Publishing**       | ✅ Complete | 100%       | OIDC/Provenance automation    |
 | **Memory Bank**                  | ✅ Complete | 100%       | Migrated to TypeScript        |
 | **GitHub Integration**           | ✅ Complete | 100%       | Templates and workflows       |
 | **AI Integration**               | ✅ Enhanced | 100%       | Multi-provider + Free tier    |

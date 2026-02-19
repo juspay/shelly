@@ -33,6 +33,13 @@
 - **GitHub Actions**: Workflow permissions and approval settings configuration
 - **Repository Configuration**: Pull request settings, branch protection, and security policies
 
+#### **NPM Publishing Automation**
+
+- **OIDC Integration**: GitHub Actions OIDC token support for secure npm publishing
+- **Workflow Analysis**: Regex-based detection of release workflows and publish commands
+- **Provenance Support**: `NPM_CONFIG_PROVENANCE` for semantic-release, `--provenance` for direct npm publish
+- **Interactive CLI**: Inquirer-based step-by-step setup with browser integration
+
 #### **Development Dependencies**
 
 - **`typescript`**: TypeScript compiler for type-safe development
@@ -466,6 +473,53 @@ SHELLY_DEBUG=true node dist/shelly/cli.js organize
 # Debug specific components
 DEBUG=shelly:analysis node dist/main.js
 DEBUG=shelly:memory node dist/shelly/cli.js memory init
+```
+
+## **NPM Trusted Publishing Architecture**
+
+### **OIDC Authentication Flow**
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────┐
+│  GitHub Actions │────▶│  OIDC Provider   │────▶│  npm.org    │
+│  (workflow)     │     │  (GitHub)        │     │  Registry   │
+└─────────────────┘     └──────────────────┘     └─────────────┘
+```
+
+### **Workflow Configuration**
+
+```yaml
+# Required permissions for OIDC
+permissions:
+  id-token: write
+  contents: read
+
+# For semantic-release
+env:
+  NPM_CONFIG_PROVENANCE: true
+
+# For direct npm publish
+run: npm publish --provenance
+```
+
+### **NpmService Architecture**
+
+```typescript
+// Key methods in src/shelly/services/npmService.ts
+class NpmService {
+  analyzeWorkflow(path): WorkflowInfo     // Detect OIDC configuration
+  updateWorkflowForOIDC(path): Changes    // Add OIDC permissions
+  findReleaseWorkflow(): WorkflowInfo     // Find release/publish workflow
+  checkNpmVersionSupport(): VersionInfo   // Check npm >= 11.5
+}
+```
+
+### **Command Structure**
+
+```bash
+shelly npm trusted-publishing setup   # Interactive OIDC setup
+shelly npm trusted-publishing status  # Check current configuration
+shelly npm tp setup                   # Shorthand alias
 ```
 
 ## **Security Considerations**

@@ -2,6 +2,33 @@
 
 **Current Work Focus:**
 
+### 🔗 **Bitbucket Platform Integration (ACTIVE - Feb 2026)**
+
+- **Branch**: `66-feature-shelly-integration-in-bitbucket`
+- **Platform Detection**: New `PlatformDetector` service auto-detects GitHub vs Bitbucket from `.git/config` remote URL (SSH + HTTPS both supported)
+- **New Commands**: `shelly bitbucket [setup]` and `shelly bb` (alias) for full Bitbucket repo configuration
+- **Auto-detect in `setup`**: `shelly setup` now auto-detects platform and runs GitHub or Bitbucket setup accordingly
+- **`--platform` flag**: Added to `organize`, `setup`, `status` commands for explicit platform override
+- **`organize` is platform-aware**: Skips `.github/` directories for Bitbucket repos, creates `bitbucket-pipelines.yml` instead
+- **NPM OIDC for Bitbucket**: `shelly npm trusted-publishing` now handles Bitbucket Pipelines OIDC (`oidc: true` + `BITBUCKET_STEP_OIDC_TOKEN`)
+- **New Files**:
+  - `src/shelly/services/platformDetector.ts` — `PlatformDetector.detect(cwd, override?)`
+  - `src/shelly/services/bitbucketService.ts` — Bitbucket REST API client
+  - `src/shelly/services/bitbucketProvider.ts`, `githubProvider.ts`, `platformProvider.ts` — provider abstractions
+  - `src/shelly/commands/bitbucketSetup.ts` — `BitbucketSetupCommand` full setup flow
+  - `src/shelly/commands/runBitbucketSetup.ts` — runner
+  - `src/shelly/templates/bitbucketPipelines.ts` — YAML generator
+  - `src/shelly/templates/bitbucket/` — Bitbucket template files
+- **Env Vars**: `BITBUCKET_ACCESS_TOKEN` or `BITBUCKET_TOKEN`, `BITBUCKET_USERNAME`
+
+### 🔐 **NPM Trusted Publishing / OIDC Automation (NEW)**
+
+- **OIDC Setup Command**: `shelly npm trusted-publishing setup` with interactive workflow
+- **Workflow Analysis**: Automatic detection of semantic-release and npm publish patterns
+- **Smart Updates**: Adds `id-token: write`, `NPM_CONFIG_PROVENANCE: true` automatically
+- **Interactive UI**: Beautiful CLI with step-by-step npmjs.com configuration guide
+- **Browser Integration**: Auto-opens package settings with values to copy
+
 ### 🔄 **TypeScript Migration & Build System Enhancement**
 
 - **TypeScript Migration**: Complete conversion from JavaScript to TypeScript (COMPLETE)
@@ -25,6 +52,17 @@
 - **Package Enhancement**: Metadata optimization and dependency management
 
 **Recent Major Changes:**
+
+### 🔗 **Bitbucket Integration (Feb 2026 - In Progress)**
+
+- **Platform Abstraction**: `Platform` type (`'github' | 'bitbucket'`) added across all major services
+- **`PlatformDetector`**: Reads `.git/config` and parses remote URL to determine host; supports SSH and HTTPS for both GitHub and Bitbucket
+- **`BitbucketSetupCommand`** flow: auth validation → repo detection (with SSH alias normalization) → admin check → repo settings → branch restrictions → enable Pipelines → create `bitbucket-pipelines.yml` → NPM_TOKEN variable → commit + push → optional version tag
+- **`organize.ts`** changes: detects platform at step 0, dispatches `createPlatformTemplates()`, skips `.github/` dirs for Bitbucket, uses `bitbucket.org` in repository URLs
+- **`npmService.ts`** changes: `getGitRepoInfo()` now returns `{ owner, repo, platform }`; new `analyzeBitbucketPipeline()`, `updateBitbucketPipelineForOIDC()`, `getSecretsUrl()`
+- **`cli.ts`** changes: new `bitbucket` + `bb` commands; `--platform` flag on `organize`, `status`, `setup`; `setup` auto-detects platform; legacy `--github-only` aliased to `--platform-only`
+- **Files Changed**: `cli.ts`, `commands/organize.ts`, `commands/npmTrustedPublishing.ts`, `services/npmService.ts`
+- **New Untracked Files**: `bitbucketSetup.ts`, `runBitbucketSetup.ts`, `bitbucketService.ts`, `bitbucketProvider.ts`, `githubProvider.ts`, `platformDetector.ts`, `platformProvider.ts`, `templates/bitbucket/`, `templates/bitbucketPipelines.ts`
 
 ### 🆓 **Free Tier AI Support & Multi-Provider Configuration (Jan 31, 2026)**
 
@@ -60,6 +98,21 @@
   - Added `scripts/fix-node-pty-permissions.js` - Cross-platform permission fixer
   - Updated `package.json` - Added `postinstall` script and included fix script in `files` array
 - **Impact**: Shelly now works correctly on all platforms without manual intervention
+
+### 🔐 **NPM Trusted Publishing (NEW - Feb 2026)**
+
+- **New Command**: `shelly npm trusted-publishing setup` - Interactive OIDC configuration
+- **New Command**: `shelly npm trusted-publishing status` - Check OIDC readiness
+- **New Service**: `src/shelly/services/npmService.ts` - NPM workflow analysis and updates
+- **New Command Handler**: `src/shelly/commands/npmTrustedPublishing.ts` - CLI implementation
+- **Features**:
+  - Detects semantic-release vs direct npm publish workflows
+  - Adds `id-token: write` permission for GitHub OIDC
+  - Adds `NPM_CONFIG_PROVENANCE: true` for semantic-release
+  - Adds `--provenance` flag for direct npm publish commands
+  - Comments out `NODE_AUTH_TOKEN` (replaced by OIDC)
+  - Interactive UI with browser auto-open for npmjs.com setup
+  - Visual step-by-step guide with copy-paste values
 
 ### 🔄 **TypeScript Migration (JUST COMPLETED - Oct 28, 2025)**
 
@@ -122,8 +175,9 @@
 - ✅ **Free Tier AI Support**: Multi-provider configuration with fallback mode
 - ✅ **AI Config Command**: `shelly config` for AI configuration management
 - ✅ **Memory Bank Refresh**: Updating all Memory Bank files with new features
-- ⏳ **Final Testing**: Comprehensive validation of free tier features
-- ⏳ **Publication Preparation**: Final review with TypeScript codebase
+- 🔄 **Bitbucket Integration**: Platform abstraction + `shelly bitbucket` command (in progress)
+- ⏳ **Bitbucket Integration Testing**: End-to-end validation with real Bitbucket repos
+- ⏳ **Publication Preparation**: Final review and version bump after Bitbucket feature
 
 ### 🔄 **Ongoing Development**
 
@@ -136,12 +190,14 @@
 
 ### 📊 **Feature Completion Status**
 
+- **Bitbucket Integration**: 🔄 In Progress (Feb 2026) - platform abstraction + `shelly bitbucket` command
+- **NPM Trusted Publishing**: ✅ Complete (Feb 2026) - OIDC for GitHub + Bitbucket
 - **TypeScript Migration**: ✅ Complete (Oct 28, 2025)
 - **Build System**: ✅ Complete (automated template copying)
 - **Error Analysis Engine**: ✅ Mature (with fallback mode)
 - **Free Tier AI Support**: ✅ Complete (Jan 31, 2026) - Multi-provider with auto-detection
 - **AI Configuration**: ✅ Complete - `shelly config` command
-- **Repository Organization**: ✅ Complete (migrated to TypeScript)
+- **Repository Organization**: ✅ Complete (now platform-aware)
 - **GitHub Repository Automation**: ✅ Complete (migrated to TypeScript)
 - **Memory Bank System**: ✅ Complete (with AI fallback support)
 - **GitHub Integration**: ✅ Complete (templates and workflows)
