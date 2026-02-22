@@ -46,10 +46,7 @@ async function setupCLI() {
     .option('-f, --force', 'overwrite existing files without prompting')
     .option('-u, --update', 'only add missing files, preserve existing ones')
     .option('-m, --move', 'move misplaced files to their correct directories')
-    .option(
-      '--github-action',
-      'include action.yml for GitHub Action projects'
-    )
+    .option('--github-action', 'include action.yml for GitHub Action projects')
     .option(
       '-d, --directory <path>',
       'target directory (defaults to current directory)'

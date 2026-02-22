@@ -272,7 +272,9 @@ async function main() {
   const skipped = results.filter((r) => r.skipped);
 
   if (successful.length > 0) {
-    console.log(`${colors.green}Successful (${successful.length}):${colors.reset}`);
+    console.log(
+      `${colors.green}Successful (${successful.length}):${colors.reset}`
+    );
     successful.forEach((r) => log(`${r.name}: ${r.message}`, 'success'));
     console.log('');
   }

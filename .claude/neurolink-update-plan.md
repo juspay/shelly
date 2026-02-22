@@ -8,11 +8,11 @@ Analysis of 52 commits in neurolink-fork (v8.21.x → v8.41.1) reveals several u
 
 ## Current State
 
-| Aspect | Shelly | Neurolink Fork |
-|--------|--------|----------------|
-| **Package Version** | `^8.41.0` | `8.41.1` |
-| **Files Using Neurolink** | 5 files | - |
-| **Providers Configured** | google, openai, mistral, ollama, openrouter | +60 providers via OpenRouter |
+| Aspect                    | Shelly                                      | Neurolink Fork               |
+| ------------------------- | ------------------------------------------- | ---------------------------- |
+| **Package Version**       | `^8.41.0`                                   | `8.41.1`                     |
+| **Files Using Neurolink** | 5 files                                     | -                            |
+| **Providers Configured**  | google, openai, mistral, ollama, openrouter | +60 providers via OpenRouter |
 
 ---
 
@@ -25,6 +25,7 @@ Analysis of 52 commits in neurolink-fork (v8.21.x → v8.41.1) reveals several u
 **Issue**: NeuroLink instances are created but never cleaned up, accumulating event listeners.
 
 **New Methods Available**:
+
 - `neurolink.shutdown()` - Cleanup NeuroLink instance
 - `ExternalServerManager.destroy()` - Clean up server manager
 - `ToolDiscoveryService.destroy()` - Clean up tool discovery
@@ -33,6 +34,7 @@ Analysis of 52 commits in neurolink-fork (v8.21.x → v8.41.1) reveals several u
 **Files to Update**:
 
 ##### `src/services/analysisService.ts`
+
 ```typescript
 // BEFORE
 const neurolink = new NeuroLink();
@@ -50,6 +52,7 @@ try {
 ```
 
 ##### `src/shelly/utils/aiContentGenerator.ts`
+
 Already has `process.setMaxListeners(20)` which helps, but should implement proper cleanup pattern.
 
 ---
@@ -57,6 +60,7 @@ Already has `process.setMaxListeners(20)` which helps, but should implement prop
 #### 2. Update Package Version
 
 **File**: `package.json`
+
 ```json
 // BEFORE
 "@juspay/neurolink": "^8.41.0"
@@ -72,10 +76,12 @@ Already has `process.setMaxListeners(20)` which helps, but should implement prop
 #### 3. Claude Model Identifier Awareness
 
 **Change in v8.40.1**: Claude model identifiers updated:
+
 - `claude-sonnet-4@20250514` → `claude-sonnet-4-5@20250929`
 - `claude-opus-4@20250514` → `claude-opus-4-5@20251101`
 
 **Impact on Shelly**:
+
 - aiConfigService uses `anthropic/claude-3.5-sonnet` via OpenRouter
 - This is different from the internal ModelRouter identifiers
 - **No action needed** - the ModelRouter handles this internally
@@ -89,6 +95,7 @@ Already has `process.setMaxListeners(20)` which helps, but should implement prop
 **New in v8.24.0**: Full OpenRouter support with 300+ models
 
 **Current Shelly Config** (`aiConfigService.ts`):
+
 ```typescript
 openrouter: {
   free: {
@@ -155,17 +162,20 @@ const result = await neurolink.generate({
 ## Implementation Checklist
 
 ### Phase 1: Critical Updates
+
 - [ ] Add `neurolink.shutdown()` calls in analysisService.ts
 - [ ] Verify Claude model compatibility with OpenRouter
 - [ ] Update package.json version if needed
 - [ ] Run tests to verify no regressions
 
 ### Phase 2: Enhancements
+
 - [ ] Consider adding more OpenRouter model options
 - [ ] Add destroy() calls if using MCP components
 - [ ] Review memory usage patterns in long-running processes
 
 ### Phase 3: Future Features
+
 - [ ] Evaluate PPT generation for project reports
 - [ ] Consider title generation for session naming
 - [ ] Explore video capabilities if relevant
@@ -174,12 +184,12 @@ const result = await neurolink.generate({
 
 ## Files to Modify
 
-| File | Changes | Priority |
-|------|---------|----------|
-| `src/services/analysisService.ts` | Add shutdown cleanup | 🔴 High |
-| `src/shelly/utils/aiContentGenerator.ts` | Review cleanup pattern | 🟡 Medium |
-| `package.json` | Version update | 🟡 Medium |
-| `src/services/aiConfigService.ts` | OpenRouter model options | 🟢 Low |
+| File                                     | Changes                  | Priority  |
+| ---------------------------------------- | ------------------------ | --------- |
+| `src/services/analysisService.ts`        | Add shutdown cleanup     | 🔴 High   |
+| `src/shelly/utils/aiContentGenerator.ts` | Review cleanup pattern   | 🟡 Medium |
+| `package.json`                           | Version update           | 🟡 Medium |
+| `src/services/aiConfigService.ts`        | OpenRouter model options | 🟢 Low    |
 
 ---
 
@@ -204,6 +214,7 @@ const result = await neurolink.generate({
 ## Documentation Updates
 
 After implementation:
+
 - [ ] Update CLAUDE.md with new cleanup patterns
 - [ ] Update README if new features are exposed
 - [ ] Add memory management notes to developer docs
@@ -212,21 +223,21 @@ After implementation:
 
 ## Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Breaking change in model routing | Low | Medium | Test with all providers |
-| Shutdown causing issues | Low | Low | Wrap in try/finally |
-| Memory issues in long sessions | Medium | Medium | Implement cleanup properly |
+| Risk                             | Likelihood | Impact | Mitigation                 |
+| -------------------------------- | ---------- | ------ | -------------------------- |
+| Breaking change in model routing | Low        | Medium | Test with all providers    |
+| Shutdown causing issues          | Low        | Low    | Wrap in try/finally        |
+| Memory issues in long sessions   | Medium     | Medium | Implement cleanup properly |
 
 ---
 
 ## Timeline
 
-| Phase | Tasks | Effort |
-|-------|-------|--------|
+| Phase   | Tasks            | Effort    |
+| ------- | ---------------- | --------- |
 | Phase 1 | Critical updates | 1-2 hours |
-| Phase 2 | Enhancements | 2-3 hours |
-| Phase 3 | Future features | As needed |
+| Phase 2 | Enhancements     | 2-3 hours |
+| Phase 3 | Future features  | As needed |
 
 ---
 

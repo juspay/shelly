@@ -994,9 +994,19 @@ export class OrganizeCommand {
    */
   resolveVersionConflict(version1: string, version2: string): string {
     // Check for special protocol/reference types first
-    const specialProtocols = ['workspace:', 'file:', 'git+', 'link:', 'portal:'];
-    const isSpecial1 = specialProtocols.some(proto => version1.startsWith(proto));
-    const isSpecial2 = specialProtocols.some(proto => version2.startsWith(proto));
+    const specialProtocols = [
+      'workspace:',
+      'file:',
+      'git+',
+      'link:',
+      'portal:',
+    ];
+    const isSpecial1 = specialProtocols.some((proto) =>
+      version1.startsWith(proto)
+    );
+    const isSpecial2 = specialProtocols.some((proto) =>
+      version2.startsWith(proto)
+    );
 
     // If either is a special protocol, preserve the existing one
     if (isSpecial1 || isSpecial2) {
@@ -1111,8 +1121,7 @@ export class OrganizeCommand {
       },
       {
         name: 'CLAUDE.md',
-        generator: () =>
-          this.loadTemplate('CLAUDE.md.template', repoAnalysis),
+        generator: () => this.loadTemplate('CLAUDE.md.template', repoAnalysis),
       },
       {
         name: 'SECURITY.md',
@@ -1121,8 +1130,7 @@ export class OrganizeCommand {
       },
       {
         name: '.markdownlint.json',
-        generator: () =>
-          this.loadTemplateRaw('.markdownlint.json.template'),
+        generator: () => this.loadTemplateRaw('.markdownlint.json.template'),
       },
       {
         name: 'typedoc.json',
@@ -1177,22 +1185,34 @@ export class OrganizeCommand {
       {
         name: 'scripts/build-validations.cjs',
         generator: () =>
-          this.loadTemplate('scripts/build-validations.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/build-validations.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/commit-validation.cjs',
         generator: () =>
-          this.loadTemplate('scripts/commit-validation.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/commit-validation.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/env-validation.cjs',
         generator: () =>
-          this.loadTemplate('scripts/env-validation.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/env-validation.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/security-check.cjs',
         generator: () =>
-          this.loadTemplate('scripts/security-check.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/security-check.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/smart-test.cjs',
@@ -1202,7 +1222,10 @@ export class OrganizeCommand {
       {
         name: 'scripts/organize-project.cjs',
         generator: () =>
-          this.loadTemplate('scripts/organize-project.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/organize-project.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/mcp-test.cjs',
@@ -1217,7 +1240,10 @@ export class OrganizeCommand {
       {
         name: 'scripts/quality-metrics.cjs',
         generator: () =>
-          this.loadTemplate('scripts/quality-metrics.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/quality-metrics.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/format-staged.cjs',
@@ -1227,17 +1253,22 @@ export class OrganizeCommand {
       {
         name: 'scripts/format-changelog.cjs',
         generator: () =>
-          this.loadTemplate('scripts/format-changelog.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/format-changelog.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/semantic-release-format-plugin.cjs',
         generator: () =>
-          this.loadTemplate('scripts/semantic-release-format-plugin.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/semantic-release-format-plugin.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: '.npmrc',
-        generator: () =>
-          this.loadTemplate('.npmrc.template', repoAnalysis),
+        generator: () => this.loadTemplate('.npmrc.template', repoAnalysis),
       },
       {
         name: '.mcp-servers.json',
@@ -1250,8 +1281,7 @@ export class OrganizeCommand {
     if (this.githubAction) {
       files.push({
         name: 'action.yml',
-        generator: () =>
-          this.loadTemplate('action.yml.template', repoAnalysis),
+        generator: () => this.loadTemplate('action.yml.template', repoAnalysis),
       });
     }
 
@@ -1514,7 +1544,8 @@ export class OrganizeCommand {
         target: '.claude/commands/update-docs.md',
       },
       {
-        source: '.claude/commands/create-architecture-documentation.md.template',
+        source:
+          '.claude/commands/create-architecture-documentation.md.template',
         target: '.claude/commands/create-architecture-documentation.md',
       },
       // Claude settings
@@ -1706,7 +1737,10 @@ export class OrganizeCommand {
 
     // Convert project name to kebab-case for binName
     const projectName = repoAnalysis.name || repoAnalysis.repoName;
-    const binName = projectName.replace('@juspay/', '').replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+    const binName = projectName
+      .replace('@juspay/', '')
+      .replace(/[^a-zA-Z0-9-]/g, '-')
+      .toLowerCase();
 
     const replacements = {
       '{{projectName}}': projectName,

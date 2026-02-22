@@ -149,11 +149,15 @@ export abstract class BaseAIProvider implements AIProvider {
 
   abstract isAvailable(): Promise<boolean>;
 
-  abstract generateText(options: GenerateTextOptions): Promise<GenerateTextResult>;
+  abstract generateText(
+    options: GenerateTextOptions
+  ): Promise<GenerateTextResult>;
 
   abstract generateEmbedding(text: string | string[]): Promise<EmbeddingResult>;
 
-  abstract streamText(options: GenerateTextOptions): AsyncGenerator<StreamChunk>;
+  abstract streamText(
+    options: GenerateTextOptions
+  ): AsyncGenerator<StreamChunk>;
 
   protected abstract getDefaultModel(): string;
 
@@ -246,7 +250,10 @@ export abstract class BaseAIProvider implements AIProvider {
   /**
    * Log debug message.
    */
-  protected log(message: string, level: 'debug' | 'info' | 'warn' | 'error' = 'debug'): void {
+  protected log(
+    message: string,
+    level: 'debug' | 'info' | 'warn' | 'error' = 'debug'
+  ): void {
     if (process.env.DEBUG) {
       console[level](`[${this.name}] ${message}`);
     }
@@ -282,15 +289,13 @@ export class ExampleProvider extends BaseAIProvider {
     }
 
     // Optionally verify API connectivity
-    try {
-      // await this.testConnection();
-      return true;
-    } catch {
-      return false;
-    }
+    // await this.testConnection();
+    return true;
   }
 
-  async generateText(options: GenerateTextOptions): Promise<GenerateTextResult> {
+  async generateText(
+    options: GenerateTextOptions
+  ): Promise<GenerateTextResult> {
     const messages = this.buildMessages(options);
     const model = options.model || this.defaultModel;
 
@@ -342,9 +347,13 @@ export class ExampleProvider extends BaseAIProvider {
         embeddings,
         model: 'example-embedding-v1',
         usage: {
-          promptTokens: Math.ceil(inputs.reduce((sum, t) => sum + t.length / 4, 0)),
+          promptTokens: Math.ceil(
+            inputs.reduce((sum, t) => sum + t.length / 4, 0)
+          ),
           completionTokens: 0,
-          totalTokens: Math.ceil(inputs.reduce((sum, t) => sum + t.length / 4, 0)),
+          totalTokens: Math.ceil(
+            inputs.reduce((sum, t) => sum + t.length / 4, 0)
+          ),
         },
       };
     });
@@ -394,7 +403,9 @@ export class ProviderFactory {
   static create(name: string): AIProvider {
     const factory = this.providers.get(name.toLowerCase());
     if (!factory) {
-      throw new Error(`Unknown provider: ${name}. Available: ${this.getAvailableProviders().join(', ')}`);
+      throw new Error(
+        `Unknown provider: ${name}. Available: ${this.getAvailableProviders().join(', ')}`
+      );
     }
     return factory();
   }

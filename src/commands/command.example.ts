@@ -96,9 +96,7 @@ function logError(message: string, exit: boolean = true): void {
 function formatAsTable(data: unknown): string {
   if (Array.isArray(data)) {
     // Format array as numbered list
-    return data
-      .map((row, i) => `${i + 1}. ${JSON.stringify(row)}`)
-      .join('\n');
+    return data.map((row, i) => `${i + 1}. ${JSON.stringify(row)}`).join('\n');
   }
 
   // Format object as key-value pairs
@@ -395,9 +393,15 @@ export function registerExampleCommand(program: Command): void {
     // --------------------------------------------------------------------------
     // The action receives arguments first (in order), then options object.
 
-    .action(async (input: string, target: string | undefined, options: CommandOptions) => {
-      await actionHandler(input, target, options);
-    });
+    .action(
+      async (
+        input: string,
+        target: string | undefined,
+        options: CommandOptions
+      ) => {
+        await actionHandler(input, target, options);
+      }
+    );
 }
 
 /**
@@ -441,9 +445,15 @@ export function createExampleCommand(): Command {
       },
       100
     )
-    .action(async (input: string, target: string | undefined, options: CommandOptions) => {
-      await actionHandler(input, target, options);
-    });
+    .action(
+      async (
+        input: string,
+        target: string | undefined,
+        options: CommandOptions
+      ) => {
+        await actionHandler(input, target, options);
+      }
+    );
 
   return cmd;
 }

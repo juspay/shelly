@@ -31,7 +31,16 @@
       "description": "Database connection URL with credentials",
       "regex": "(?i)(mongodb|postgres|postgresql|mysql|mariadb|redis|amqp|rabbitmq)://[^:]+:([^@]+)@[^\\s'\"]+",
       "secretGroup": 2,
-      "keywords": ["mongodb", "postgres", "postgresql", "mysql", "mariadb", "redis", "amqp", "rabbitmq"],
+      "keywords": [
+        "mongodb",
+        "postgres",
+        "postgresql",
+        "mysql",
+        "mariadb",
+        "redis",
+        "amqp",
+        "rabbitmq"
+      ],
       "tags": ["database", "connection", "credentials"],
       "severity": "critical"
     },
@@ -67,7 +76,14 @@
       "regex": "(?i)(secret|password|passwd|pwd|token|credential)\\s*[=:]\\s*['\"]?([^\\s'\"]{8,})['\"]?",
       "secretGroup": 2,
       "entropy": 3.5,
-      "keywords": ["secret", "password", "passwd", "pwd", "token", "credential"],
+      "keywords": [
+        "secret",
+        "password",
+        "passwd",
+        "pwd",
+        "token",
+        "credential"
+      ],
       "tags": ["secret", "password", "generic"],
       "severity": "medium"
     }

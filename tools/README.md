@@ -5,11 +5,13 @@ This directory contains development tools and utilities for @juspay/shelly.
 ## Available Tools
 
 ### Scripts
+
 - Custom development scripts
 - Build helpers
 - Deployment utilities
 
 ### Generators
+
 - Code generators
 - Template generators
 - Boilerplate creators
@@ -21,6 +23,7 @@ Each tool should include its own documentation in comments or a separate README 
 ## Adding New Tools
 
 When creating new tools:
+
 1. Add clear documentation
 2. Include usage examples
 3. Handle errors gracefully
