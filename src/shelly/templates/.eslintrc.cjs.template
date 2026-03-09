@@ -1,0 +1,17 @@
+// ESLint config template for Juspay Svelte/React projects
+module.exports = {
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    // Add Svelte/React specific configs as needed
+  ],
+  plugins: [
+    'unused-imports',
+  ],
+  rules: {
+    'no-explicit-any': 'error',
+    'unused-imports/no-unused-imports': 'error',
+    // ...other rules
+  },
+  ignorePatterns: ['node_modules/', 'dist/', 'build/'],
+};

@@ -1,0 +1,5 @@
+// knip.config.ts template for Juspay SvelteKit projects
+module.exports = {
+  entry: ['src/app.ts', 'src/index.ts'],
+  ignore: ['src/generated/', 'src/mocks/'],
+};

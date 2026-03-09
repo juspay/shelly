@@ -1,0 +1,3 @@
+#!/bin/sh
+# Juspay pre-push hook template
+pnpm run commitlint

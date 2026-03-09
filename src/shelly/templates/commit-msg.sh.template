@@ -1,0 +1,4 @@
+#!/bin/sh
+# Juspay commit-msg hook template
+pnpm run commitlint
+# Inject OPSAT report URL if needed

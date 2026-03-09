@@ -1,0 +1,27 @@
+// setup.js template for Juspay projects
+const fs = require('fs');
+const crypto = require('crypto');
+
+// Generate .env from .env.example
+function generateEnv() {
+  if (!fs.existsSync('.env')) {
+    fs.copyFileSync('.env.example', '.env');
+    console.log('Created .env from .env.example');
+  }
+}
+
+// Generate random secrets
+function generateSecrets() {
+  const secret = crypto.randomBytes(32).toString('hex');
+  fs.appendFileSync('.env', `SECRET_KEY=${secret}\n`);
+}
+
+// Generate RSA key pair
+function generateRSAKeys() {
+  // Placeholder for OpenSSL command
+  console.log('Generating RSA keys...');
+}
+
+generateEnv();
+generateSecrets();
+generateRSAKeys();
