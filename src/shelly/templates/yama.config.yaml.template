@@ -1,0 +1,14 @@
+# Yama AI PR review config template for Juspay
+focus_areas:
+  - code_quality
+  - security
+  - documentation
+severity_rules:
+  - critical
+  - major
+  - minor
+mcp_servers:
+  - bitbucket
+  - jira
+  - github
+# ...add more as needed

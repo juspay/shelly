@@ -1,0 +1,23 @@
+// workflow.js template for Juspay CI/CD engine
+module.exports = {
+  jira: {
+    transition: true,
+    autopilot: true,
+  },
+  deploy: {
+    aws: true,
+    gcp: true,
+    s3: true,
+    cloudfront: true,
+    docker: true,
+  },
+  versioning: {
+    standardVersion: true,
+    autoChangelog: true,
+  },
+  bitbucket: {
+    apiIntegration: true,
+    commitUrlFormat: true,
+  },
+  // ...add more as needed
+};

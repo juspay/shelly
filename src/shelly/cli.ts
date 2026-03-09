@@ -9,6 +9,10 @@ import { dirname } from 'path';
 import fs from 'fs/promises';
 import path from 'path';
 import { aiConfigService } from '../services/aiConfigService.js';
+import { BitbucketSetupCommand } from './commands/bitbucketSetup.js';
+import { JenkinsScaffoldCommand } from './commands/jenkinsScaffold.js';
+import { PackagesCommand } from './commands/packages.js';
+import { OrganizeJuspayCommand } from './commands/organizeJuspay.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -442,6 +446,92 @@ async function setupCLI() {
         console.error('❌ Error executing config command:', error.message);
         process.exit(1);
       }
+    });
+
+  // BitBucket setup command
+  program
+    .command('bitbucket')
+    .description('Setup BitBucket repository with Juspay best practices')
+    .requiredOption('--project-key <key>', 'BitBucket project key')
+    .requiredOption('--repo-slug <slug>', 'BitBucket repository slug')
+    .requiredOption('--base-url <url>', 'BitBucket base URL')
+    .requiredOption('--token <token>', 'BitBucket API token')
+    .action(async (options) => {
+      const cmd = new BitbucketSetupCommand({
+        projectKey: options.projectKey,
+        repoSlug: options.repoSlug,
+        baseUrl: options.baseUrl,
+        token: options.token,
+      });
+      await cmd.execute();
+    });
+
+  // Jenkinsfile scaffold command
+  program
+    .command('jenkins')
+    .description('Scaffold Jenkinsfile for Juspay projects')
+    .requiredOption('--project-name <name>', 'Project name')
+    .requiredOption('--bitbucket-project <key>', 'BitBucket project key')
+    .option('--s3-bucket <bucket>', 'S3 bucket name')
+    .option('--gcp-project <id>', 'GCP project ID')
+    .option('--docker-destination <dest>', 'Docker destination')
+    .action(async (options) => {
+      const cmd = new JenkinsScaffoldCommand({
+        projectName: options.projectName,
+        bitbucketProject: options.bitbucketProject,
+        s3Bucket: options.s3Bucket,
+        gcpProject: options.gcpProject,
+        dockerDestination: options.dockerDestination,
+      });
+      await cmd.execute();
+    });
+
+  // Juspay package injection command
+  program
+    .command('packages')
+    .description('Auto-detect and inject Juspay dependencies')
+    .option('--package-json <path>', 'Path to package.json', 'package.json')
+    .action(async (options) => {
+      const cmd = new PackagesCommand(options.packageJson);
+      await cmd.execute();
+    });
+
+  // Unified Juspay repo organizer
+  program
+    .command('organize-juspay')
+    .description(
+      'Scaffold a Juspay-ready repository (BitBucket, Jenkins, packages)'
+    )
+    .requiredOption('--project-key <key>', 'BitBucket project key')
+    .requiredOption('--repo-slug <slug>', 'BitBucket repository slug')
+    .requiredOption('--base-url <url>', 'BitBucket base URL')
+    .requiredOption('--token <token>', 'BitBucket API token')
+    .requiredOption('--project-name <name>', 'Project name')
+    .requiredOption('--bitbucket-project <key>', 'BitBucket project key')
+    .option('--s3-bucket <bucket>', 'S3 bucket name')
+    .option('--gcp-project <id>', 'GCP project ID')
+    .option('--docker-destination <dest>', 'Docker destination')
+    .option('--package-json <path>', 'Path to package.json', 'package.json')
+    .action(async (options) => {
+      const bitbucketConfig = {
+        projectKey: options.projectKey,
+        repoSlug: options.repoSlug,
+        baseUrl: options.baseUrl,
+        token: options.token,
+      };
+      const jenkinsParams = {
+        projectName: options.projectName,
+        bitbucketProject: options.bitbucketProject,
+        s3Bucket: options.s3Bucket,
+        gcpProject: options.gcpProject,
+        dockerDestination: options.dockerDestination,
+      };
+      const cmd = new OrganizeJuspayCommand(
+        bitbucketConfig,
+        jenkinsParams,
+        options.packageJson
+      );
+      await cmd.execute();
     });
 
   // Parse command line arguments

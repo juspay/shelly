@@ -1,0 +1,3 @@
+#!/bin/sh
+# Juspay prepare-commit-msg hook template
+git-cz --jira

@@ -1,0 +1,7 @@
+// Stylelint config template for Juspay Svelte/SCSS projects
+{
+  "extends": ["stylelint-config-standard-scss", "stylelint-config-html"],
+  "rules": {
+    "selector-pseudo-class-no-unknown": [true, {"ignorePseudoClasses": ["global"]}]
+  }
+}
