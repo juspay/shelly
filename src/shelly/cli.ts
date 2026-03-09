@@ -4,6 +4,9 @@ import { Command } from 'commander';
 import { OrganizeCommand } from './commands/organize.js';
 import { MemoryCommand } from './commands/memory.js';
 import { GitHubSetupCommand } from './commands/githubSetup.js';
+import { BitbucketSetupCommand } from './commands/bitbucketSetup.js';
+import { NpmTrustedPublishingCommand } from './commands/npmTrustedPublishing.js';
+import { PlatformDetector, type Platform } from './services/platformDetector.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs/promises';
@@ -54,6 +57,10 @@ async function setupCLI() {
       '-d, --directory <path>',
       'target directory (defaults to current directory)'
     )
+    .option(
+      '--platform <platform>',
+      'override platform detection (github|bitbucket)'
+    )
     .action(async (options) => {
       try {
         // Handle current working directory access safely
@@ -83,12 +90,21 @@ async function setupCLI() {
           }
         }
 
+        // Validate platform option
+        const platform = options.platform as Platform | undefined;
+        if (platform && platform !== 'github' && platform !== 'bitbucket') {
+          console.error(`❌ Invalid platform: ${platform}`);
+          console.error('   Supported platforms: github, bitbucket');
+          process.exit(1);
+        }
+
         const organizeCommand = new OrganizeCommand({
           force: options.force,
           update: options.update,
           move: options.move,
           githubAction: options.githubAction,
           cwd: targetDirectory,
+          platform: platform,
         });
 
         await organizeCommand.execute();
@@ -174,12 +190,16 @@ async function setupCLI() {
       '-d, --directory <path>',
       'target directory (defaults to current directory)'
     )
+    .option(
+      '--platform <platform>',
+      'override platform detection (github|bitbucket)'
+    )
     .action(async (options) => {
       try {
         const targetDir = options.directory
           ? path.resolve(options.directory)
           : process.cwd();
-        await checkRepositoryStatus(targetDir);
+        await checkRepositoryStatus(targetDir, options.platform);
       } catch (error) {
         console.error('❌ Error checking status:', error.message);
         process.exit(1);
@@ -305,40 +325,264 @@ async function setupCLI() {
       }
     });
 
-  // Quick setup command
+  // Bitbucket setup command
   program
-    .command('setup')
-    .description('Quick repository setup (GitHub + organize)')
+    .command('bitbucket')
+    .description(
+      'Configure Bitbucket repository with best practices for publishing and collaboration'
+    )
+    .argument('[subcommand]', 'bitbucket subcommand (setup)', 'setup')
     .option('-f, --force', 'skip confirmation prompts')
     .option('--dry-run', 'show what would be configured without making changes')
     .option(
       '-d, --directory <path>',
       'target directory (defaults to current directory)'
     )
-    .option('--github-only', 'only run GitHub setup, skip organize')
-    .option('--organize-only', 'only run organize, skip GitHub setup')
+    .action(async (subcommand, options) => {
+      try {
+        if (subcommand !== 'setup') {
+          console.error(`❌ Unknown subcommand: ${subcommand}`);
+          console.error('Available subcommands: setup');
+          process.exit(1);
+        }
+
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        const bitbucketSetupCommand = new BitbucketSetupCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+        });
+
+        await bitbucketSetupCommand.execute();
+      } catch (error) {
+        console.error(
+          '❌ Error executing Bitbucket setup command:',
+          error.message
+        );
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // Shortcut command for Bitbucket setup
+  program
+    .command('bb')
+    .description('Shortcut for Bitbucket setup (alias for "bitbucket setup")')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be configured without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
     .action(async (options) => {
       try {
         const targetDir = options.directory
           ? path.resolve(options.directory)
           : process.cwd();
 
-        if (!options.organizeOnly) {
-          console.log('🔧 Running GitHub setup...\n');
-          const githubSetupCommand = new GitHubSetupCommand({
+        const bitbucketSetupCommand = new BitbucketSetupCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+        });
+
+        await bitbucketSetupCommand.execute();
+      } catch (error) {
+        console.error(
+          '❌ Error executing Bitbucket setup command:',
+          error.message
+        );
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // NPM trusted publishing command
+  program
+    .command('npm')
+    .description('NPM package management commands')
+    .argument(
+      '<subcommand>',
+      'npm subcommand (trusted-publishing)'
+    )
+    .argument('[action]', 'action for the subcommand (setup, status)')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be changed without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .action(async (subcommand, action, options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        if (subcommand === 'trusted-publishing' || subcommand === 'tp') {
+          const npmCommand = new NpmTrustedPublishingCommand({
             cwd: targetDir,
             force: options.force,
             dryRun: options.dryRun,
           });
-          await githubSetupCommand.execute();
+
+          switch (action) {
+            case 'setup':
+              await npmCommand.executeSetup();
+              break;
+            case 'status':
+              await npmCommand.executeStatus();
+              break;
+            case undefined:
+            case 'help':
+              npmCommand.displayHelp();
+              break;
+            default:
+              console.error(`❌ Unknown action: ${action}`);
+              console.error('Available actions: setup, status');
+              process.exit(1);
+          }
+        } else {
+          console.error(`❌ Unknown subcommand: ${subcommand}`);
+          console.error('Available subcommands: trusted-publishing (or tp)');
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error('❌ Error executing npm command:', error.message);
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // OIDC shortcut - top-level command for quick access
+  program
+    .command('oidc')
+    .description('Quick setup for NPM trusted publishing (alias for "npm tp setup")')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be changed without making changes')
+    .option('--status', 'check current OIDC configuration status')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .action(async (options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        const npmCommand = new NpmTrustedPublishingCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+        });
+
+        if (options.status) {
+          await npmCommand.executeStatus();
+        } else {
+          await npmCommand.executeSetup();
+        }
+      } catch (error) {
+        console.error('❌ Error executing OIDC setup:', error.message);
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // Quick setup command
+  program
+    .command('setup')
+    .description('Quick repository setup (auto-detects GitHub/Bitbucket + organize)')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be configured without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .option(
+      '--platform <platform>',
+      'override platform detection (github|bitbucket)'
+    )
+    .option('--platform-only', 'only run platform setup, skip organize')
+    .option('--organize-only', 'only run organize, skip platform setup')
+    // Legacy aliases
+    .option('--github-only', 'alias for --platform-only (for GitHub repos)')
+    .action(async (options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        // Auto-detect platform if not skipping platform setup
+        let detectedPlatform: Platform = 'github';
+        if (!options.organizeOnly) {
+          try {
+            const platformInfo = await PlatformDetector.detect(
+              targetDir,
+              options.platform
+            );
+            detectedPlatform = platformInfo.platform;
+          } catch {
+            // Fall back to GitHub if detection fails
+            detectedPlatform = options.platform || 'github';
+          }
         }
 
-        if (!options.githubOnly) {
+        const platformName = detectedPlatform === 'bitbucket' ? 'Bitbucket' : 'GitHub';
+
+        if (!options.organizeOnly && !options.platformOnly && !options.githubOnly) {
+          console.log(`🔧 Running ${platformName} setup...\n`);
+          if (detectedPlatform === 'bitbucket') {
+            const bitbucketSetupCommand = new BitbucketSetupCommand({
+              cwd: targetDir,
+              force: options.force,
+              dryRun: options.dryRun,
+            });
+            await bitbucketSetupCommand.execute();
+          } else {
+            const githubSetupCommand = new GitHubSetupCommand({
+              cwd: targetDir,
+              force: options.force,
+              dryRun: options.dryRun,
+            });
+            await githubSetupCommand.execute();
+          }
+        } else if (options.platformOnly || options.githubOnly) {
+          console.log(`🔧 Running ${platformName} setup...\n`);
+          if (detectedPlatform === 'bitbucket') {
+            const bitbucketSetupCommand = new BitbucketSetupCommand({
+              cwd: targetDir,
+              force: options.force,
+              dryRun: options.dryRun,
+            });
+            await bitbucketSetupCommand.execute();
+          } else {
+            const githubSetupCommand = new GitHubSetupCommand({
+              cwd: targetDir,
+              force: options.force,
+              dryRun: options.dryRun,
+            });
+            await githubSetupCommand.execute();
+          }
+        }
+
+        if (!options.platformOnly && !options.githubOnly) {
           console.log('\n📁 Running repository organization...\n');
           const organizeCommand = new OrganizeCommand({
             cwd: targetDir,
             force: options.force,
             update: !options.force,
+            platform: detectedPlatform,
           });
           await organizeCommand.execute();
         }
@@ -454,8 +698,20 @@ async function setupCLI() {
 /**
  * Check repository organization status
  */
-async function checkRepositoryStatus(targetDir) {
+async function checkRepositoryStatus(targetDir, platformOverride?: Platform) {
   console.log('🔍 Checking repository status...\n');
+
+  // Detect platform
+  let platform: Platform = 'github';
+  try {
+    const platformInfo = await PlatformDetector.detect(targetDir, platformOverride);
+    platform = platformInfo.platform;
+  } catch {
+    platform = platformOverride || 'github';
+  }
+
+  const platformName = platform === 'bitbucket' ? 'Bitbucket' : 'GitHub';
+  console.log(`📌 Detected Platform: ${platformName}\n`);
 
   const requiredFiles = [
     'package.json',
@@ -468,22 +724,23 @@ async function checkRepositoryStatus(targetDir) {
     'CHANGELOG.md',
   ];
 
-  const requiredDirs = [
-    '.github/ISSUE_TEMPLATE',
-    '.github/workflows',
-    'src',
-    'docs',
-  ];
+  // Platform-specific required directories
+  const requiredDirs = platform === 'bitbucket'
+    ? ['src', 'docs']
+    : ['.github/ISSUE_TEMPLATE', '.github/workflows', 'src', 'docs'];
 
-  const githubFiles = [
-    '.github/PULL_REQUEST_TEMPLATE.md',
-    '.github/CODEOWNERS',
-    '.github/workflows/ci.yml',
-  ];
+  // Platform-specific files
+  const platformFiles = platform === 'bitbucket'
+    ? ['bitbucket-pipelines.yml']
+    : [
+        '.github/PULL_REQUEST_TEMPLATE.md',
+        '.github/CODEOWNERS',
+        '.github/workflows/ci.yml',
+      ];
 
   let score = 0;
   const maxScore =
-    requiredFiles.length + requiredDirs.length + githubFiles.length;
+    requiredFiles.length + requiredDirs.length + platformFiles.length;
 
   console.log('📋 Required Files:');
   for (const file of requiredFiles) {
@@ -499,8 +756,8 @@ async function checkRepositoryStatus(targetDir) {
     if (exists) score++;
   }
 
-  console.log('\n🔧 GitHub Templates:');
-  for (const file of githubFiles) {
+  console.log(`\n🔧 ${platformName} Templates:`);
+  for (const file of platformFiles) {
     const exists = await fileExists(path.join(targetDir, file));
     console.log(`   ${exists ? '✅' : '❌'} ${file}`);
     if (exists) score++;
