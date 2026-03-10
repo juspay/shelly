@@ -9,11 +9,13 @@ This directory contains JSON-based workflow templates for AI-assisted automation
 Automated code review with analysis, suggestions, and refactoring.
 
 **Variables:**
+
 - `file` (required): Path to the file to review
 - `language` (optional): Programming language (auto-detected)
 - `reviewType` (optional): quick, comprehensive, security, or performance
 
 **Usage:**
+
 ```bash
 @juspay/shelly workflow run code-review --file src/utils/helper.ts --reviewType security
 ```
@@ -23,12 +25,14 @@ Automated code review with analysis, suggestions, and refactoring.
 AI-assisted content writing for documentation, articles, and tutorials.
 
 **Variables:**
+
 - `topic` (required): The main topic to write about
 - `audience` (optional): Target audience (default: developers)
 - `length` (optional): short, medium, long, comprehensive
 - `format` (optional): article, tutorial, documentation, blog-post, readme
 
 **Usage:**
+
 ```bash
 @juspay/shelly workflow run content-creation --topic "GraphQL Best Practices" --format tutorial
 ```
@@ -38,11 +42,13 @@ AI-assisted content writing for documentation, articles, and tutorials.
 AI-powered data exploration and insight extraction.
 
 **Variables:**
+
 - `dataSource` (required): Path to data file or description
 - `analysisType` (optional): exploratory, statistical, trend, comparative, predictive
 - `outputFormat` (optional): report, summary, visualization-code, insights-only
 
 **Usage:**
+
 ```bash
 @juspay/shelly workflow run data-analysis --dataSource ./data/sales.csv --analysisType trend
 ```
@@ -52,11 +58,13 @@ AI-powered data exploration and insight extraction.
 Automated documentation generation from source code.
 
 **Variables:**
+
 - `sourceCode` (required): Path to source code
 - `docType` (optional): api, readme, tutorial, architecture, changelog
 - `language` (optional): Programming language
 
 **Usage:**
+
 ```bash
 @juspay/shelly workflow run documentation --sourceCode ./src/index.ts --docType api
 ```
@@ -96,6 +104,7 @@ Workflows are defined as JSON files with the following structure:
 ## Integration
 
 Workflows integrate with the @juspay/shelly CLI and can be:
+
 - Run from command line
 - Triggered via API
 - Scheduled as automated tasks

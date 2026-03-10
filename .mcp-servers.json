@@ -4,7 +4,6 @@
   "_docs": "https://modelcontextprotocol.io/introduction",
 
   "mcpServers": {
-
     "_section_filesystem": "=== FILE SYSTEM & LOCAL OPERATIONS ===",
 
     "filesystem": {
@@ -16,7 +15,12 @@
 
     "filesystem-readonly": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "--read-only", "shelly-V2"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "--read-only",
+        "shelly-V2"
+      ],
       "description": "Read-only file access for safety",
       "enabled": false
     },
@@ -65,7 +69,11 @@
 
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sqlite", "shelly-V2/data/database.sqlite"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "shelly-V2/data/database.sqlite"
+      ],
       "description": "SQLite database for local development",
       "enabled": false
     },

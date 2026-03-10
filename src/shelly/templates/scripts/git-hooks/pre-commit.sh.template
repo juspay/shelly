@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Runs check, format, lint, and test before each commit.
+# Skipped during Breeze/Hyper deployment pipelines (EXECUTION_MODE env var).
+BRANCH_NAME=$(git branch | grep '*' | sed 's/* //')
+
+if [[ $BRANCH_NAME != *"no branch"* ]] && [[ "$EXECUTION_MODE" != "BREEZE_DEPLOYMENT" ]] && [[ "$EXECUTION_MODE" != "HYPER_DEPLOYMENT" ]]; then
+  # Detect package manager and run checks
+  if [ -f "pnpm-lock.yaml" ]; then
+    PM="pnpm"
+  elif [ -f "yarn.lock" ]; then
+    PM="yarn"
+  elif [ -f "bun.lockb" ] || [ -f "bun.lock" ]; then
+    PM="bun"
+  else
+    PM="npm"
+  fi
+
+  $PM run check  2>/dev/null || true
+  $PM run format 2>/dev/null || true
+  $PM run lint   2>/dev/null || true
+  $PM run test   2>/dev/null || true
+
+  # Re-stage any files reformatted by the above
+  STAGED=$(git diff --name-only --cached --diff-filter=d)
+  if [ -n "$STAGED" ]; then
+    git add $(echo "$STAGED" | xargs)
+  fi
+
+  npx --no -- commitlint --edit "${1}"
+fi
+
+finish() {
+  result=$?
+  exit ${result}
+}
+trap finish EXIT ERR

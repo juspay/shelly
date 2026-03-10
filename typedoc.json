@@ -13,14 +13,7 @@
   "excludeNotDocumented": false,
   "includeVersion": true,
   "categorizeByGroup": true,
-  "categoryOrder": [
-    "Core",
-    "Services",
-    "Commands",
-    "Utilities",
-    "Types",
-    "*"
-  ],
+  "categoryOrder": ["Core", "Services", "Commands", "Utilities", "Types", "*"],
   "navigation": {
     "includeCategories": true,
     "includeGroups": true
