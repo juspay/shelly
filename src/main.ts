@@ -81,7 +81,7 @@ shelly() {
     # If arguments are provided, check if it's a CLI command or a shell command to analyze
     if [ \$# -gt 0 ]; then
         case "\$1" in
-            organize|memory|github|gh|setup|init|status|config|help|--help|-h|--version|-v|--alias)
+            organize|memory|github|gh|bitbucket|bb|setup|init|status|config|help|--help|-h|--version|-v|--alias)
                 # Known CLI commands - route to CLI tool
                 node "${cliPath}" "\$@"
                 ;;

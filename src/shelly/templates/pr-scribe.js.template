@@ -1,0 +1,161 @@
+#!/usr/bin/env node
+
+/**
+ * PR Scribe - Automated PR Description Generator
+ *
+ * Generates comprehensive PR descriptions using AI by analyzing:
+ * - Branch diff and code changes
+ * - Commit messages
+ * - File modifications
+ *
+ * Usage:
+ *   node scripts/pr-scribe.js [pr-id]
+ *   pnpm run describe [pr-id]
+ *
+ * Environment Variables Required:
+ *   GOOGLE_AI_API_KEY - Google AI API key for NeuroLink
+ *   BITBUCKET_TOKEN - Bitbucket personal access token
+ *   BITBUCKET_USERNAME - Your Bitbucket username
+ *   BITBUCKET_BASE_URL - Bitbucket server base URL
+ */
+
+import { config } from 'dotenv';
+import { NeuroLink } from '@juspay/neurolink';
+import { BitbucketMCPServer } from '@nexus2520/bitbucket-mcp-server';
+
+// Load environment variables from .env file
+config();
+
+// Configuration
+const WORKSPACE = '{{workspaceName}}'; // e.g., 'BZ' or 'breeze'
+const REPO_SLUG = '{{repoSlug}}'; // e.g., 'vayu', 'nimble'
+
+async function generatePRDescription(prId) {
+  try {
+    console.log(`🤖 Generating PR description for PR #${prId}...`);
+
+    // Initialize NeuroLink (AI orchestration)
+    const neurolink = new NeuroLink({
+      apiKey: process.env.GOOGLE_AI_API_KEY,
+      model: 'gemini-2.5-pro',
+    });
+
+    // Initialize Bitbucket MCP handlers
+    const bitbucket = new BitbucketMCPServer({
+      token: process.env.BITBUCKET_TOKEN,
+      username: process.env.BITBUCKET_USERNAME,
+      baseUrl: process.env.BITBUCKET_BASE_URL,
+    });
+
+    // Step 1: Fetch PR data
+    console.log('📥 Fetching PR data...');
+    const pr = await bitbucket.callTool('get_pull_request', {
+      workspace: WORKSPACE,
+      repoSlug: REPO_SLUG,
+      prId: prId,
+    });
+
+    // Step 2: Get branch diff
+    console.log('📊 Analyzing code changes...');
+    const diff = await bitbucket.callTool('get_pull_request_diff', {
+      workspace: WORKSPACE,
+      repoSlug: REPO_SLUG,
+      prId: prId,
+    });
+
+    // Step 3: Get branch details
+    const branch = await bitbucket.callTool('get_branch', {
+      workspace: WORKSPACE,
+      repoSlug: REPO_SLUG,
+      branchName: pr.fromRef.displayId,
+    });
+
+    // Step 4: AI analyzes changes and generates description
+    console.log('🧠 AI analyzing changes...');
+    const prompt = `
+You are a technical writer helping generate a comprehensive PR description.
+
+**PR Information:**
+- Title: ${pr.title}
+- Author: ${pr.author.displayName}
+- Source Branch: ${pr.fromRef.displayId}
+- Target Branch: ${pr.toRef.displayId}
+
+**Code Changes:**
+\`\`\`diff
+${diff}
+\`\`\`
+
+**Task:**
+Generate a structured PR description with:
+
+## Summary
+[Brief 2-3 sentence summary of changes]
+
+## Changes
+- [Bullet point list of key changes]
+- [Focus on WHAT changed, not HOW]
+
+## Testing
+- [How to test these changes]
+- [Any specific scenarios to verify]
+
+## Impact
+- [Areas of the codebase affected]
+- [Potential side effects or considerations]
+
+Keep it concise, clear, and focused on helping reviewers understand the changes quickly.
+`;
+
+    const response = await neurolink.chat(prompt);
+    const description = response.content;
+
+    // Step 5: Update PR description
+    console.log('✍️  Updating PR description...');
+    await bitbucket.callTool('update_pull_request', {
+      workspace: WORKSPACE,
+      repoSlug: REPO_SLUG,
+      prId: prId,
+      description: description,
+    });
+
+    console.log('✅ PR description generated successfully!');
+    console.log('\n' + '='.repeat(80));
+    console.log(description);
+    console.log('='.repeat(80) + '\n');
+
+  } catch (error) {
+    console.error('❌ Error generating PR description:', error.message);
+    if (process.env.DEBUG) {
+      console.error(error.stack);
+    }
+    process.exit(1);
+  }
+}
+
+// Main execution
+const prId = process.argv[2];
+
+if (!prId) {
+  console.error('❌ Usage: node pr-scribe.js <pr-id>');
+  console.error('   Example: node pr-scribe.js 123');
+  process.exit(1);
+}
+
+// Check required environment variables
+const requiredEnvVars = [
+  'GOOGLE_AI_API_KEY',
+  'BITBUCKET_TOKEN',
+  'BITBUCKET_USERNAME',
+  'BITBUCKET_BASE_URL',
+];
+
+const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
+if (missingVars.length > 0) {
+  console.error('❌ Missing required environment variables:');
+  missingVars.forEach((v) => console.error(`   - ${v}`));
+  console.error('\n💡 Set them in your .env file or export them in your shell');
+  process.exit(1);
+}
+
+generatePRDescription(prId);

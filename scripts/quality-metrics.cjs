@@ -79,7 +79,7 @@ class QualityMetricsReporter {
 
       let errorCount = 0;
       let warningCount = 0;
-      let ruleViolations = {};
+      const ruleViolations = {};
       let fileCount = 0;
 
       for (const file of results) {

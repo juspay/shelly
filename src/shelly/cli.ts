@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { OrganizeCommand } from './commands/organize.js';
 import { MemoryCommand } from './commands/memory.js';
 import { GitHubSetupCommand } from './commands/githubSetup.js';
+import { BitbucketSetupCommand } from './commands/bitbucketSetup.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs/promises';
@@ -46,10 +47,13 @@ async function setupCLI() {
     .option('-f, --force', 'overwrite existing files without prompting')
     .option('-u, --update', 'only add missing files, preserve existing ones')
     .option('-m, --move', 'move misplaced files to their correct directories')
+    .option('--github-action', 'include action.yml for GitHub Action projects')
     .option(
-      '--github-action',
-      'include action.yml for GitHub Action projects'
+      '--ci <system>',
+      'CI/CD system to use (github or jenkins)',
+      'github'
     )
+    .option('--skip-mcp', 'skip Breeze AI & MCP setup (PR automation)')
     .option(
       '-d, --directory <path>',
       'target directory (defaults to current directory)'
@@ -88,6 +92,8 @@ async function setupCLI() {
           update: options.update,
           move: options.move,
           githubAction: options.githubAction,
+          ciSystem: options.ci,
+          skipMcp: options.skipMcp,
           cwd: targetDirectory,
         });
 
@@ -296,6 +302,102 @@ async function setupCLI() {
       } catch (error) {
         console.error(
           '❌ Error executing GitHub setup command:',
+          error.message
+        );
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // BitBucket setup command
+  program
+    .command('bitbucket')
+    .description(
+      'Configure BitBucket repository with Juspay best practices (Breeze workspace)'
+    )
+    .argument('[subcommand]', 'bitbucket subcommand (setup)', 'setup')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be configured without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .option(
+      '-r, --repo <slug>',
+      'repository slug (auto-detected from git remote if not specified)'
+    )
+    .option(
+      '-w, --workspace <name>',
+      'BitBucket workspace (defaults to "breeze")'
+    )
+    .action(async (subcommand, options) => {
+      try {
+        if (subcommand !== 'setup') {
+          console.error(`❌ Unknown subcommand: ${subcommand}`);
+          console.error('Available subcommands: setup');
+          process.exit(1);
+        }
+
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        const bitbucketSetupCommand = new BitbucketSetupCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+          repoSlug: options.repo,
+          workspace: options.workspace,
+        });
+
+        await bitbucketSetupCommand.execute();
+      } catch (error) {
+        console.error(
+          '❌ Error executing BitBucket setup command:',
+          error.message
+        );
+        if (process.env.DEBUG) {
+          console.error(error.stack);
+        }
+        process.exit(1);
+      }
+    });
+
+  // Shortcut command for BitBucket setup
+  program
+    .command('bb')
+    .description('Shortcut for BitBucket setup (alias for "bitbucket setup")')
+    .option('-f, --force', 'skip confirmation prompts')
+    .option('--dry-run', 'show what would be configured without making changes')
+    .option(
+      '-d, --directory <path>',
+      'target directory (defaults to current directory)'
+    )
+    .option('-r, --repo <slug>', 'repository slug')
+    .option(
+      '-w, --workspace <name>',
+      'BitBucket workspace (defaults to "breeze")'
+    )
+    .action(async (options) => {
+      try {
+        const targetDir = options.directory
+          ? path.resolve(options.directory)
+          : process.cwd();
+
+        const bitbucketSetupCommand = new BitbucketSetupCommand({
+          cwd: targetDir,
+          force: options.force,
+          dryRun: options.dryRun,
+          repoSlug: options.repo,
+          workspace: options.workspace,
+        });
+
+        await bitbucketSetupCommand.execute();
+      } catch (error) {
+        console.error(
+          '❌ Error executing BitBucket setup command:',
           error.message
         );
         if (process.env.DEBUG) {

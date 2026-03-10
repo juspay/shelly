@@ -4,6 +4,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { AIContentGenerator } from '../utils/aiContentGenerator.js';
 import { memoryBankService } from '../services/memoryBankService.js';
+import { PackageDetector } from '../services/packageDetector.js';
+import { JenkinsfileGenerator } from '../services/jenkinsfileGenerator.js';
+import { BreezeDetector } from '../services/breezeDetector.js';
 import inquirer from 'inquirer';
 
 interface OrganizeOptions {
@@ -12,6 +15,8 @@ interface OrganizeOptions {
   move?: boolean;
   cwd?: string;
   githubAction?: boolean;
+  ciSystem?: 'github' | 'jenkins';
+  skipMcp?: boolean;
 }
 
 interface ClassificationRule {
@@ -47,6 +52,8 @@ export class OrganizeCommand {
   update: boolean;
   move: boolean;
   githubAction: boolean;
+  ciSystem: 'github' | 'jenkins';
+  skipMcp: boolean;
   preserveDocs: boolean;
   preserveTests: boolean;
   cwd: string;
@@ -58,6 +65,8 @@ export class OrganizeCommand {
     this.update = options.update || false;
     this.move = options.move || false;
     this.githubAction = options.githubAction || false;
+    this.ciSystem = options.ciSystem || 'github';
+    this.skipMcp = options.skipMcp || false;
 
     // Initialize preservation flags
     this.preserveDocs = false;
@@ -120,9 +129,20 @@ export class OrganizeCommand {
       await this.createProjectFiles(repoAnalysis);
       console.log('📝 Created/enhanced project files');
 
-      // Step 5: Create GitHub templates and workflows
-      await this.createGitHubTemplates(repoAnalysis);
-      console.log('🔧 Created GitHub templates and workflows');
+      // Step 5: Create GitHub templates and workflows OR Jenkinsfile
+      if (this.ciSystem === 'jenkins') {
+        await this.createJenkinsfile(repoAnalysis);
+        console.log('🔧 Created Jenkinsfile for CI/CD');
+      } else {
+        await this.createGitHubTemplates(repoAnalysis);
+        console.log('🔧 Created GitHub templates and workflows');
+      }
+
+      // Step 5.5: Detect and recommend Juspay packages
+      await this.detectAndRecommendPackages(repoAnalysis);
+
+      // Step 5.6: Setup Breeze AI & MCP (if applicable)
+      await this.setupBreezeMCP(repoAnalysis);
 
       // Step 6: Create configuration files
       await this.createConfigFiles(repoAnalysis);
@@ -630,8 +650,6 @@ export class OrganizeCommand {
    */
   async createDirectoryStructure(repoAnalysis) {
     const directories = [
-      '.github/ISSUE_TEMPLATE',
-      '.github/workflows',
       '.changeset',
       '.husky',
       '.ai/workflows',
@@ -654,6 +672,11 @@ export class OrganizeCommand {
       `${repoAnalysis.repoName}-demo`,
       'test',
     ];
+
+    // Only add GitHub-specific directories if using GitHub CI
+    if (this.ciSystem === 'github') {
+      directories.push('.github/ISSUE_TEMPLATE', '.github/workflows');
+    }
 
     for (const dir of directories) {
       const dirPath = path.join(this.cwd, dir);
@@ -994,9 +1017,19 @@ export class OrganizeCommand {
    */
   resolveVersionConflict(version1: string, version2: string): string {
     // Check for special protocol/reference types first
-    const specialProtocols = ['workspace:', 'file:', 'git+', 'link:', 'portal:'];
-    const isSpecial1 = specialProtocols.some(proto => version1.startsWith(proto));
-    const isSpecial2 = specialProtocols.some(proto => version2.startsWith(proto));
+    const specialProtocols = [
+      'workspace:',
+      'file:',
+      'git+',
+      'link:',
+      'portal:',
+    ];
+    const isSpecial1 = specialProtocols.some((proto) =>
+      version1.startsWith(proto)
+    );
+    const isSpecial2 = specialProtocols.some((proto) =>
+      version2.startsWith(proto)
+    );
 
     // If either is a special protocol, preserve the existing one
     if (isSpecial1 || isSpecial2) {
@@ -1111,8 +1144,7 @@ export class OrganizeCommand {
       },
       {
         name: 'CLAUDE.md',
-        generator: () =>
-          this.loadTemplate('CLAUDE.md.template', repoAnalysis),
+        generator: () => this.loadTemplate('CLAUDE.md.template', repoAnalysis),
       },
       {
         name: 'SECURITY.md',
@@ -1121,8 +1153,7 @@ export class OrganizeCommand {
       },
       {
         name: '.markdownlint.json',
-        generator: () =>
-          this.loadTemplateRaw('.markdownlint.json.template'),
+        generator: () => this.loadTemplateRaw('.markdownlint.json.template'),
       },
       {
         name: 'typedoc.json',
@@ -1177,22 +1208,34 @@ export class OrganizeCommand {
       {
         name: 'scripts/build-validations.cjs',
         generator: () =>
-          this.loadTemplate('scripts/build-validations.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/build-validations.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/commit-validation.cjs',
         generator: () =>
-          this.loadTemplate('scripts/commit-validation.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/commit-validation.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/env-validation.cjs',
         generator: () =>
-          this.loadTemplate('scripts/env-validation.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/env-validation.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/security-check.cjs',
         generator: () =>
-          this.loadTemplate('scripts/security-check.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/security-check.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/smart-test.cjs',
@@ -1202,7 +1245,10 @@ export class OrganizeCommand {
       {
         name: 'scripts/organize-project.cjs',
         generator: () =>
-          this.loadTemplate('scripts/organize-project.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/organize-project.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/mcp-test.cjs',
@@ -1217,7 +1263,10 @@ export class OrganizeCommand {
       {
         name: 'scripts/quality-metrics.cjs',
         generator: () =>
-          this.loadTemplate('scripts/quality-metrics.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/quality-metrics.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/format-staged.cjs',
@@ -1227,17 +1276,22 @@ export class OrganizeCommand {
       {
         name: 'scripts/format-changelog.cjs',
         generator: () =>
-          this.loadTemplate('scripts/format-changelog.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/format-changelog.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/semantic-release-format-plugin.cjs',
         generator: () =>
-          this.loadTemplate('scripts/semantic-release-format-plugin.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/semantic-release-format-plugin.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: '.npmrc',
-        generator: () =>
-          this.loadTemplate('.npmrc.template', repoAnalysis),
+        generator: () => this.loadTemplate('.npmrc.template', repoAnalysis),
       },
       {
         name: '.mcp-servers.json',
@@ -1250,8 +1304,7 @@ export class OrganizeCommand {
     if (this.githubAction) {
       files.push({
         name: 'action.yml',
-        generator: () =>
-          this.loadTemplate('action.yml.template', repoAnalysis),
+        generator: () => this.loadTemplate('action.yml.template', repoAnalysis),
       });
     }
 
@@ -1514,7 +1567,8 @@ export class OrganizeCommand {
         target: '.claude/commands/update-docs.md',
       },
       {
-        source: '.claude/commands/create-architecture-documentation.md.template',
+        source:
+          '.claude/commands/create-architecture-documentation.md.template',
         target: '.claude/commands/create-architecture-documentation.md',
       },
       // Claude settings
@@ -1706,7 +1760,10 @@ export class OrganizeCommand {
 
     // Convert project name to kebab-case for binName
     const projectName = repoAnalysis.name || repoAnalysis.repoName;
-    const binName = projectName.replace('@juspay/', '').replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+    const binName = projectName
+      .replace('@juspay/', '')
+      .replace(/[^a-zA-Z0-9-]/g, '-')
+      .toLowerCase();
 
     const replacements = {
       '{{projectName}}': projectName,
@@ -2000,6 +2057,341 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     }
 
     return structure;
+  }
+
+  /**
+   * Create Jenkinsfile with variable replacement
+   */
+  async createJenkinsfile(_repoAnalysis) {
+    console.log('\n🤖 Generating Jenkinsfile...');
+
+    try {
+      const templatePath = path.join(this.templatesDir, 'Jenkinsfile.template');
+      const outputPath = path.join(this.cwd, 'Jenkinsfile');
+
+      // Check if Jenkinsfile already exists
+      if ((await this.fileExists(outputPath)) && !this.force) {
+        console.log(
+          '   ℹ️  Jenkinsfile already exists (use --force to overwrite)'
+        );
+        return;
+      }
+
+      // Detect project variables
+      const variables = await JenkinsfileGenerator.detectVariables(this.cwd);
+
+      // Show detected variables
+      console.log('\n📋 Detected Project Variables:');
+      console.log(JenkinsfileGenerator.formatVariablesTable(variables));
+
+      // Generate Jenkinsfile
+      await JenkinsfileGenerator.generateJenkinsfile(
+        templatePath,
+        outputPath,
+        variables
+      );
+
+      console.log('\n✅ Jenkinsfile created successfully!');
+      console.log('   📄 Location: Jenkinsfile');
+      console.log('\n💡 Next steps:');
+      console.log('   1. Review the generated Jenkinsfile');
+      console.log(
+        '   2. Configure Jenkins credentials (see docs/JENKINSFILE_TEMPLATE.md)'
+      );
+      console.log('   3. Commit the Jenkinsfile to your repository');
+      console.log('   4. Jenkins will automatically detect and use it');
+    } catch (error) {
+      console.error(`   ❌ Failed to create Jenkinsfile: ${error.message}`);
+      if (this.force) {
+        // In force mode, log warning but continue
+        console.log('   ⚠️  Continuing without Jenkinsfile...');
+      } else {
+        // In normal mode, fail hard for explicit --ci jenkins request
+        throw new Error(
+          `Jenkinsfile generation failed: ${error.message}\nUse --force to skip Jenkinsfile creation and continue.`
+        );
+      }
+    }
+  }
+
+  /**
+   * Detect and recommend Juspay packages
+   */
+  async detectAndRecommendPackages(repoAnalysis) {
+    console.log('\n🔍 Analyzing tech stack...');
+
+    try {
+      // Analyze project context
+      const context = await PackageDetector.analyzeProject(this.cwd);
+
+      // Show project summary
+      const techStack = PackageDetector.formatProjectSummary(context);
+      if (techStack.length > 0) {
+        console.log(`   📊 Detected: ${techStack.join(', ')}`);
+        console.log(`   📦 Package Manager: ${context.packageManager}`);
+      }
+
+      // Detect recommended Juspay packages
+      const packageJson = repoAnalysis;
+      const recommendedPackages = PackageDetector.detectJuspayPackages(
+        packageJson,
+        context
+      );
+
+      if (recommendedPackages.length === 0) {
+        console.log(
+          '   ✅ All recommended Juspay packages are already installed'
+        );
+        return;
+      }
+
+      // Show recommendations
+      console.log(
+        `\n💡 Recommended Juspay packages (${recommendedPackages.length}):`
+      );
+      recommendedPackages.forEach((pkg) => {
+        console.log(`   • ${pkg}`);
+      });
+
+      // Ask user if they want to install (unless force mode)
+      if (!this.force) {
+        const { installPackages } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'installPackages',
+            message: `Install ${recommendedPackages.length} recommended package(s)?`,
+            default: true,
+          },
+        ]);
+
+        if (!installPackages) {
+          console.log('   ⏭️  Skipping package installation');
+          console.log(`\n   💡 To install later, run:`);
+          console.log(
+            `      ${PackageDetector.getInstallCommand(context.packageManager, recommendedPackages)}`
+          );
+          return;
+        }
+      }
+
+      // Install packages
+      console.log('\n📦 Installing recommended packages...');
+      const installCmd = PackageDetector.getInstallCommand(
+        context.packageManager,
+        recommendedPackages
+      );
+      console.log(`   Running: ${installCmd}`);
+
+      try {
+        const { execSync } = await import('child_process');
+        execSync(installCmd, { cwd: this.cwd, stdio: 'inherit' });
+        console.log('   ✅ Packages installed successfully!');
+      } catch (error) {
+        console.error(`   ⚠️  Installation failed: ${error.message}`);
+        console.log(`\n   💡 Install manually:`);
+        console.log(`      ${installCmd}`);
+      }
+    } catch (error) {
+      console.warn(`   ⚠️  Package detection failed: ${error.message}`);
+      // Don't fail the entire operation
+      console.log('   ⚠️  Continuing without package recommendations...');
+    }
+  }
+
+  /**
+   * Setup Breeze AI & MCP infrastructure
+   */
+  async setupBreezeMCP(repoAnalysis) {
+    // Skip if flag is set
+    if (this.skipMcp) {
+      console.log('\n⏭️  Skipping MCP setup (--skip-mcp flag)');
+      return;
+    }
+
+    try {
+      console.log('\n🌊 Checking for Breeze project...');
+
+      // Detect if this is a Breeze project
+      const breezeInfo = await BreezeDetector.detectBreezeProject(this.cwd);
+
+      if (!breezeInfo.isBreezeProject) {
+        console.log('   ℹ️  Not a Breeze project - skipping MCP setup');
+        return;
+      }
+
+      // Show detected info
+      const infoLines = BreezeDetector.formatProjectInfo(breezeInfo);
+      infoLines.forEach((line) => console.log(line));
+
+      // Check if MCP is already setup
+      const hasScripts = await this.checkMCPScripts();
+      if (hasScripts && !this.force) {
+        console.log(
+          '\n   ✅ MCP already configured (use --force to reconfigure)'
+        );
+        return;
+      }
+
+      // Ask user if they want to setup MCP (unless force mode)
+      if (!this.force) {
+        const { setupMcp } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'setupMcp',
+            message: 'Setup Breeze AI & MCP infrastructure (PR automation)?',
+            default: true,
+          },
+        ]);
+
+        if (!setupMcp) {
+          console.log('   ⏭️  Skipping MCP setup');
+          return;
+        }
+      }
+
+      console.log('\n🔧 Setting up Breeze AI & MCP...');
+
+      // Step 1: Create scripts directory if it doesn't exist
+      const scriptsDir = path.join(this.cwd, 'scripts');
+      await fs.mkdir(scriptsDir, { recursive: true });
+
+      // Step 2: Copy PR automation scripts
+      await this.createPRAutomationScripts(breezeInfo);
+
+      // Step 3: Create .env template
+      await this.createMCPEnvTemplate(breezeInfo);
+
+      // Step 4: Update package.json with scripts
+      await this.addMCPScripts(repoAnalysis);
+
+      console.log('   ✅ MCP infrastructure setup complete!');
+      console.log('\n   📝 Next steps:');
+      console.log('      1. Fill in .env.breeze with your credentials');
+      console.log('      2. Copy to .env: cp .env.breeze .env');
+      console.log('      3. Test PR automation: pnpm run pr:describe <pr-id>');
+    } catch (error) {
+      console.warn(`   ⚠️  MCP setup failed: ${error.message}`);
+      console.log('   ⚠️  Continuing without MCP setup...');
+    }
+  }
+
+  /**
+   * Check if MCP scripts are already configured
+   */
+  async checkMCPScripts(): Promise<boolean> {
+    try {
+      const packageJsonPath = path.join(this.cwd, 'package.json');
+      const packageContent = await fs.readFile(packageJsonPath, 'utf8');
+      const packageJson = JSON.parse(packageContent);
+
+      // Check for namespaced scripts pointing to the correct files
+      const hasDescribe =
+        packageJson.scripts?.['pr:describe']?.includes('pr-scribe.js');
+      const hasReview =
+        packageJson.scripts?.['pr:review']?.includes('pr-police.js');
+
+      return !!(hasDescribe && hasReview);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Create PR automation scripts
+   */
+  async createPRAutomationScripts(breezeInfo) {
+    console.log('   📝 Creating PR automation scripts...');
+
+    const scriptsDir = path.join(this.cwd, 'scripts');
+
+    // Read templates
+    const scribeTemplate = await fs.readFile(
+      path.join(this.templatesDir, 'pr-scribe.js.template'),
+      'utf8'
+    );
+
+    const policeTemplate = await fs.readFile(
+      path.join(this.templatesDir, 'pr-police.js.template'),
+      'utf8'
+    );
+
+    // Replace variables
+    const workspace = breezeInfo.workspace || 'BZ';
+    const repoSlug = breezeInfo.repoSlug || 'your-repo';
+
+    const scribeContent = scribeTemplate
+      .replace(/{{workspaceName}}/g, workspace)
+      .replace(/{{repoSlug}}/g, repoSlug);
+
+    const policeContent = policeTemplate
+      .replace(/{{workspaceName}}/g, workspace)
+      .replace(/{{repoSlug}}/g, repoSlug);
+
+    // Write scripts
+    await fs.writeFile(path.join(scriptsDir, 'pr-scribe.js'), scribeContent);
+    await fs.writeFile(path.join(scriptsDir, 'pr-police.js'), policeContent);
+
+    // Make executable
+    await fs.chmod(path.join(scriptsDir, 'pr-scribe.js'), 0o755);
+    await fs.chmod(path.join(scriptsDir, 'pr-police.js'), 0o755);
+
+    console.log('      ✅ scripts/pr-scribe.js');
+    console.log('      ✅ scripts/pr-police.js');
+  }
+
+  /**
+   * Create .env template for MCP
+   */
+  async createMCPEnvTemplate(_breezeInfo) {
+    console.log('   📝 Creating .env template...');
+
+    const envTemplate = await fs.readFile(
+      path.join(this.templatesDir, '.env.breeze.template'),
+      'utf8'
+    );
+
+    const envPath = path.join(this.cwd, '.env.breeze');
+
+    // Check if .env.breeze already exists
+    if ((await this.fileExists(envPath)) && !this.force) {
+      console.log(
+        '      ℹ️  .env.breeze already exists (use --force to overwrite)'
+      );
+      return;
+    }
+
+    await fs.writeFile(envPath, envTemplate);
+    console.log('      ✅ .env.breeze (template)');
+  }
+
+  /**
+   * Add MCP scripts to package.json
+   */
+  async addMCPScripts(_repoAnalysis) {
+    console.log('   📝 Adding MCP scripts to package.json...');
+
+    const packageJsonPath = path.join(this.cwd, 'package.json');
+    const packageContent = await fs.readFile(packageJsonPath, 'utf8');
+    const packageJson = JSON.parse(packageContent);
+
+    // Add scripts if they don't exist
+    packageJson.scripts = packageJson.scripts || {};
+
+    if (!packageJson.scripts['pr:describe']) {
+      packageJson.scripts['pr:describe'] = 'node scripts/pr-scribe.js';
+    }
+
+    if (!packageJson.scripts['pr:review']) {
+      packageJson.scripts['pr:review'] = 'node scripts/pr-police.js';
+    }
+
+    // Save package.json
+    await fs.writeFile(
+      packageJsonPath,
+      JSON.stringify(packageJson, null, 2) + '\n'
+    );
+
+    console.log('      ✅ Added "pr:describe" and "pr:review" scripts');
   }
 
   /**
