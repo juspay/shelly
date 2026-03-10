@@ -26,6 +26,37 @@
 
 **Recent Major Changes:**
 
+### 🌊 **Breeze AI & MCP Integration (Mar 10, 2026)**
+
+- **Automatic Breeze Detection**: Auto-detects Breeze projects from BitBucket git remotes and @juspay packages
+- **MCP Infrastructure Setup**: Automated PR automation scripts (pr-scribe.js, pr-police.js) generation
+- **Real Package Recommendations**: Fixed to recommend actual @juspay/neurolink and @nexus2520/bitbucket-mcp-server
+- **Tech Stack Detection**: Auto-detects TypeScript, React, Rust, Prettier, ESLint, Jest, Playwright
+- **Package Manager Detection**: Auto-identifies npm, pnpm, yarn from lock files
+- **Jenkins CI/CD Support**: Jenkins template generation with variable replacement (--ci jenkins)
+- **BitBucket Integration**: Full BitBucket repository setup command (shelly bb)
+- **New Services**:
+  - `src/shelly/services/breezeDetector.ts` - Breeze project detection
+  - `src/shelly/services/packageDetector.ts` - Tech stack & package detection
+  - `src/shelly/services/jenkinsfileGenerator.ts` - Jenkins CI generation
+  - `src/shelly/services/bitbucketService.ts` - BitBucket API integration
+  - `src/shelly/commands/bitbucketSetup.ts` - BitBucket setup command
+- **New Templates**:
+  - `src/shelly/templates/pr-scribe.js.template` - PR description generator
+  - `src/shelly/templates/pr-police.js.template` - PR reviewer
+  - `src/shelly/templates/.env.breeze.template` - MCP credentials template
+  - `src/shelly/templates/Jenkinsfile.template` - Jenkins pipeline
+- **New CLI Options**:
+  - `--ci <system>` - Choose github or jenkins CI system
+  - `--skip-mcp` - Skip Breeze MCP setup
+- **New Commands**:
+  - `shelly bitbucket` / `shelly bb` - BitBucket repository setup
+- **Documentation**:
+  - `BREEZE_MCP_IMPLEMENTATION.md` - Complete implementation guide
+  - `COMPREHENSIVE_TESTING_GUIDE.md` - 40+ test scenarios
+  - `docs/BITBUCKET_INTEGRATION.md` - BitBucket setup guide
+  - `docs/JENKINSFILE_TEMPLATE.md` - Jenkins documentation
+
 ### 🆓 **Free Tier AI Support & Multi-Provider Configuration (Jan 31, 2026)**
 
 - **Multi-Provider Support**: Added support for 5 AI providers: Google, Ollama, OpenRouter, Mistral, OpenAI
@@ -143,9 +174,14 @@
 - **AI Configuration**: ✅ Complete - `shelly config` command
 - **Repository Organization**: ✅ Complete (migrated to TypeScript)
 - **GitHub Repository Automation**: ✅ Complete (migrated to TypeScript)
+- **BitBucket Repository Automation**: ✅ Complete (Mar 10, 2026) - Breeze workspace support
+- **Jenkins CI/CD Support**: ✅ Complete (Mar 10, 2026) - Template generation with variables
+- **Breeze MCP Integration**: ✅ Complete (Mar 10, 2026) - Auto-setup PR automation
+- **Tech Stack Detection**: ✅ Complete (Mar 10, 2026) - Auto-detect languages & tools
+- **Package Recommendations**: ✅ Complete (Mar 10, 2026) - Juspay package suggestions
 - **Memory Bank System**: ✅ Complete (with AI fallback support)
 - **GitHub Integration**: ✅ Complete (templates and workflows)
-- **Documentation**: ✅ Updated (reflecting free tier features)
+- **Documentation**: ✅ Updated (reflecting all features)
 - **Shell Integration**: ✅ Enhanced (fixed routing for CLI vs error analysis)
 
 ### 🧪 **Quality Assurance**
