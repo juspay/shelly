@@ -153,8 +153,34 @@ Start the response directly with the # title line.`;
    * @param {string} workingDir - Working directory for the project
    * @returns {Object} Enhanced package.json
    */
-  async enhancePackageJson(currentPackage, repoName, workingDir) {
+  async enhancePackageJson(
+    currentPackage,
+    repoName,
+    workingDir,
+    platform = 'github'
+  ) {
     const enhanced = { ...currentPackage };
+
+    // Detect Bitbucket workspace from git remote for URL generation
+    let bitbucketWorkspace = 'juspay';
+    let bitbucketProjectKey = 'BZ';
+    if (platform === 'bitbucket') {
+      try {
+        const gitConfig = fs.readFileSync(
+          path.join(workingDir, '.git', 'config'),
+          'utf8'
+        );
+        const remoteMatch = gitConfig.match(
+          /url\s*=\s*[^\n]*bitbucket[^/]*\/([^/\n]+)\//i
+        );
+        if (remoteMatch) {
+          bitbucketWorkspace = remoteMatch[1].toLowerCase();
+          bitbucketProjectKey = remoteMatch[1].toUpperCase();
+        }
+      } catch (_e) {
+        // no git config, use Juspay defaults
+      }
+    }
 
     // Update name to @juspay/ format if it matches pattern
     if (repoName && !enhanced.name.startsWith('@juspay/')) {
@@ -194,18 +220,27 @@ Start the response directly with the # title line.`;
     if (!enhanced.repository) {
       enhanced.repository = {
         type: 'git',
-        url: `git+https://github.com/juspay/${repoName}.git`,
+        url:
+          platform === 'bitbucket'
+            ? `git+https://bitbucket.juspay.net/scm/${bitbucketWorkspace}/${repoName}.git`
+            : `git+https://github.com/juspay/${repoName}.git`,
       };
     }
 
     if (!enhanced.bugs) {
       enhanced.bugs = {
-        url: `https://github.com/juspay/${repoName}/issues`,
+        url:
+          platform === 'bitbucket'
+            ? `https://bitbucket.juspay.net/projects/${bitbucketProjectKey}/repos/${repoName}/issues`
+            : `https://github.com/juspay/${repoName}/issues`,
       };
     }
 
     if (!enhanced.homepage) {
-      enhanced.homepage = `https://github.com/juspay/${repoName}#readme`;
+      enhanced.homepage =
+        platform === 'bitbucket'
+          ? `https://bitbucket.juspay.net/projects/${bitbucketProjectKey}/repos/${repoName}/browse`
+          : `https://github.com/juspay/${repoName}#readme`;
     }
 
     // Add engines requirement
@@ -250,12 +285,12 @@ Start the response directly with the # title line.`;
     // Ensure essential dev dependencies
     enhanced.devDependencies = enhanced.devDependencies || {};
 
-    const essentialDevDeps = {
+    const essentialDevDeps: Record<string, string> = {
       'semantic-release': '^22.0.0',
       '@semantic-release/changelog': '^6.0.3',
       '@semantic-release/commit-analyzer': '^11.0.0',
       '@semantic-release/git': '^10.0.1',
-      '@semantic-release/github': '^9.0.0',
+      ...(platform !== 'bitbucket' && { '@semantic-release/github': '^9.0.0' }),
       '@semantic-release/npm': '^11.0.0',
       '@semantic-release/release-notes-generator': '^12.0.0',
       '@types/node': '^20.0.0',
@@ -305,8 +340,10 @@ Start the response directly with the # title line.`;
       'docs:build':
         enhanced.scripts?.['docs:build'] || 'mkdocs build --strict --clean',
       'docs:serve': enhanced.scripts?.['docs:serve'] || 'mkdocs serve',
-      'docs:gh-deploy':
-        enhanced.scripts?.['docs:gh-deploy'] || 'mkdocs gh-deploy --force',
+      ...(platform !== 'bitbucket' && {
+        'docs:gh-deploy':
+          enhanced.scripts?.['docs:gh-deploy'] || 'mkdocs gh-deploy --force',
+      }),
 
       // Validation
       validate:

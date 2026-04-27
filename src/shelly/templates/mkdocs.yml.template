@@ -1,7 +1,7 @@
 site_name: {{projectName}}
 site_description: {{description}}
 site_author: {{maintainerUsername}}
-site_url: https://{{repoName}}.github.io/
+site_url: {{siteUrl}}
 
 # Repository
 repo_name: {{repoName}}

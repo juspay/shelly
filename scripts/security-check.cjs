@@ -54,7 +54,8 @@ const CRITICAL_SECURITY_RULES = [
   {
     id: 'private-key',
     name: 'Private Key',
-    pattern: /-----BEGIN (RSA |DSA |EC |OPENSSH |PGP )?PRIVATE KEY( BLOCK)?-----/g,
+    pattern:
+      /-----BEGIN (RSA |DSA |EC |OPENSSH |PGP )?PRIVATE KEY( BLOCK)?-----/g,
     severity: 'critical',
     description: 'Private key detected',
   },
@@ -73,7 +74,8 @@ const SECRET_PATTERNS = [
     id: 'aws-secret-key',
     name: 'AWS Secret Access Key',
     // Require AWS context - look for secret key near aws/AWS keywords or in assignment
-    pattern: /(?:aws|AWS|secret|SECRET|access|ACCESS)[_\-]?(?:secret|SECRET|access|ACCESS|key|KEY)?[_\-]?(?:key|KEY|id|ID)?[\s]*[=:]["']?([A-Za-z0-9/+=]{40})["']?/g,
+    pattern:
+      /(?:aws|AWS|secret|SECRET|access|ACCESS)[_\-]?(?:secret|SECRET|access|ACCESS|key|KEY)?[_\-]?(?:key|KEY|id|ID)?[\s]*[=:]["']?([A-Za-z0-9/+=]{40})["']?/g,
     severity: 'high',
     description: 'AWS Secret Access Key detected',
   },
@@ -211,9 +213,13 @@ class SecurityValidator {
     this.log('\n[1/6] Checking dependency vulnerabilities...', 'cyan');
 
     // Detect package manager
-    const hasPnpmLock = fs.existsSync(path.join(this.projectRoot, 'pnpm-lock.yaml'));
+    const hasPnpmLock = fs.existsSync(
+      path.join(this.projectRoot, 'pnpm-lock.yaml')
+    );
     const hasYarnLock = fs.existsSync(path.join(this.projectRoot, 'yarn.lock'));
-    const hasNpmLock = fs.existsSync(path.join(this.projectRoot, 'package-lock.json'));
+    const hasNpmLock = fs.existsSync(
+      path.join(this.projectRoot, 'package-lock.json')
+    );
 
     let auditCommand;
     let auditArgs;
@@ -240,8 +246,14 @@ class SecurityValidator {
       });
 
       if (result.error) {
-        this.addIssue('warning', 'dependencies', `Could not run ${auditCommand} audit: ${result.error.message}`);
-        this.log(`  ${COLORS.yellow}! Could not run audit command${COLORS.reset}`);
+        this.addIssue(
+          'warning',
+          'dependencies',
+          `Could not run ${auditCommand} audit: ${result.error.message}`
+        );
+        this.log(
+          `  ${COLORS.yellow}! Could not run audit command${COLORS.reset}`
+        );
         return;
       }
 
@@ -287,36 +299,73 @@ class SecurityValidator {
         // Dependency vulnerabilities are reported as warnings since they're often
         // in transitive deps that can't be directly fixed - use pnpm audit fix
         if (critical > 0) {
-          this.addIssue('warning', 'dependencies', `${critical} critical vulnerabilities found - run pnpm audit fix`, auditData);
-          this.log(`  ${COLORS.red}✗ ${critical} critical vulnerabilities${COLORS.reset}`);
+          this.addIssue(
+            'warning',
+            'dependencies',
+            `${critical} critical vulnerabilities found - run pnpm audit fix`,
+            auditData
+          );
+          this.log(
+            `  ${COLORS.red}✗ ${critical} critical vulnerabilities${COLORS.reset}`
+          );
         }
         if (high > 0) {
-          this.addIssue('warning', 'dependencies', `${high} high severity vulnerabilities found`);
-          this.log(`  ${COLORS.red}✗ ${high} high severity vulnerabilities${COLORS.reset}`);
+          this.addIssue(
+            'warning',
+            'dependencies',
+            `${high} high severity vulnerabilities found`
+          );
+          this.log(
+            `  ${COLORS.red}✗ ${high} high severity vulnerabilities${COLORS.reset}`
+          );
         }
         if (moderate > 0) {
-          this.addIssue('warning', 'dependencies', `${moderate} moderate vulnerabilities found`);
-          this.log(`  ${COLORS.yellow}! ${moderate} moderate vulnerabilities${COLORS.reset}`);
+          this.addIssue(
+            'warning',
+            'dependencies',
+            `${moderate} moderate vulnerabilities found`
+          );
+          this.log(
+            `  ${COLORS.yellow}! ${moderate} moderate vulnerabilities${COLORS.reset}`
+          );
         }
         if (low > 0) {
-          this.addIssue('info', 'dependencies', `${low} low severity vulnerabilities found`);
-          this.log(`  ${COLORS.dim}  ${low} low severity vulnerabilities${COLORS.reset}`);
+          this.addIssue(
+            'info',
+            'dependencies',
+            `${low} low severity vulnerabilities found`
+          );
+          this.log(
+            `  ${COLORS.dim}  ${low} low severity vulnerabilities${COLORS.reset}`
+          );
         }
 
         if (critical === 0 && high === 0 && moderate === 0 && low === 0) {
-          this.log(`  ${COLORS.green}✓ No vulnerabilities found${COLORS.reset}`);
+          this.log(
+            `  ${COLORS.green}✓ No vulnerabilities found${COLORS.reset}`
+          );
         }
       } catch (parseError) {
         // Audit command might have non-JSON output on error
         if (result.status !== 0) {
-          this.addIssue('warning', 'dependencies', 'Audit found issues (could not parse details)');
+          this.addIssue(
+            'warning',
+            'dependencies',
+            'Audit found issues (could not parse details)'
+          );
           this.log(`  ${COLORS.yellow}! Audit reported issues${COLORS.reset}`);
         } else {
-          this.log(`  ${COLORS.green}✓ No vulnerabilities found${COLORS.reset}`);
+          this.log(
+            `  ${COLORS.green}✓ No vulnerabilities found${COLORS.reset}`
+          );
         }
       }
     } catch (error) {
-      this.addIssue('warning', 'dependencies', `Audit check failed: ${error.message}`);
+      this.addIssue(
+        'warning',
+        'dependencies',
+        `Audit check failed: ${error.message}`
+      );
       this.log(`  ${COLORS.yellow}! Audit check failed${COLORS.reset}`);
     }
   }
@@ -334,15 +383,28 @@ class SecurityValidator {
     });
 
     if (whichResult.status !== 0) {
-      this.log(`  ${COLORS.yellow}! gitleaks not installed, using basic detection${COLORS.reset}`);
+      this.log(
+        `  ${COLORS.yellow}! gitleaks not installed, using basic detection${COLORS.reset}`
+      );
       return this.basicSecretDetection();
     }
 
     try {
-      const result = spawnSync('gitleaks', ['detect', '--source', this.projectRoot, '--no-git', '--report-format', 'json'], {
-        encoding: 'utf-8',
-        timeout: 120000,
-      });
+      const result = spawnSync(
+        'gitleaks',
+        [
+          'detect',
+          '--source',
+          this.projectRoot,
+          '--no-git',
+          '--report-format',
+          'json',
+        ],
+        {
+          encoding: 'utf-8',
+          timeout: 120000,
+        }
+      );
 
       if (result.stdout) {
         try {
@@ -350,28 +412,49 @@ class SecurityValidator {
           if (Array.isArray(findings) && findings.length > 0) {
             findings.forEach((finding) => {
               this.results.secrets.push(finding);
-              this.addIssue('critical', 'secrets', `Secret detected: ${finding.Description || finding.RuleID}`, {
-                file: finding.File,
-                line: finding.StartLine,
-                rule: finding.RuleID,
-              });
-              this.log(`  ${COLORS.red}✗ ${finding.Description || finding.RuleID} in ${finding.File}:${finding.StartLine}${COLORS.reset}`);
+              this.addIssue(
+                'critical',
+                'secrets',
+                `Secret detected: ${finding.Description || finding.RuleID}`,
+                {
+                  file: finding.File,
+                  line: finding.StartLine,
+                  rule: finding.RuleID,
+                }
+              );
+              this.log(
+                `  ${COLORS.red}✗ ${finding.Description || finding.RuleID} in ${finding.File}:${finding.StartLine}${COLORS.reset}`
+              );
             });
           } else {
-            this.log(`  ${COLORS.green}✓ No secrets detected by gitleaks${COLORS.reset}`);
+            this.log(
+              `  ${COLORS.green}✓ No secrets detected by gitleaks${COLORS.reset}`
+            );
           }
         } catch (parseError) {
           // No findings or empty output
-          this.log(`  ${COLORS.green}✓ No secrets detected by gitleaks${COLORS.reset}`);
+          this.log(
+            `  ${COLORS.green}✓ No secrets detected by gitleaks${COLORS.reset}`
+          );
         }
       } else if (result.status === 0) {
-        this.log(`  ${COLORS.green}✓ No secrets detected by gitleaks${COLORS.reset}`);
+        this.log(
+          `  ${COLORS.green}✓ No secrets detected by gitleaks${COLORS.reset}`
+        );
       } else {
-        this.log(`  ${COLORS.yellow}! gitleaks scan completed with warnings${COLORS.reset}`);
+        this.log(
+          `  ${COLORS.yellow}! gitleaks scan completed with warnings${COLORS.reset}`
+        );
       }
     } catch (error) {
-      this.addIssue('warning', 'secrets', `gitleaks check failed: ${error.message}`);
-      this.log(`  ${COLORS.yellow}! gitleaks check failed, falling back to basic detection${COLORS.reset}`);
+      this.addIssue(
+        'warning',
+        'secrets',
+        `gitleaks check failed: ${error.message}`
+      );
+      this.log(
+        `  ${COLORS.yellow}! gitleaks check failed, falling back to basic detection${COLORS.reset}`
+      );
       return this.basicSecretDetection();
     }
   }
@@ -413,15 +496,32 @@ class SecurityValidator {
                 severity: rule.severity,
               });
 
-              const level = rule.severity === 'critical' ? 'critical' : rule.severity === 'high' ? 'error' : 'warning';
-              this.addIssue(level, 'secrets', `${rule.name}: ${rule.description}`, {
-                file: relativePath,
-                line: lineNumber,
-                match: match.substring(0, 20) + '...',
-              });
+              const level =
+                rule.severity === 'critical'
+                  ? 'critical'
+                  : rule.severity === 'high'
+                    ? 'error'
+                    : 'warning';
+              this.addIssue(
+                level,
+                'secrets',
+                `${rule.name}: ${rule.description}`,
+                {
+                  file: relativePath,
+                  line: lineNumber,
+                  match: match.substring(0, 20) + '...',
+                }
+              );
 
-              const colorCode = rule.severity === 'critical' ? 'red' : rule.severity === 'high' ? 'red' : 'yellow';
-              this.log(`  ${COLORS[colorCode]}✗ ${rule.name} in ${relativePath}:${lineNumber}${COLORS.reset}`);
+              const colorCode =
+                rule.severity === 'critical'
+                  ? 'red'
+                  : rule.severity === 'high'
+                    ? 'red'
+                    : 'yellow';
+              this.log(
+                `  ${COLORS[colorCode]}✗ ${rule.name} in ${relativePath}:${lineNumber}${COLORS.reset}`
+              );
             });
           }
         });
@@ -431,7 +531,9 @@ class SecurityValidator {
     });
 
     if (secretsFound === 0) {
-      this.log(`  ${COLORS.green}✓ No secrets detected in basic scan${COLORS.reset}`);
+      this.log(
+        `  ${COLORS.green}✓ No secrets detected in basic scan${COLORS.reset}`
+      );
     }
   }
 
@@ -461,7 +563,33 @@ class SecurityValidator {
       } else if (entry.isFile()) {
         // Only scan text files
         const ext = path.extname(entry.name).toLowerCase();
-        const textExtensions = ['.js', '.ts', '.jsx', '.tsx', '.json', '.yml', '.yaml', '.env', '.sh', '.bash', '.zsh', '.py', '.rb', '.go', '.java', '.md', '.txt', '.cfg', '.conf', '.ini', '.xml', '.html', '.css', '.scss', '.less'];
+        const textExtensions = [
+          '.js',
+          '.ts',
+          '.jsx',
+          '.tsx',
+          '.json',
+          '.yml',
+          '.yaml',
+          '.env',
+          '.sh',
+          '.bash',
+          '.zsh',
+          '.py',
+          '.rb',
+          '.go',
+          '.java',
+          '.md',
+          '.txt',
+          '.cfg',
+          '.conf',
+          '.ini',
+          '.xml',
+          '.html',
+          '.css',
+          '.scss',
+          '.less',
+        ];
         if (textExtensions.includes(ext) || !ext) {
           files.push(fullPath);
         }
@@ -490,26 +618,50 @@ class SecurityValidator {
       const license = packageJson.license;
 
       if (!license) {
-        this.addIssue('warning', 'license', 'No license specified in package.json');
-        this.log(`  ${COLORS.yellow}! No license specified in package.json${COLORS.reset}`);
+        this.addIssue(
+          'warning',
+          'license',
+          'No license specified in package.json'
+        );
+        this.log(
+          `  ${COLORS.yellow}! No license specified in package.json${COLORS.reset}`
+        );
       } else {
         this.results.licenses = license;
         this.log(`  ${COLORS.green}✓ License: ${license}${COLORS.reset}`);
       }
 
       // Check for LICENSE file
-      const licenseFiles = ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'LICENCE', 'LICENCE.md'];
-      const hasLicenseFile = licenseFiles.some((file) => fs.existsSync(path.join(this.projectRoot, file)));
+      const licenseFiles = [
+        'LICENSE',
+        'LICENSE.md',
+        'LICENSE.txt',
+        'LICENCE',
+        'LICENCE.md',
+      ];
+      const hasLicenseFile = licenseFiles.some((file) =>
+        fs.existsSync(path.join(this.projectRoot, file))
+      );
 
       if (!hasLicenseFile) {
-        this.addIssue('info', 'license', 'No LICENSE file found in project root');
+        this.addIssue(
+          'info',
+          'license',
+          'No LICENSE file found in project root'
+        );
         this.log(`  ${COLORS.dim}  No LICENSE file found${COLORS.reset}`);
       } else {
         this.log(`  ${COLORS.green}✓ LICENSE file present${COLORS.reset}`);
       }
     } catch (error) {
-      this.addIssue('warning', 'license', `Could not parse package.json: ${error.message}`);
-      this.log(`  ${COLORS.yellow}! Could not parse package.json${COLORS.reset}`);
+      this.addIssue(
+        'warning',
+        'license',
+        `Could not parse package.json: ${error.message}`
+      );
+      this.log(
+        `  ${COLORS.yellow}! Could not parse package.json${COLORS.reset}`
+      );
     }
   }
 
@@ -545,16 +697,27 @@ class SecurityValidator {
       const patternEscaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(patternEscaped.replace(/\\\*/g, '.*'), 'm');
 
-      if (!regex.test(gitignoreContent) && !gitignoreContent.includes(pattern)) {
+      if (
+        !regex.test(gitignoreContent) &&
+        !gitignoreContent.includes(pattern)
+      ) {
         missingPatterns.push(pattern);
       }
     });
 
     if (missingPatterns.length > 0) {
-      this.addIssue('warning', 'best-practices', `Missing patterns in .gitignore: ${missingPatterns.join(', ')}`);
-      this.log(`  ${COLORS.yellow}! Missing .gitignore patterns: ${missingPatterns.join(', ')}${COLORS.reset}`);
+      this.addIssue(
+        'warning',
+        'best-practices',
+        `Missing patterns in .gitignore: ${missingPatterns.join(', ')}`
+      );
+      this.log(
+        `  ${COLORS.yellow}! Missing .gitignore patterns: ${missingPatterns.join(', ')}${COLORS.reset}`
+      );
     } else {
-      this.log(`  ${COLORS.green}✓ .gitignore has security patterns${COLORS.reset}`);
+      this.log(
+        `  ${COLORS.green}✓ .gitignore has security patterns${COLORS.reset}`
+      );
     }
 
     this.results.bestPractices.push({
@@ -572,14 +735,22 @@ class SecurityValidator {
     const envPath = path.join(this.projectRoot, '.env');
 
     if (fs.existsSync(envPath) && !fs.existsSync(envExamplePath)) {
-      this.addIssue('warning', 'best-practices', '.env file exists but no .env.example template provided');
-      this.log(`  ${COLORS.yellow}! .env exists but no .env.example template${COLORS.reset}`);
+      this.addIssue(
+        'warning',
+        'best-practices',
+        '.env file exists but no .env.example template provided'
+      );
+      this.log(
+        `  ${COLORS.yellow}! .env exists but no .env.example template${COLORS.reset}`
+      );
       this.results.bestPractices.push({
         check: 'env-example',
         status: 'warning',
       });
     } else if (fs.existsSync(envExamplePath)) {
-      this.log(`  ${COLORS.green}✓ .env.example template exists${COLORS.reset}`);
+      this.log(
+        `  ${COLORS.green}✓ .env.example template exists${COLORS.reset}`
+      );
       this.results.bestPractices.push({
         check: 'env-example',
         status: 'pass',
@@ -607,12 +778,26 @@ class SecurityValidator {
         ...packageJson.devDependencies,
       };
 
-      const securityPackages = ['helmet', 'express-rate-limit', 'cors', 'csurf', 'express-validator', 'joi', 'zod', 'sanitize-html', 'xss', 'bcrypt', 'argon2'];
+      const securityPackages = [
+        'helmet',
+        'express-rate-limit',
+        'cors',
+        'csurf',
+        'express-validator',
+        'joi',
+        'zod',
+        'sanitize-html',
+        'xss',
+        'bcrypt',
+        'argon2',
+      ];
 
       const foundPackages = securityPackages.filter((pkg) => allDeps[pkg]);
 
       if (foundPackages.length > 0) {
-        this.log(`  ${COLORS.green}✓ Security packages found: ${foundPackages.join(', ')}${COLORS.reset}`);
+        this.log(
+          `  ${COLORS.green}✓ Security packages found: ${foundPackages.join(', ')}${COLORS.reset}`
+        );
       }
 
       this.results.bestPractices.push({
@@ -637,14 +822,27 @@ class SecurityValidator {
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
       const scripts = packageJson.scripts || {};
 
-      const securityScripts = ['audit', 'security', 'security-check', 'audit:fix'];
+      const securityScripts = [
+        'audit',
+        'security',
+        'security-check',
+        'audit:fix',
+      ];
       const foundScripts = securityScripts.filter((script) => scripts[script]);
 
       if (foundScripts.length === 0) {
-        this.addIssue('info', 'best-practices', 'Consider adding security audit scripts to package.json');
-        this.log(`  ${COLORS.dim}  Consider adding audit scripts to package.json${COLORS.reset}`);
+        this.addIssue(
+          'info',
+          'best-practices',
+          'Consider adding security audit scripts to package.json'
+        );
+        this.log(
+          `  ${COLORS.dim}  Consider adding audit scripts to package.json${COLORS.reset}`
+        );
       } else {
-        this.log(`  ${COLORS.green}✓ Security scripts found: ${foundScripts.join(', ')}${COLORS.reset}`);
+        this.log(
+          `  ${COLORS.green}✓ Security scripts found: ${foundScripts.join(', ')}${COLORS.reset}`
+        );
       }
 
       this.results.bestPractices.push({
@@ -670,17 +868,27 @@ class SecurityValidator {
     // Summary
     this.log('\n📊 Summary:', 'bold');
     this.log(`   Duration: ${elapsed}s`);
-    this.log(`   ${COLORS.red}Critical/Errors: ${this.errors.length}${COLORS.reset}`);
-    this.log(`   ${COLORS.yellow}Warnings: ${this.warnings.length}${COLORS.reset}`);
+    this.log(
+      `   ${COLORS.red}Critical/Errors: ${this.errors.length}${COLORS.reset}`
+    );
+    this.log(
+      `   ${COLORS.yellow}Warnings: ${this.warnings.length}${COLORS.reset}`
+    );
     this.log(`   ${COLORS.dim}Info: ${this.info.length}${COLORS.reset}`);
 
     // Critical Issues
     if (this.errors.length > 0) {
       this.log('\n🚨 Critical Issues:', 'red');
       this.errors.forEach((issue, index) => {
-        this.log(`   ${index + 1}. [${issue.category}] ${issue.message}`, 'red');
+        this.log(
+          `   ${index + 1}. [${issue.category}] ${issue.message}`,
+          'red'
+        );
         if (issue.details && issue.details.file) {
-          this.log(`      File: ${issue.details.file}:${issue.details.line || '?'}`, 'dim');
+          this.log(
+            `      File: ${issue.details.file}:${issue.details.line || '?'}`,
+            'dim'
+          );
         }
       });
     }
@@ -689,7 +897,10 @@ class SecurityValidator {
     if (this.warnings.length > 0) {
       this.log('\n⚠️  Warnings:', 'yellow');
       this.warnings.forEach((issue, index) => {
-        this.log(`   ${index + 1}. [${issue.category}] ${issue.message}`, 'yellow');
+        this.log(
+          `   ${index + 1}. [${issue.category}] ${issue.message}`,
+          'yellow'
+        );
       });
     }
 
@@ -699,11 +910,20 @@ class SecurityValidator {
       this.log('   ✓ No critical security issues found!', 'green');
     } else {
       if (this.errors.some((e) => e.category === 'secrets')) {
-        this.log('   • Remove detected secrets and rotate compromised credentials', 'white');
-        this.log('   • Use environment variables for sensitive configuration', 'white');
+        this.log(
+          '   • Remove detected secrets and rotate compromised credentials',
+          'white'
+        );
+        this.log(
+          '   • Use environment variables for sensitive configuration',
+          'white'
+        );
       }
       if (this.errors.some((e) => e.category === 'dependencies')) {
-        this.log('   • Run npm/pnpm audit fix to resolve vulnerabilities', 'white');
+        this.log(
+          '   • Run npm/pnpm audit fix to resolve vulnerabilities',
+          'white'
+        );
         this.log('   • Review and update outdated dependencies', 'white');
       }
       if (this.warnings.some((w) => w.category === 'best-practices')) {
@@ -716,13 +936,22 @@ class SecurityValidator {
 
     // Final status
     if (this.errors.length > 0) {
-      this.log(`\n${COLORS.bgRed}${COLORS.white} SECURITY CHECK FAILED ${COLORS.reset}`, 'bold');
+      this.log(
+        `\n${COLORS.bgRed}${COLORS.white} SECURITY CHECK FAILED ${COLORS.reset}`,
+        'bold'
+      );
       return false;
     } else if (this.warnings.length > 0) {
-      this.log(`\n${COLORS.bgYellow}${COLORS.white} SECURITY CHECK PASSED WITH WARNINGS ${COLORS.reset}`, 'bold');
+      this.log(
+        `\n${COLORS.bgYellow}${COLORS.white} SECURITY CHECK PASSED WITH WARNINGS ${COLORS.reset}`,
+        'bold'
+      );
       return true;
     } else {
-      this.log(`\n${COLORS.bgGreen}${COLORS.white} SECURITY CHECK PASSED ${COLORS.reset}`, 'bold');
+      this.log(
+        `\n${COLORS.bgGreen}${COLORS.white} SECURITY CHECK PASSED ${COLORS.reset}`,
+        'bold'
+      );
       return true;
     }
   }
@@ -757,6 +986,8 @@ class SecurityValidator {
 // Main execution
 const validator = new SecurityValidator();
 validator.run().catch((error) => {
-  console.error(`${COLORS.red}Security check failed with error: ${error.message}${COLORS.reset}`);
+  console.error(
+    `${COLORS.red}Security check failed with error: ${error.message}${COLORS.reset}`
+  );
   process.exit(1);
 });

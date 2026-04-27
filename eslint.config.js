@@ -5,7 +5,15 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['node_modules', 'dist', 'build', 'coverage', '.next', '.nuxt'],
+    ignores: [
+      'node_modules',
+      'dist',
+      'build',
+      'coverage',
+      '.next',
+      '.nuxt',
+      'docs-site/build',
+    ],
   },
   js.configs.recommended,
   {
@@ -37,6 +45,18 @@ export default [
       'no-var': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-undef': 'off', // TypeScript handles this better
+    },
+  },
+  {
+    // Utility scripts are not application code — relax stylistic rules
+    files: ['scripts/**/*.cjs', 'scripts/**/*.js'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-unused-vars': 'off',
+      'no-var': 'off',
+      'prefer-const': 'off',
+      'no-case-declarations': 'off',
+      'no-useless-escape': 'off',
     },
   },
 ];

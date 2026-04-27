@@ -186,7 +186,9 @@ export abstract class BaseService implements IService {
    */
   protected ensureInitialized(): void {
     if (!this.initialized) {
-      throw new Error(`${this.name} service not initialized. Call initialize() first.`);
+      throw new Error(
+        `${this.name} service not initialized. Call initialize() first.`
+      );
     }
   }
 
@@ -213,7 +215,10 @@ export abstract class BaseService implements IService {
   /**
    * Log a message.
    */
-  protected log(message: string, level: 'debug' | 'info' | 'warn' | 'error' = 'debug'): void {
+  protected log(
+    message: string,
+    level: 'debug' | 'info' | 'warn' | 'error' = 'debug'
+  ): void {
     if (this.config.debug || level !== 'debug') {
       console[level](`[${this.name}] ${message}`);
     }
@@ -264,7 +269,9 @@ export class ExampleSingletonService extends BaseService {
    * Get initialized instance (async).
    * Use when initialization is required before use.
    */
-  static async getInitializedInstance(config?: ServiceConfig): Promise<ExampleSingletonService> {
+  static async getInitializedInstance(
+    config?: ServiceConfig
+  ): Promise<ExampleSingletonService> {
     if (!ExampleSingletonService.initPromise) {
       ExampleSingletonService.initPromise = (async () => {
         const instance = ExampleSingletonService.getInstance(config);
@@ -391,20 +398,27 @@ export class ExampleSingletonService extends BaseService {
  */
 export class ServiceFactory {
   private static services: Map<string, IService> = new Map();
-  private static factories: Map<string, (config?: ServiceConfig) => IService> = new Map();
+  private static factories: Map<string, (config?: ServiceConfig) => IService> =
+    new Map();
   private static inFlight: Map<string, Promise<IService>> = new Map();
 
   /**
    * Register a service factory.
    */
-  static register(name: string, factory: (config?: ServiceConfig) => IService): void {
+  static register(
+    name: string,
+    factory: (config?: ServiceConfig) => IService
+  ): void {
     this.factories.set(name.toLowerCase(), factory);
   }
 
   /**
    * Get or create a service instance.
    */
-  static async get<T extends IService>(name: string, config?: ServiceConfig): Promise<T> {
+  static async get<T extends IService>(
+    name: string,
+    config?: ServiceConfig
+  ): Promise<T> {
     const key = name.toLowerCase();
 
     // Return existing instance
@@ -420,7 +434,9 @@ export class ServiceFactory {
     // Create new instance
     const factory = this.factories.get(key);
     if (!factory) {
-      throw new Error(`Unknown service: ${name}. Available: ${this.getAvailable().join(', ')}`);
+      throw new Error(
+        `Unknown service: ${name}. Available: ${this.getAvailable().join(', ')}`
+      );
     }
 
     // Track in-flight initialization to prevent double-initialization on concurrent calls
@@ -445,7 +461,9 @@ export class ServiceFactory {
    * Shutdown all services.
    */
   static async shutdownAll(): Promise<void> {
-    const shutdowns = Array.from(this.services.values()).map((s) => s.shutdown());
+    const shutdowns = Array.from(this.services.values()).map((s) =>
+      s.shutdown()
+    );
     await Promise.all(shutdowns);
     this.services.clear();
   }
@@ -473,7 +491,9 @@ export class ServiceFactory {
 // REGISTER DEFAULT SERVICES
 // ============================================================================
 
-ServiceFactory.register('example', (config) => ExampleSingletonService.getInstance(config));
+ServiceFactory.register('example', (config) =>
+  ExampleSingletonService.getInstance(config)
+);
 
 // ============================================================================
 // CONVENIENCE EXPORTS
@@ -489,7 +509,7 @@ export const getExampleService = (): ExampleSingletonService => {
 /**
  * Get initialized example service.
  */
-export const getInitializedExampleService = (): Promise<ExampleSingletonService> => {
-  return ExampleSingletonService.getInitializedInstance();
-};
-
+export const getInitializedExampleService =
+  (): Promise<ExampleSingletonService> => {
+    return ExampleSingletonService.getInitializedInstance();
+  };

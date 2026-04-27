@@ -208,7 +208,9 @@ function checkForbidden() {
       }
     } else if (exists(pattern)) {
       if (pattern === '.env' || pattern === '.env.local') {
-        warnings.push(`Found environment file that should not be committed: ${pattern}`);
+        warnings.push(
+          `Found environment file that should not be committed: ${pattern}`
+        );
       } else {
         warnings.push(`Found unwanted file/directory: ${pattern}`);
       }
@@ -356,7 +358,9 @@ function main() {
   // Exit with error code if issues remain
   const remainingIssues = issues.length;
   if (remainingIssues > 0) {
-    console.log(`\n${colors.red}${remainingIssues} issue(s) need attention${colors.reset}\n`);
+    console.log(
+      `\n${colors.red}${remainingIssues} issue(s) need attention${colors.reset}\n`
+    );
     process.exit(1);
   }
 

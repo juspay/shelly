@@ -6,18 +6,18 @@ Shelly supports multiple shell environments for its error analysis feature. Each
 
 ### Fully Supported
 
-| Shell | History Method | Config File |
-|-------|---------------|-------------|
-| **Bash** | `fc` command via eval alias | `~/.bashrc` |
-| **Zsh** | `fc` command via eval alias | `~/.zshrc` |
+| Shell        | History Method                     | Config File |
+| ------------ | ---------------------------------- | ----------- |
+| **Bash**     | `fc` command via eval alias        | `~/.bashrc` |
+| **Zsh**      | `fc` command via eval alias        | `~/.zshrc`  |
 | **Tcsh/Csh** | `history` command via direct alias | `~/.tcshrc` |
 
 ### Partial Support (Fallback)
 
-| Shell | History Method | Config File |
-|-------|---------------|-------------|
-| **Fish** | History file read | `~/.config/fish/config.fish` |
-| **PowerShell** | History file read | PSReadLine history |
+| Shell          | History Method    | Config File                  |
+| -------------- | ----------------- | ---------------------------- |
+| **Fish**       | History file read | `~/.config/fish/config.fish` |
+| **PowerShell** | History file read | PSReadLine history           |
 
 ## Setup
 

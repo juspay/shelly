@@ -11,18 +11,20 @@ After deep investigation of 799 commits, origin/release branch patterns, and com
 ### 1. GITHUB WORKFLOWS (8 Total - Shelly Missing 4)
 
 #### Neurolink Has (8 workflows):
-| Workflow | Lines | Purpose |
-|----------|-------|---------|
-| `ci.yml` | ~200 | CI with quality gates, ffmpeg, SvelteKit sync |
-| `release.yml` | ~150 | Semantic release with npm provenance, OIDC |
-| `copilot-review.yml` | ~80 | AI code review with concurrency controls |
-| `single-commit-enforcement.yml` | ~100 | Single commit per branch policy |
-| `docs-deploy.yml` | ~120 | Docusaurus deployment to GitHub Pages |
-| `docs-pr-validation.yml` | ~90 | Documentation PR validation |
-| `docs-version.yml` | ~60 | Auto-versioned docs on release |
-| `update-major-tag.yml` | ~40 | Update v1, v2 tags on release |
+
+| Workflow                        | Lines | Purpose                                       |
+| ------------------------------- | ----- | --------------------------------------------- |
+| `ci.yml`                        | ~200  | CI with quality gates, ffmpeg, SvelteKit sync |
+| `release.yml`                   | ~150  | Semantic release with npm provenance, OIDC    |
+| `copilot-review.yml`            | ~80   | AI code review with concurrency controls      |
+| `single-commit-enforcement.yml` | ~100  | Single commit per branch policy               |
+| `docs-deploy.yml`               | ~120  | Docusaurus deployment to GitHub Pages         |
+| `docs-pr-validation.yml`        | ~90   | Documentation PR validation                   |
+| `docs-version.yml`              | ~60   | Auto-versioned docs on release                |
+| `update-major-tag.yml`          | ~40   | Update v1, v2 tags on release                 |
 
 #### Shelly Has (6 workflows):
+
 - `ci.yml` (basic - needs enhancement)
 - `release.yml` (needs npm provenance)
 - `copilot-review.yml` (needs concurrency)
@@ -31,40 +33,44 @@ After deep investigation of 799 commits, origin/release branch patterns, and com
 - `docs.yml`
 
 #### Missing Workflows (4):
-| Workflow | Priority | Purpose |
-|----------|----------|---------|
-| `docs-deploy.yml` | 🟡 Medium | Docusaurus deployment |
-| `docs-pr-validation.yml` | 🟡 Medium | Docs PR checks |
-| `docs-version.yml` | 🟢 Low | Auto-versioned docs |
-| `update-major-tag.yml` | 🟢 Low | Major tag updates |
+
+| Workflow                 | Priority  | Purpose               |
+| ------------------------ | --------- | --------------------- |
+| `docs-deploy.yml`        | 🟡 Medium | Docusaurus deployment |
+| `docs-pr-validation.yml` | 🟡 Medium | Docs PR checks        |
+| `docs-version.yml`       | 🟢 Low    | Auto-versioned docs   |
+| `update-major-tag.yml`   | 🟢 Low    | Major tag updates     |
 
 #### Workflows Needing Updates (4):
-| Workflow | Updates Required |
-|----------|------------------|
-| `ci.yml` | Add quality-gate job, ffmpeg setup, SvelteKit sync |
-| `release.yml` | Add npm provenance, OIDC tokens, permissions block |
-| `copilot-review.yml` | Add concurrency, external contributor detection |
-| `singlecommitenforcement.yml` | Add detailed error messages, squash instructions |
+
+| Workflow                      | Updates Required                                   |
+| ----------------------------- | -------------------------------------------------- |
+| `ci.yml`                      | Add quality-gate job, ffmpeg setup, SvelteKit sync |
+| `release.yml`                 | Add npm provenance, OIDC tokens, permissions block |
+| `copilot-review.yml`          | Add concurrency, external contributor detection    |
+| `singlecommitenforcement.yml` | Add detailed error messages, squash instructions   |
 
 ---
 
 ### 2. GITHUB CONFIG FILES (10 Total - Shelly Missing 6)
 
 #### Neurolink Has:
-| File | Purpose |
-|------|---------|
-| `CODEOWNERS` | Team ownership rules |
-| `dependabot.yml` | Dependency automation |
-| `settings.yml` | Repository settings |
-| `copilot-review.json` | Copilot review config |
-| `BRANCH_PROTECTION_CONFIG.md` | Branch protection documentation |
-| `SINGLE_COMMIT_POLICY.md` | Commit policy documentation |
-| `FUNDING.yml` | GitHub Sponsors |
-| `ISSUE_TEMPLATE/bug_report.yml` | YAML-based bug template |
-| `ISSUE_TEMPLATE/feature_request.yml` | YAML-based feature template |
-| `ISSUE_TEMPLATE/documentation.md` | Docs issue template |
+
+| File                                 | Purpose                         |
+| ------------------------------------ | ------------------------------- |
+| `CODEOWNERS`                         | Team ownership rules            |
+| `dependabot.yml`                     | Dependency automation           |
+| `settings.yml`                       | Repository settings             |
+| `copilot-review.json`                | Copilot review config           |
+| `BRANCH_PROTECTION_CONFIG.md`        | Branch protection documentation |
+| `SINGLE_COMMIT_POLICY.md`            | Commit policy documentation     |
+| `FUNDING.yml`                        | GitHub Sponsors                 |
+| `ISSUE_TEMPLATE/bug_report.yml`      | YAML-based bug template         |
+| `ISSUE_TEMPLATE/feature_request.yml` | YAML-based feature template     |
+| `ISSUE_TEMPLATE/documentation.md`    | Docs issue template             |
 
 #### Shelly Has:
+
 - `CODEOWNERS`
 - `dependabot.yml`
 - `settings.yml`
@@ -74,44 +80,47 @@ After deep investigation of 799 commits, origin/release branch patterns, and com
 - `PULL_REQUEST_TEMPLATE.md`
 
 #### Missing (6):
-| File | Priority |
-|------|----------|
-| `BRANCH_PROTECTION_CONFIG.md` | 🔴 High |
-| `SINGLE_COMMIT_POLICY.md` | 🔴 High |
-| `FUNDING.yml` | 🟢 Low |
-| `ISSUE_TEMPLATE/bug_report.yml` | 🟡 Medium (upgrade) |
+
+| File                                 | Priority            |
+| ------------------------------------ | ------------------- |
+| `BRANCH_PROTECTION_CONFIG.md`        | 🔴 High             |
+| `SINGLE_COMMIT_POLICY.md`            | 🔴 High             |
+| `FUNDING.yml`                        | 🟢 Low              |
+| `ISSUE_TEMPLATE/bug_report.yml`      | 🟡 Medium (upgrade) |
 | `ISSUE_TEMPLATE/feature_request.yml` | 🟡 Medium (upgrade) |
-| `ISSUE_TEMPLATE/documentation.md` | 🟡 Medium |
+| `ISSUE_TEMPLATE/documentation.md`    | 🟡 Medium           |
 
 ---
 
 ### 3. ROOT CONFIGURATION FILES (20+ Total - Shelly Missing 10)
 
 #### Neurolink Has (root config files):
-| File | Size | Purpose |
-|------|------|---------|
-| `.gitleaksrc.json` | 2KB | Secret scanning patterns |
-| `.gitleaksignore` | 500B | Secret scanner exceptions |
-| `.mcp-config.json` | 3KB | MCP server configurations |
-| `.markdownlint.json` | 1KB | Markdown linting rules |
-| `.releaserc.json` | 4KB | Semantic release with custom plugins |
-| `biome.json` | 2KB | Biome with VCS integration |
-| `eslint.config.js` | 3KB | ESLint v9 flat config |
-| `tsconfig.json` | 2KB | TypeScript config |
-| `vite.config.ts` | 3KB | Vite bundler config |
-| `vitest.config.ts` | 2KB | Vitest testing config |
-| `svelte.config.js` | 1KB | Svelte framework config |
-| `action.yml` | 6KB | GitHub Action definition (200+ inputs) |
-| `typedoc.json` | 1KB | API documentation config |
-| `CLAUDE.md` | 20KB | AI assistant guidance (618 lines) |
-| `SECURITY.md` | 2KB | Security policy |
-| `LICENSE` | 1KB | License file |
-| `.nvmrc` | 10B | Node version |
-| `.editorconfig` | 300B | Editor config |
-| `.gitignore` | 2KB | Git ignore patterns |
-| `.gitattributes` | 500B | Git attributes |
+
+| File                 | Size | Purpose                                |
+| -------------------- | ---- | -------------------------------------- |
+| `.gitleaksrc.json`   | 2KB  | Secret scanning patterns               |
+| `.gitleaksignore`    | 500B | Secret scanner exceptions              |
+| `.mcp-config.json`   | 3KB  | MCP server configurations              |
+| `.markdownlint.json` | 1KB  | Markdown linting rules                 |
+| `.releaserc.json`    | 4KB  | Semantic release with custom plugins   |
+| `biome.json`         | 2KB  | Biome with VCS integration             |
+| `eslint.config.js`   | 3KB  | ESLint v9 flat config                  |
+| `tsconfig.json`      | 2KB  | TypeScript config                      |
+| `vite.config.ts`     | 3KB  | Vite bundler config                    |
+| `vitest.config.ts`   | 2KB  | Vitest testing config                  |
+| `svelte.config.js`   | 1KB  | Svelte framework config                |
+| `action.yml`         | 6KB  | GitHub Action definition (200+ inputs) |
+| `typedoc.json`       | 1KB  | API documentation config               |
+| `CLAUDE.md`          | 20KB | AI assistant guidance (618 lines)      |
+| `SECURITY.md`        | 2KB  | Security policy                        |
+| `LICENSE`            | 1KB  | License file                           |
+| `.nvmrc`             | 10B  | Node version                           |
+| `.editorconfig`      | 300B | Editor config                          |
+| `.gitignore`         | 2KB  | Git ignore patterns                    |
+| `.gitattributes`     | 500B | Git attributes                         |
 
 #### Shelly Has:
+
 - `tsconfig.json`, `tsconfig.cli.json`
 - `eslint.config.js` (needs v9 flat config update)
 - `.prettierignore`
@@ -124,24 +133,26 @@ After deep investigation of 799 commits, origin/release branch patterns, and com
 - `LICENSE`
 
 #### Missing (10):
-| File | Priority | Purpose |
-|------|----------|---------|
-| `CLAUDE.md` | 🔴 HIGH | AI assistant instructions (618 lines) |
-| `SECURITY.md` | 🔴 High | Security policy |
-| `.gitleaksrc.json` | 🔴 High | Secret scanning patterns |
-| `.gitleaksignore` | 🔴 High | Secret scanner exceptions |
-| `.mcp-config.json` | 🟡 Medium | MCP server configs |
-| `.markdownlint.json` | 🟡 Medium | Markdown linting |
-| `action.yml` | 🟡 Medium | GitHub Action definition |
-| `typedoc.json` | 🟡 Medium | API doc generation |
-| `vite.config.ts` | 🟢 Low | Vite bundler config |
-| `vitest.config.ts` | 🟢 Low | Vitest testing config |
+
+| File                 | Priority  | Purpose                               |
+| -------------------- | --------- | ------------------------------------- |
+| `CLAUDE.md`          | 🔴 HIGH   | AI assistant instructions (618 lines) |
+| `SECURITY.md`        | 🔴 High   | Security policy                       |
+| `.gitleaksrc.json`   | 🔴 High   | Secret scanning patterns              |
+| `.gitleaksignore`    | 🔴 High   | Secret scanner exceptions             |
+| `.mcp-config.json`   | 🟡 Medium | MCP server configs                    |
+| `.markdownlint.json` | 🟡 Medium | Markdown linting                      |
+| `action.yml`         | 🟡 Medium | GitHub Action definition              |
+| `typedoc.json`       | 🟡 Medium | API doc generation                    |
+| `vite.config.ts`     | 🟢 Low    | Vite bundler config                   |
+| `vitest.config.ts`   | 🟢 Low    | Vitest testing config                 |
 
 ---
 
 ### 4. SCRIPTS DIRECTORY (60+ Files - Shelly Has 0)
 
 #### Neurolink scripts/ Structure:
+
 ```
 scripts/
 ├── build-validations.cjs          # Build rule enforcement
@@ -172,20 +183,22 @@ scripts/
 ```
 
 #### Critical Scripts to Template:
-| Script | Priority | Purpose |
-|--------|----------|---------|
-| `build-validations.cjs` | 🔴 High | Enforce build rules |
-| `env-validation.cjs` | 🔴 High | Validate environment |
-| `security-check.cjs` | 🔴 High | Security validation |
-| `commit-validation.cjs` | 🔴 High | Commit format validation |
-| `quality-metrics.cjs` | 🟡 Medium | Code quality checks |
-| `format-changelog.cjs` | 🟡 Medium | Changelog formatting |
+
+| Script                  | Priority  | Purpose                  |
+| ----------------------- | --------- | ------------------------ |
+| `build-validations.cjs` | 🔴 High   | Enforce build rules      |
+| `env-validation.cjs`    | 🔴 High   | Validate environment     |
+| `security-check.cjs`    | 🔴 High   | Security validation      |
+| `commit-validation.cjs` | 🔴 High   | Commit format validation |
+| `quality-metrics.cjs`   | 🟡 Medium | Code quality checks      |
+| `format-changelog.cjs`  | 🟡 Medium | Changelog formatting     |
 
 ---
 
 ### 5. TOOLS DIRECTORY (Automation Suite - Shelly Has 0)
 
 #### Neurolink tools/ Structure:
+
 ```
 tools/
 ├── automation/
@@ -203,18 +216,20 @@ tools/
 ```
 
 #### Missing (Entire Directory):
-| Tool | Priority | Purpose |
-|------|----------|---------|
-| `automation/buildSystem.js` | 🟡 Medium | Build pipeline |
-| `automation/environmentManager.js` | 🟡 Medium | Env management |
-| `automation/projectOrganizer.js` | 🟡 Medium | Project structure |
-| `automation/shellConverter.js` | 🟢 Low | Bash to Node conversion |
+
+| Tool                               | Priority  | Purpose                 |
+| ---------------------------------- | --------- | ----------------------- |
+| `automation/buildSystem.js`        | 🟡 Medium | Build pipeline          |
+| `automation/environmentManager.js` | 🟡 Medium | Env management          |
+| `automation/projectOrganizer.js`   | 🟡 Medium | Project structure       |
+| `automation/shellConverter.js`     | 🟢 Low    | Bash to Node conversion |
 
 ---
 
 ### 6. DOCS-SITE DIRECTORY (Docusaurus - Shelly Has 0)
 
 #### Neurolink docs-site/ Structure:
+
 ```
 docs-site/
 ├── docusaurus.config.ts           # Main Docusaurus config
@@ -234,19 +249,21 @@ docs-site/
 ```
 
 #### Key Files to Template:
-| File | Priority | Purpose |
-|------|----------|---------|
-| `docusaurus.config.ts` | 🟡 Medium | Main config with Algolia, PostHog |
-| `sidebars.ts` | 🟡 Medium | Navigation structure |
-| `scripts/sync-docs.ts` | 🟡 Medium | Docs synchronization |
-| `scripts/build-llms-txt.ts` | 🟢 Low | AI context file |
-| `scripts/validate-frontmatter.ts` | 🟢 Low | Frontmatter validation |
+
+| File                              | Priority  | Purpose                           |
+| --------------------------------- | --------- | --------------------------------- |
+| `docusaurus.config.ts`            | 🟡 Medium | Main config with Algolia, PostHog |
+| `sidebars.ts`                     | 🟡 Medium | Navigation structure              |
+| `scripts/sync-docs.ts`            | 🟡 Medium | Docs synchronization              |
+| `scripts/build-llms-txt.ts`       | 🟢 Low    | AI context file                   |
+| `scripts/validate-frontmatter.ts` | 🟢 Low    | Frontmatter validation            |
 
 ---
 
 ### 7. MEMORY BANK STRUCTURE (56 Files - Shelly Has Basic)
 
 #### Neurolink Memory Bank:
+
 ```
 memory-bank/
 ├── README.md
@@ -272,19 +289,21 @@ memory-bank/
 ```
 
 #### Missing:
-| Path | Priority | Purpose |
-|------|----------|---------|
-| `project/roadmap.md` | 🟡 Medium | Project roadmap |
-| `technical/architecture.md` | 🟡 Medium | Architecture docs |
-| `research/` directory | 🟡 Medium | Research documents |
-| `development/` directory | 🟡 Medium | Implementation guides |
-| Domain-specific directories | 🟢 Low | Project-specific context |
+
+| Path                        | Priority  | Purpose                  |
+| --------------------------- | --------- | ------------------------ |
+| `project/roadmap.md`        | 🟡 Medium | Project roadmap          |
+| `technical/architecture.md` | 🟡 Medium | Architecture docs        |
+| `research/` directory       | 🟡 Medium | Research documents       |
+| `development/` directory    | 🟡 Medium | Implementation guides    |
+| Domain-specific directories | 🟢 Low    | Project-specific context |
 
 ---
 
 ### 8. HUSKY & GIT HOOKS (Shelly Has 0)
 
 #### Neurolink .husky/ Structure:
+
 ```
 .husky/
 ├── pre-commit                     # Run lint-staged
@@ -295,6 +314,7 @@ memory-bank/
 ```
 
 #### lint-staged Configuration (in package.json):
+
 ```json
 {
   "lint-staged": {
@@ -306,12 +326,13 @@ memory-bank/
 ```
 
 #### Missing:
-| File | Priority | Purpose |
-|------|----------|---------|
-| `.husky/pre-commit` | 🔴 High | Lint-staged execution |
-| `.husky/commit-msg` | 🔴 High | Commit validation |
-| `.husky/pre-push` | 🟡 Medium | Pre-push tests |
-| `lint-staged` config | 🔴 High | Staged file linting |
+
+| File                 | Priority  | Purpose               |
+| -------------------- | --------- | --------------------- |
+| `.husky/pre-commit`  | 🔴 High   | Lint-staged execution |
+| `.husky/commit-msg`  | 🔴 High   | Commit validation     |
+| `.husky/pre-push`    | 🟡 Medium | Pre-push tests        |
+| `lint-staged` config | 🔴 High   | Staged file linting   |
 
 ---
 
@@ -320,62 +341,73 @@ memory-bank/
 #### Neurolink Has 73+ npm Scripts:
 
 **Testing Scripts:**
+
 - `test`, `test:coverage`, `test:ci`, `test:debug`
 - `test:e2e`, `test:integration`, `test:unit`
 
 **Validation Scripts:**
+
 - `validate:all`, `validate:env`, `validate:security`
 - `validate:commit`, `validate:build`, `validate:deps`
 
 **Quality Scripts:**
+
 - `quality:all`, `quality:metrics`, `check:all`
 - `lint`, `lint:fix`, `format`, `format:check`
 
 **Build Scripts:**
+
 - `build`, `build:lib`, `build:action`, `build:svelte`
 - `build:watch`, `prebuild`, `postbuild`
 
 **Pre-commit Scripts:**
+
 - `pre-commit`, `pre-push`, `prepare`
 
 **Setup Scripts:**
+
 - `setup`, `setup:complete`, `env:setup`, `env:validate`
 
 **Clean Scripts:**
+
 - `clean`, `clean:all`, `reset`
 
 **Docs Scripts:**
+
 - `docs:api`, `docs:sync`, `docs:validate`
 - `docs:start`, `docs:build`, `docs:deploy`
 
 #### Shelly Has ~20 Scripts
 
 #### Missing Script Categories:
-| Category | Scripts | Priority |
-|----------|---------|----------|
-| Testing | `test:coverage`, `test:ci`, `test:e2e` | 🔴 High |
-| Validation | `validate:all`, `validate:security` | 🔴 High |
-| Quality | `quality:all`, `check:all` | 🟡 Medium |
-| Pre-commit | `pre-commit`, `pre-push` | 🔴 High |
-| Setup | `setup`, `setup:complete` | 🟡 Medium |
-| Clean | `clean`, `reset` | 🟡 Medium |
-| Docs | `docs:*` (7 scripts) | 🟡 Medium |
+
+| Category   | Scripts                                | Priority  |
+| ---------- | -------------------------------------- | --------- |
+| Testing    | `test:coverage`, `test:ci`, `test:e2e` | 🔴 High   |
+| Validation | `validate:all`, `validate:security`    | 🔴 High   |
+| Quality    | `quality:all`, `check:all`             | 🟡 Medium |
+| Pre-commit | `pre-commit`, `pre-push`               | 🔴 High   |
+| Setup      | `setup`, `setup:complete`              | 🟡 Medium |
+| Clean      | `clean`, `reset`                       | 🟡 Medium |
+| Docs       | `docs:*` (7 scripts)                   | 🟡 Medium |
 
 #### Missing package.json Fields:
-| Field | Purpose |
-|-------|---------|
-| `pnpm.onlyBuiltDependencies` | Pre-built binaries |
-| `pnpm.overrides` | Security version overrides |
-| `engines.pnpm` | pnpm version requirement |
-| `os` | Supported operating systems |
-| `funding` | Funding/sponsors URL |
-| `lint-staged` | Staged file configuration |
+
+| Field                        | Purpose                     |
+| ---------------------------- | --------------------------- |
+| `pnpm.onlyBuiltDependencies` | Pre-built binaries          |
+| `pnpm.overrides`             | Security version overrides  |
+| `engines.pnpm`               | pnpm version requirement    |
+| `os`                         | Supported operating systems |
+| `funding`                    | Funding/sponsors URL        |
+| `lint-staged`                | Staged file configuration   |
 
 ---
 
 ### 10. DOCUMENTATION FILES (Shelly Missing 5)
 
 #### Neurolink Has:
+
 - `README.md` (with badges, quick links, feature matrix)
 - `CONTRIBUTING.md` (with build rules, semantic commits)
 - `CODE_OF_CONDUCT.md`
@@ -388,6 +420,7 @@ memory-bank/
 - `docs/TESTING.md`
 
 #### Shelly Has:
+
 - `README.md`
 - `CONTRIBUTING.md`
 - `CODE_OF_CONDUCT.md`
@@ -395,13 +428,14 @@ memory-bank/
 - `LICENSE`
 
 #### Missing:
-| File | Priority | Purpose |
-|------|----------|---------|
-| `CLAUDE.md` | 🔴 HIGH | AI assistant instructions |
-| `SECURITY.md` | 🔴 High | Security policy |
-| `docs/ARCHITECTURE.md` | 🟡 Medium | Architecture docs |
-| `docs/DEVELOPMENT.md` | 🟡 Medium | Development guide |
-| `docs/TESTING.md` | 🟡 Medium | Testing strategy |
+
+| File                   | Priority  | Purpose                   |
+| ---------------------- | --------- | ------------------------- |
+| `CLAUDE.md`            | 🔴 HIGH   | AI assistant instructions |
+| `SECURITY.md`          | 🔴 High   | Security policy           |
+| `docs/ARCHITECTURE.md` | 🟡 Medium | Architecture docs         |
+| `docs/DEVELOPMENT.md`  | 🟡 Medium | Development guide         |
+| `docs/TESTING.md`      | 🟡 Medium | Testing strategy          |
 
 ---
 
@@ -463,6 +497,7 @@ memory-bank/
 ## FILES TO CREATE (47 New Files)
 
 ### Templates to Add:
+
 ```
 templates/
 ├── CLAUDE.md                              # 🔴 HIGH
@@ -518,29 +553,30 @@ templates/
 
 ## FILES TO UPDATE (15 Files)
 
-| File | Updates Required |
-|------|------------------|
-| `templates/.github/workflows/ci.yml` | Add quality-gate job, ffmpeg, SvelteKit sync |
-| `templates/.github/workflows/release.yml` | Add npm provenance, OIDC, permissions |
-| `templates/.github/workflows/copilot-review.yml` | Add concurrency, contributor detection |
-| `templates/.github/workflows/singlecommitenforcement.yml` | Detailed errors, squash instructions |
-| `templates/.github/PULL_REQUEST_TEMPLATE.md` | Add security, performance, deployment sections |
-| `templates/eslint.config.js` | Update to v9 flat config, add complexity rules |
-| `templates/biome.json` | Add VCS integration, Git ignore respect |
-| `templates/.releaserc.json` | Add custom header pattern for tickets |
-| `templates/.gitignore` | Add action-dist, test outputs, lock files |
-| `templates/CONTRIBUTING.md` | Add build rules, semantic commits |
-| `templates/README.md` | Add badges, quick links, feature matrix |
-| `templates/package.json` | Add scripts, lint-staged, engines |
-| `src/shelly/commands/organize.ts` | Handle new file types |
-| `src/shelly/services/scaffoldingService.ts` | Add new templates |
-| `src/shelly/utils/templateCopier.ts` | Support new structures |
+| File                                                      | Updates Required                               |
+| --------------------------------------------------------- | ---------------------------------------------- |
+| `templates/.github/workflows/ci.yml`                      | Add quality-gate job, ffmpeg, SvelteKit sync   |
+| `templates/.github/workflows/release.yml`                 | Add npm provenance, OIDC, permissions          |
+| `templates/.github/workflows/copilot-review.yml`          | Add concurrency, contributor detection         |
+| `templates/.github/workflows/singlecommitenforcement.yml` | Detailed errors, squash instructions           |
+| `templates/.github/PULL_REQUEST_TEMPLATE.md`              | Add security, performance, deployment sections |
+| `templates/eslint.config.js`                              | Update to v9 flat config, add complexity rules |
+| `templates/biome.json`                                    | Add VCS integration, Git ignore respect        |
+| `templates/.releaserc.json`                               | Add custom header pattern for tickets          |
+| `templates/.gitignore`                                    | Add action-dist, test outputs, lock files      |
+| `templates/CONTRIBUTING.md`                               | Add build rules, semantic commits              |
+| `templates/README.md`                                     | Add badges, quick links, feature matrix        |
+| `templates/package.json`                                  | Add scripts, lint-staged, engines              |
+| `src/shelly/commands/organize.ts`                         | Handle new file types                          |
+| `src/shelly/services/scaffoldingService.ts`               | Add new templates                              |
+| `src/shelly/utils/templateCopier.ts`                      | Support new structures                         |
 
 ---
 
 ## IMPLEMENTATION PHASES
 
 ### Phase 1: Critical Security & Policy (15 files)
+
 - CLAUDE.md, SECURITY.md
 - .gitleaksrc.json, .gitleaksignore
 - BRANCH_PROTECTION_CONFIG.md, SINGLE_COMMIT_POLICY.md
@@ -550,23 +586,27 @@ templates/
 - lint-staged config in package.json
 
 ### Phase 2: Workflow Updates (8 files)
+
 - Update ci.yml, release.yml
 - Update copilot-review.yml, singlecommitenforcement.yml
 - Add docs-deploy.yml, docs-pr-validation.yml
 - Convert issue templates to YAML
 
 ### Phase 3: Configuration Updates (10 files)
+
 - Add .mcp-config.json, .markdownlint.json
 - Add action.yml, typedoc.json
 - Update eslint.config.js, biome.json
 - Update .releaserc.json, .gitignore
 
 ### Phase 4: Documentation & Memory Bank (12 files)
+
 - Update CONTRIBUTING.md, README.md, PR template
 - Add memory-bank directories and files
 - Add docs/ARCHITECTURE.md, DEVELOPMENT.md, TESTING.md
 
 ### Phase 5: Optional Enhancements (12+ files)
+
 - Add docs-version.yml, update-major-tag.yml, FUNDING.yml
 - Add scripts/quality-metrics.cjs, format-changelog.cjs
 - Add tools/automation/ suite
@@ -598,16 +638,16 @@ After implementation, `shelly organize` should produce:
 
 ## TOTAL GAP COUNT: 87+
 
-| Category | Gaps |
-|----------|------|
-| GitHub Workflows | 8 (4 missing + 4 updates) |
-| GitHub Config Files | 6 |
-| Root Config Files | 10 |
-| Scripts Directory | 60+ (6 critical) |
-| Tools Directory | 10+ |
-| Docs-Site | 10+ |
-| Memory Bank | 5 |
-| Husky/Hooks | 4 |
-| Package.json | 20+ scripts, 6 fields |
-| Documentation | 5 |
-| **TOTAL** | **87+ gaps** |
+| Category            | Gaps                      |
+| ------------------- | ------------------------- |
+| GitHub Workflows    | 8 (4 missing + 4 updates) |
+| GitHub Config Files | 6                         |
+| Root Config Files   | 10                        |
+| Scripts Directory   | 60+ (6 critical)          |
+| Tools Directory     | 10+                       |
+| Docs-Site           | 10+                       |
+| Memory Bank         | 5                         |
+| Husky/Hooks         | 4                         |
+| Package.json        | 20+ scripts, 6 fields     |
+| Documentation       | 5                         |
+| **TOTAL**           | **87+ gaps**              |

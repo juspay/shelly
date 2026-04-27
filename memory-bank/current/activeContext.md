@@ -2,12 +2,14 @@
 
 **Current Work Focus:**
 
-### 🔄 **TypeScript Migration & Build System Enhancement**
+### ✅ **Three-Tier Setup System + Bitbucket Platform Support (COMPLETE)**
 
-- **TypeScript Migration**: Complete conversion from JavaScript to TypeScript (COMPLETE)
-- **Build System Enhancement**: Automated template copying and type-safe compilation
-- **Development Experience**: Improved IDE support and type checking
-- **Documentation Updates**: Reflecting TypeScript architecture across all docs
+- **Three-Tier Scaffolding**: `--essential`, `--standard`, `--complete` flags on `shelly organize`
+- **Single Source of Truth**: `src/shelly/utils/fileTiers.ts` is authoritative for all file→tier assignments
+- **Platform Detection**: Auto-detects GitHub/Bitbucket from git remote; prompts user for scratch projects
+- **Bitbucket CI Templates**: Jenkinsfile, git-hooks, husky proxies, BZ-ticket commitlint
+- **Platform-Aware Generation**: mkdocs.yml, .releaserc.json, package.json URLs adapt to platform
+- **Release Pipeline**: MkDocs strict build fixed, npm audit criticals cleared, neurolink upgraded to v9.59.3
 
 ### 🚀 **Established Feature Set**
 

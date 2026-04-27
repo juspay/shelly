@@ -13,7 +13,13 @@
       "type": "string",
       "required": false,
       "default": "exploratory",
-      "enum": ["exploratory", "statistical", "trend", "comparative", "predictive"],
+      "enum": [
+        "exploratory",
+        "statistical",
+        "trend",
+        "comparative",
+        "predictive"
+      ],
       "description": "Type of analysis to perform"
     },
     "outputFormat": {
@@ -55,6 +61,11 @@
   ],
   "output": {
     "format": "markdown",
-    "sections": ["dataUnderstanding", "analysisResults", "insights", "visualizationCode"]
+    "sections": [
+      "dataUnderstanding",
+      "analysisResults",
+      "insights",
+      "visualizationCode"
+    ]
   }
 }

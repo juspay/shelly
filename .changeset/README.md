@@ -11,6 +11,7 @@ npx changeset
 ```
 
 This will prompt you to:
+
 1. Select which packages have changed
 2. Choose the type of change (major, minor, patch)
 3. Describe the changes
