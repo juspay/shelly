@@ -85,6 +85,18 @@
     "access": "public"
   },
   "type": "module",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
@@ -105,13 +117,15 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.5",
     "prettier": "^3.0.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "semantic-release": "^22.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
     "tsx": "^4.0.0"
   },
   "dependencies": {
-    "@juspay/neurolink": "^8.41.0",
+    "@juspay/neurolink": "^9.59.3",
     "@octokit/rest": "^20.0.2",
     "commander": "^11.0.0",
     "inquirer": "^12.9.6",

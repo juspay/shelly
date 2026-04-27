@@ -92,6 +92,7 @@ Update project documentation systematically: $ARGUMENTS
 - Ensure documentation reflects actual implementation
 
 Provide a summary of documentation updates after completion, including:
+
 1. Files updated
 2. Major changes to documentation
 3. Updated completion percentages

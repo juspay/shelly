@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Prepend the branch ticket number to the commit message automatically
+# Branch format expected: {{TICKET_PREFIX}}-1234-description
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+# Only auto-prepend for normal commits (not merges, amends, etc.)
+if [ -z "$COMMIT_SOURCE" ]; then
+  BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+  TICKET=$(echo "$BRANCH_NAME" | grep -oE '{{TICKET_PREFIX}}-[0-9]+' | head -1)
+
+  if [ -n "$TICKET" ]; then
+    CURRENT_MSG=$(cat "$COMMIT_MSG_FILE")
+    # Only prepend if not already prefixed
+    if ! echo "$CURRENT_MSG" | grep -qE "^{{TICKET_PREFIX}}-[0-9]+:"; then
+      echo "${TICKET}: ${CURRENT_MSG}" > "$COMMIT_MSG_FILE"
+    fi
+  fi
+fi
+
+finish() {
+  result=$?
+  exit ${result}
+}
+trap finish EXIT ERR

@@ -4,7 +4,20 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { AIContentGenerator } from '../utils/aiContentGenerator.js';
 import { memoryBankService } from '../services/memoryBankService.js';
+import { PackageDetector } from '../services/packageDetector.js';
+import { JenkinsfileGenerator } from '../services/jenkinsfileGenerator.js';
+import { BreezeDetector } from '../services/breezeDetector.js';
 import inquirer from 'inquirer';
+import {
+  SetupTier,
+  getTierDisplayName,
+  getTierDescription,
+} from '../config/setupTiers.js';
+import {
+  shouldIncludeDirectory,
+  shouldIncludeMemoryBank,
+} from '../utils/tierFilters.js';
+import { shouldIncludeFileByTier } from '../utils/fileTiers.js';
 
 interface OrganizeOptions {
   force?: boolean;
@@ -12,6 +25,10 @@ interface OrganizeOptions {
   move?: boolean;
   cwd?: string;
   githubAction?: boolean;
+  ciSystem?: 'github' | 'jenkins';
+  skipMcp?: boolean;
+  platform?: 'github' | 'bitbucket';
+  setupTier?: SetupTier;
 }
 
 interface ClassificationRule {
@@ -47,8 +64,14 @@ export class OrganizeCommand {
   update: boolean;
   move: boolean;
   githubAction: boolean;
+  ciSystem: 'github' | 'jenkins';
+  platform: 'github' | 'bitbucket';
+  platformExplicit: boolean;
+  workspace: string;
+  skipMcp: boolean;
   preserveDocs: boolean;
   preserveTests: boolean;
+  setupTier: SetupTier;
   cwd: string;
   aiGenerator: AIContentGenerator;
   templatesDir: string;
@@ -58,6 +81,12 @@ export class OrganizeCommand {
     this.update = options.update || false;
     this.move = options.move || false;
     this.githubAction = options.githubAction || false;
+    this.ciSystem = options.ciSystem || 'github';
+    this.platform = options.platform || 'github';
+    this.platformExplicit = !!options.platform;
+    this.workspace = 'juspay';
+    this.skipMcp = options.skipMcp || false;
+    this.setupTier = options.setupTier || 'standard'; // Default to standard tier
 
     // Initialize preservation flags
     this.preserveDocs = false;
@@ -97,9 +126,29 @@ export class OrganizeCommand {
    * Main organize command execution
    */
   async execute() {
-    console.log('🚀 Starting repository organization...');
+    const tierName = getTierDisplayName(this.setupTier);
+    console.log(`🚀 Starting repository organization (${tierName} tier)...`);
 
     try {
+      // Step 0: Detect platform (explicit flag → auto-detect from remote → ask user)
+      this.platform = await this.detectPlatform();
+      if (this.platform === 'bitbucket') {
+        this.ciSystem = 'jenkins';
+      }
+      // Always detect workspace from git remote (even when --platform flag was given)
+      if (this.workspace === 'juspay') {
+        try {
+          const gitInfo = await BreezeDetector.detectGitRemote(this.cwd);
+          if (gitInfo?.workspace)
+            this.workspace = gitInfo.workspace.toLowerCase();
+        } catch {
+          // no git remote — use default workspace
+        }
+      }
+      console.log(
+        `🌐 Platform: ${this.platform === 'bitbucket' ? 'Bitbucket (Jenkins CI)' : 'GitHub'}`
+      );
+
       // Step 1: Analyze current repository and set preservation flags
       const repoAnalysis = await this.analyzeRepository();
       await this.setPreservationFlags();
@@ -120,17 +169,32 @@ export class OrganizeCommand {
       await this.createProjectFiles(repoAnalysis);
       console.log('📝 Created/enhanced project files');
 
-      // Step 5: Create GitHub templates and workflows
-      await this.createGitHubTemplates(repoAnalysis);
-      console.log('🔧 Created GitHub templates and workflows');
+      // Step 5: Create CI/CD + platform-specific templates
+      if (this.platform === 'bitbucket') {
+        await this.createJenkinsfile(repoAnalysis);
+        console.log('🔧 Created Jenkinsfile for Jenkins CI');
+        await this.copyBitbucketTemplates(repoAnalysis);
+        console.log('🪝 Created Bitbucket git hooks and commitlint');
+      } else {
+        await this.createGitHubTemplates(repoAnalysis);
+        console.log('🔧 Created GitHub templates and workflows');
+      }
+
+      // Step 5.5: Detect and recommend Juspay packages
+      await this.detectAndRecommendPackages(repoAnalysis);
+
+      // Step 5.6: Setup Breeze AI & MCP (if applicable)
+      await this.setupBreezeMCP(repoAnalysis);
 
       // Step 6: Create configuration files
       await this.createConfigFiles(repoAnalysis);
       console.log('⚙️ Created configuration files');
 
-      // Step 7: Initialize Memory Bank
-      await this.initializeMemoryBank(repoAnalysis);
-      console.log('🧠 Initialized Memory Bank');
+      // Step 7: Initialize Memory Bank (Complete tier only)
+      if (shouldIncludeMemoryBank(this.setupTier)) {
+        await this.initializeMemoryBank(repoAnalysis);
+        console.log('🧠 Initialized Memory Bank');
+      }
 
       console.log('✅ Repository organization complete!');
 
@@ -629,9 +693,7 @@ export class OrganizeCommand {
    * Create standard directory structure
    */
   async createDirectoryStructure(repoAnalysis) {
-    const directories = [
-      '.github/ISSUE_TEMPLATE',
-      '.github/workflows',
+    const allDirectories = [
       '.changeset',
       '.husky',
       '.ai/workflows',
@@ -654,6 +716,22 @@ export class OrganizeCommand {
       `${repoAnalysis.repoName}-demo`,
       'test',
     ];
+
+    // Only add GitHub-specific directories if using GitHub CI
+    if (this.ciSystem === 'github') {
+      allDirectories.push('.github/ISSUE_TEMPLATE', '.github/workflows');
+    }
+
+    // Filter directories based on tier
+    const directories = allDirectories.filter((dir) => {
+      // Check if directory (without project-specific name) is in tier
+      if (dir === `${repoAnalysis.repoName}-demo`) {
+        // Demo directory only in complete tier
+        return this.setupTier === 'complete';
+      }
+      // Check base directory path
+      return shouldIncludeDirectory(dir, this.setupTier);
+    });
 
     for (const dir of directories) {
       const dirPath = path.join(this.cwd, dir);
@@ -705,7 +783,8 @@ export class OrganizeCommand {
     const enhanced = await this.aiGenerator.enhancePackageJson(
       repoAnalysis,
       repoAnalysis.repoName,
-      this.cwd
+      this.cwd,
+      this.platform
     );
 
     // In update mode, intelligently merge instead of preserving completely
@@ -994,9 +1073,19 @@ export class OrganizeCommand {
    */
   resolveVersionConflict(version1: string, version2: string): string {
     // Check for special protocol/reference types first
-    const specialProtocols = ['workspace:', 'file:', 'git+', 'link:', 'portal:'];
-    const isSpecial1 = specialProtocols.some(proto => version1.startsWith(proto));
-    const isSpecial2 = specialProtocols.some(proto => version2.startsWith(proto));
+    const specialProtocols = [
+      'workspace:',
+      'file:',
+      'git+',
+      'link:',
+      'portal:',
+    ];
+    const isSpecial1 = specialProtocols.some((proto) =>
+      version1.startsWith(proto)
+    );
+    const isSpecial2 = specialProtocols.some((proto) =>
+      version2.startsWith(proto)
+    );
 
     // If either is a special protocol, preserve the existing one
     if (isSpecial1 || isSpecial2) {
@@ -1111,8 +1200,7 @@ export class OrganizeCommand {
       },
       {
         name: 'CLAUDE.md',
-        generator: () =>
-          this.loadTemplate('CLAUDE.md.template', repoAnalysis),
+        generator: () => this.loadTemplate('CLAUDE.md.template', repoAnalysis),
       },
       {
         name: 'SECURITY.md',
@@ -1121,8 +1209,7 @@ export class OrganizeCommand {
       },
       {
         name: '.markdownlint.json',
-        generator: () =>
-          this.loadTemplateRaw('.markdownlint.json.template'),
+        generator: () => this.loadTemplateRaw('.markdownlint.json.template'),
       },
       {
         name: 'typedoc.json',
@@ -1136,8 +1223,13 @@ export class OrganizeCommand {
       },
       {
         name: '.releaserc.json',
-        generator: () =>
-          this.loadTemplate('.releaserc.json.template', repoAnalysis),
+        generator: () => {
+          const tpl =
+            this.platform === 'bitbucket'
+              ? '.releaserc.json.bitbucket.template'
+              : '.releaserc.json.template';
+          return this.loadTemplate(tpl, repoAnalysis);
+        },
       },
       {
         name: 'tsconfig.json',
@@ -1150,24 +1242,9 @@ export class OrganizeCommand {
           this.loadTemplate('tsconfig.cli.json.template', repoAnalysis),
       },
       {
-        name: 'vite.config.ts',
-        generator: () =>
-          this.loadTemplate('vite.config.ts.template', repoAnalysis),
-      },
-      {
         name: 'vitest.config.ts',
         generator: () =>
           this.loadTemplate('vitest.config.ts.template', repoAnalysis),
-      },
-      {
-        name: 'svelte.config.js',
-        generator: () =>
-          this.loadTemplate('svelte.config.js.template', repoAnalysis),
-      },
-      {
-        name: 'requirements.txt',
-        generator: () =>
-          this.loadTemplate('requirements.txt.template', repoAnalysis),
       },
       {
         name: 'scripts/pre-commit.sh',
@@ -1177,22 +1254,34 @@ export class OrganizeCommand {
       {
         name: 'scripts/build-validations.cjs',
         generator: () =>
-          this.loadTemplate('scripts/build-validations.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/build-validations.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/commit-validation.cjs',
         generator: () =>
-          this.loadTemplate('scripts/commit-validation.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/commit-validation.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/env-validation.cjs',
         generator: () =>
-          this.loadTemplate('scripts/env-validation.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/env-validation.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/security-check.cjs',
         generator: () =>
-          this.loadTemplate('scripts/security-check.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/security-check.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/smart-test.cjs',
@@ -1202,7 +1291,10 @@ export class OrganizeCommand {
       {
         name: 'scripts/organize-project.cjs',
         generator: () =>
-          this.loadTemplate('scripts/organize-project.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/organize-project.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/mcp-test.cjs',
@@ -1217,7 +1309,10 @@ export class OrganizeCommand {
       {
         name: 'scripts/quality-metrics.cjs',
         generator: () =>
-          this.loadTemplate('scripts/quality-metrics.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/quality-metrics.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/format-staged.cjs',
@@ -1227,17 +1322,22 @@ export class OrganizeCommand {
       {
         name: 'scripts/format-changelog.cjs',
         generator: () =>
-          this.loadTemplate('scripts/format-changelog.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/format-changelog.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: 'scripts/semantic-release-format-plugin.cjs',
         generator: () =>
-          this.loadTemplate('scripts/semantic-release-format-plugin.cjs.template', repoAnalysis),
+          this.loadTemplate(
+            'scripts/semantic-release-format-plugin.cjs.template',
+            repoAnalysis
+          ),
       },
       {
         name: '.npmrc',
-        generator: () =>
-          this.loadTemplate('.npmrc.template', repoAnalysis),
+        generator: () => this.loadTemplate('.npmrc.template', repoAnalysis),
       },
       {
         name: '.mcp-servers.json',
@@ -1250,12 +1350,17 @@ export class OrganizeCommand {
     if (this.githubAction) {
       files.push({
         name: 'action.yml',
-        generator: () =>
-          this.loadTemplate('action.yml.template', repoAnalysis),
+        generator: () => this.loadTemplate('action.yml.template', repoAnalysis),
       });
     }
 
-    for (const file of files) {
+    // Filter files based on tier configuration
+    const filteredFiles = files.filter((file) => {
+      // Check if file should be included in current tier
+      return shouldIncludeFileByTier(file.name, this.setupTier);
+    });
+
+    for (const file of filteredFiles) {
       await this.createOrUpdateFile(file.name, file.generator, repoAnalysis);
     }
 
@@ -1389,7 +1494,12 @@ export class OrganizeCommand {
       },
     ];
 
-    for (const template of templates) {
+    // Filter templates based on tier
+    const filteredTemplates = templates.filter((template) =>
+      shouldIncludeFileByTier(template.target, this.setupTier)
+    );
+
+    for (const template of filteredTemplates) {
       const content = await this.loadTemplate(template.source, repoAnalysis);
       await this.writeFileIfNeeded(template.target, content);
     }
@@ -1514,7 +1624,8 @@ export class OrganizeCommand {
         target: '.claude/commands/update-docs.md',
       },
       {
-        source: '.claude/commands/create-architecture-documentation.md.template',
+        source:
+          '.claude/commands/create-architecture-documentation.md.template',
         target: '.claude/commands/create-architecture-documentation.md',
       },
       // Claude settings
@@ -1541,12 +1652,17 @@ export class OrganizeCommand {
       },
     ];
 
-    for (const template of directoryTemplates) {
+    // Filter directory templates based on tier
+    const filteredDirectoryTemplates = directoryTemplates.filter((template) =>
+      shouldIncludeFileByTier(template.target, this.setupTier)
+    );
+
+    for (const template of filteredDirectoryTemplates) {
       const content = await this.loadTemplate(template.source, repoAnalysis);
       await this.writeFileIfNeeded(template.target, content);
     }
 
-    // Make husky hooks executable
+    // Make husky hooks executable (only if in standard or complete tier)
     try {
       const huskyHooks = [
         path.join(this.cwd, '.husky/pre-commit'),
@@ -1631,7 +1747,10 @@ export class OrganizeCommand {
   }
 };`;
 
-    await this.writeFileIfNeeded('commitlint.config.js', commitlintConfig);
+    // Bitbucket projects use commitlint.config.cjs (BZ-ticket format) written by copyBitbucketTemplates
+    if (this.platform !== 'bitbucket') {
+      await this.writeFileIfNeeded('commitlint.config.js', commitlintConfig);
+    }
   }
 
   /**
@@ -1706,7 +1825,10 @@ export class OrganizeCommand {
 
     // Convert project name to kebab-case for binName
     const projectName = repoAnalysis.name || repoAnalysis.repoName;
-    const binName = projectName.replace('@juspay/', '').replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+    const binName = projectName
+      .replace('@juspay/', '')
+      .replace(/[^a-zA-Z0-9-]/g, '-')
+      .toLowerCase();
 
     const replacements = {
       '{{projectName}}': projectName,
@@ -1715,7 +1837,14 @@ export class OrganizeCommand {
       '{{repoName}}': repoAnalysis.repoName,
       '{{description}}': repoAnalysis.description || 'A JavaScript project',
       '{{license}}': repoAnalysis.license || 'ISC',
-      '{{repositoryUrl}}': `https://github.com/juspay/${repoAnalysis.repoName}`,
+      '{{repositoryUrl}}':
+        this.platform === 'bitbucket'
+          ? `https://bitbucket.juspay.net/scm/${this.workspace}/${repoAnalysis.repoName}`
+          : `https://github.com/juspay/${repoAnalysis.repoName}`,
+      '{{siteUrl}}':
+        this.platform === 'bitbucket'
+          ? `https://bitbucket.juspay.net/projects/${this.workspace.toUpperCase()}/repos/${repoAnalysis.repoName}/browse`
+          : `https://${repoAnalysis.repoName}.github.io/`,
       '{{owner}}': 'juspay',
       '{{maintainerUsername}}': 'juspay-maintainers',
       '{{contactEmail}}': 'opensource@juspay.in',
@@ -2003,30 +2132,526 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   }
 
   /**
+   * Detect platform: explicit flag → auto from git remote → ask user interactively
+   */
+  async detectPlatform(): Promise<'github' | 'bitbucket'> {
+    if (this.platformExplicit) return this.platform;
+
+    try {
+      const gitInfo = await BreezeDetector.detectGitRemote(this.cwd);
+      if (gitInfo) {
+        const isBitbucket = gitInfo.remoteUrl.includes('bitbucket');
+        if (gitInfo.workspace) this.workspace = gitInfo.workspace.toLowerCase();
+        return isBitbucket ? 'bitbucket' : 'github';
+      }
+    } catch (_e) {
+      // no remote — fall through to prompt
+    }
+
+    const { platform } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'platform',
+        message: 'No git remote detected. Choose your platform:',
+        choices: [
+          { name: '🐙 GitHub  (GitHub Actions workflows)', value: 'github' },
+          { name: '🪣 Bitbucket  (Jenkins + git hooks)', value: 'bitbucket' },
+        ],
+        default: 'github',
+      },
+    ]);
+    return platform;
+  }
+
+  /**
+   * Generate Bitbucket-specific local files:
+   * - scripts/git-hooks/*.sh  (cadence-style hooks)
+   * - .husky/* hooks that proxy to git-hooks scripts
+   * - commitlint.config.cjs  with Juspay BZ-ticket pattern
+   */
+  async copyBitbucketTemplates(repoAnalysis) {
+    const pkg = repoAnalysis.packageManager || 'npm';
+    const workspace = repoAnalysis.workspace || 'BZ';
+    const ticketPrefix = workspace.toUpperCase();
+
+    const replace = (content: string) =>
+      content
+        .replace(/\{\{PACKAGE_MANAGER\}\}/g, pkg)
+        .replace(/\{\{TICKET_PREFIX\}\}/g, ticketPrefix);
+
+    const hooksDir = path.join(this.cwd, 'scripts/git-hooks');
+    const huskyDir = path.join(this.cwd, '.husky');
+
+    const hookFiles = [
+      'pre-commit.sh',
+      'commit-msg.sh',
+      'prepare-commit-msg.sh',
+      'pre-push.sh',
+      'post-commit.sh',
+    ];
+
+    await fs.mkdir(hooksDir, { recursive: true });
+    await fs.mkdir(huskyDir, { recursive: true });
+
+    for (const hook of hookFiles) {
+      const rel = `scripts/git-hooks/${hook}`;
+      if (!shouldIncludeFileByTier(rel, this.setupTier)) continue;
+      const tplPath = path.join(
+        this.templatesDir,
+        'git-hooks',
+        `${hook}.template`
+      );
+      try {
+        const raw = await fs.readFile(tplPath, 'utf8');
+        await this.writeFileIfNeeded(rel, replace(raw));
+        await fs.chmod(path.join(this.cwd, rel), 0o755);
+      } catch (_e) {
+        // template missing — skip
+      }
+    }
+
+    // .husky hooks — thin proxies that call scripts/git-hooks/
+    const huskyProxies = [
+      { husky: 'pre-commit', script: 'pre-commit.sh' },
+      { husky: 'commit-msg', script: 'commit-msg.sh "$1"' },
+      {
+        husky: 'prepare-commit-msg',
+        script: 'prepare-commit-msg.sh "$1" "$2"',
+      },
+      { husky: 'pre-push', script: 'pre-push.sh' },
+      { husky: 'post-commit', script: 'post-commit.sh' },
+    ];
+
+    for (const { husky, script } of huskyProxies) {
+      const rel = `.husky/${husky}`;
+      if (!shouldIncludeFileByTier(rel, this.setupTier)) continue;
+      const content = `#!/bin/sh\n./scripts/git-hooks/${script}\n`;
+      await this.writeFileIfNeeded(rel, content);
+      await fs.chmod(path.join(this.cwd, rel), 0o755);
+    }
+
+    // commitlint with Juspay BZ-ticket pattern
+    const commitlintTpl = path.join(
+      this.templatesDir,
+      'commitlint.config.cjs.bitbucket.template'
+    );
+    try {
+      const raw = await fs.readFile(commitlintTpl, 'utf8');
+      await this.writeFileIfNeeded('commitlint.config.cjs', replace(raw));
+    } catch (_e) {
+      // template missing — skip
+    }
+  }
+
+  /**
+   * Create Jenkinsfile with variable replacement
+   */
+  async createJenkinsfile(_repoAnalysis) {
+    console.log('\n🤖 Generating Jenkinsfile...');
+
+    try {
+      const templatePath = path.join(this.templatesDir, 'Jenkinsfile.template');
+      const outputPath = path.join(this.cwd, 'Jenkinsfile');
+
+      // Check if Jenkinsfile already exists
+      if ((await this.fileExists(outputPath)) && !this.force) {
+        console.log(
+          '   ℹ️  Jenkinsfile already exists (use --force to overwrite)'
+        );
+        return;
+      }
+
+      // Detect project variables
+      const variables = await JenkinsfileGenerator.detectVariables(this.cwd);
+
+      // Show detected variables
+      console.log('\n📋 Detected Project Variables:');
+      console.log(JenkinsfileGenerator.formatVariablesTable(variables));
+
+      // Generate Jenkinsfile
+      await JenkinsfileGenerator.generateJenkinsfile(
+        templatePath,
+        outputPath,
+        variables
+      );
+
+      console.log('\n✅ Jenkinsfile created successfully!');
+      console.log('   📄 Location: Jenkinsfile');
+      console.log('\n💡 Next steps:');
+      console.log('   1. Review the generated Jenkinsfile');
+      console.log(
+        '   2. Configure Jenkins credentials (see docs/JENKINSFILE_TEMPLATE.md)'
+      );
+      console.log('   3. Commit the Jenkinsfile to your repository');
+      console.log('   4. Jenkins will automatically detect and use it');
+    } catch (error) {
+      console.error(`   ❌ Failed to create Jenkinsfile: ${error.message}`);
+      if (this.force) {
+        // In force mode, log warning but continue
+        console.log('   ⚠️  Continuing without Jenkinsfile...');
+      } else {
+        // In normal mode, fail hard for explicit --ci jenkins request
+        throw new Error(
+          `Jenkinsfile generation failed: ${error.message}\nUse --force to skip Jenkinsfile creation and continue.`
+        );
+      }
+    }
+  }
+
+  /**
+   * Detect and recommend Juspay packages
+   */
+  async detectAndRecommendPackages(repoAnalysis) {
+    console.log('\n🔍 Analyzing tech stack...');
+
+    try {
+      // Analyze project context
+      const context = await PackageDetector.analyzeProject(this.cwd);
+
+      // Show project summary
+      const techStack = PackageDetector.formatProjectSummary(context);
+      if (techStack.length > 0) {
+        console.log(`   📊 Detected: ${techStack.join(', ')}`);
+        console.log(`   📦 Package Manager: ${context.packageManager}`);
+      }
+
+      // Detect recommended Juspay packages
+      const packageJson = repoAnalysis;
+      const recommendedPackages = PackageDetector.detectJuspayPackages(
+        packageJson,
+        context
+      );
+
+      if (recommendedPackages.length === 0) {
+        console.log(
+          '   ✅ All recommended Juspay packages are already installed'
+        );
+        return;
+      }
+
+      // Show recommendations
+      console.log(
+        `\n💡 Recommended Juspay packages (${recommendedPackages.length}):`
+      );
+      recommendedPackages.forEach((pkg) => {
+        console.log(`   • ${pkg}`);
+      });
+
+      // Ask user if they want to install (unless force mode)
+      if (!this.force) {
+        const { installPackages } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'installPackages',
+            message: `Install ${recommendedPackages.length} recommended package(s)?`,
+            default: true,
+          },
+        ]);
+
+        if (!installPackages) {
+          console.log('   ⏭️  Skipping package installation');
+          console.log(`\n   💡 To install later, run:`);
+          console.log(
+            `      ${PackageDetector.getInstallCommand(context.packageManager, recommendedPackages)}`
+          );
+          return;
+        }
+      }
+
+      // Install packages
+      console.log('\n📦 Installing recommended packages...');
+      const installCmd = PackageDetector.getInstallCommand(
+        context.packageManager,
+        recommendedPackages
+      );
+      console.log(`   Running: ${installCmd}`);
+
+      try {
+        const { execSync } = await import('child_process');
+        execSync(installCmd, { cwd: this.cwd, stdio: 'inherit' });
+        console.log('   ✅ Packages installed successfully!');
+      } catch (error) {
+        console.error(`   ⚠️  Installation failed: ${error.message}`);
+        console.log(`\n   💡 Install manually:`);
+        console.log(`      ${installCmd}`);
+      }
+    } catch (error) {
+      console.warn(`   ⚠️  Package detection failed: ${error.message}`);
+      // Don't fail the entire operation
+      console.log('   ⚠️  Continuing without package recommendations...');
+    }
+  }
+
+  /**
+   * Setup Breeze AI & MCP infrastructure
+   */
+  async setupBreezeMCP(repoAnalysis) {
+    // Skip if flag is set
+    if (this.skipMcp) {
+      console.log('\n⏭️  Skipping MCP setup (--skip-mcp flag)');
+      return;
+    }
+
+    try {
+      console.log('\n🌊 Checking for Breeze project...');
+
+      // Detect if this is a Breeze project
+      const breezeInfo = await BreezeDetector.detectBreezeProject(this.cwd);
+
+      // For Bitbucket projects: always set up PR automation if we have a git remote.
+      // For GitHub projects: only set up if it's a recognised Breeze workspace/package.
+      const hasBitbucketRemote = !!(
+        breezeInfo.workspace && breezeInfo.repoSlug
+      );
+      const shouldSetup =
+        this.platform === 'bitbucket'
+          ? hasBitbucketRemote
+          : breezeInfo.isBreezeProject;
+
+      if (!shouldSetup) {
+        console.log('   ℹ️  Not a Breeze project - skipping MCP setup');
+        return;
+      }
+
+      // Show detected info
+      const infoLines = BreezeDetector.formatProjectInfo(breezeInfo);
+      infoLines.forEach((line) => console.log(line));
+
+      // Check if MCP is already setup
+      const hasScripts = await this.checkMCPScripts();
+      if (hasScripts && !this.force) {
+        console.log(
+          '\n   ✅ MCP already configured (use --force to reconfigure)'
+        );
+        return;
+      }
+
+      // Ask user if they want to setup MCP (unless force mode)
+      if (!this.force) {
+        const { setupMcp } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'setupMcp',
+            message: 'Setup Breeze AI & MCP infrastructure (PR automation)?',
+            default: true,
+          },
+        ]);
+
+        if (!setupMcp) {
+          console.log('   ⏭️  Skipping MCP setup');
+          return;
+        }
+      }
+
+      console.log('\n🔧 Setting up Breeze AI & MCP...');
+
+      // Step 1: Create scripts directory if it doesn't exist
+      const scriptsDir = path.join(this.cwd, 'scripts');
+      await fs.mkdir(scriptsDir, { recursive: true });
+
+      // Step 2: Copy PR automation scripts
+      await this.createPRAutomationScripts(breezeInfo);
+
+      // Step 3: Create .env template
+      await this.createMCPEnvTemplate(breezeInfo);
+
+      // Step 4: Update package.json with scripts
+      await this.addMCPScripts(repoAnalysis);
+
+      console.log('   ✅ MCP infrastructure setup complete!');
+      console.log('\n   📝 Next steps:');
+      console.log('      1. Fill in .env.breeze with your credentials');
+      console.log('      2. Copy to .env: cp .env.breeze .env');
+      console.log('      3. Test PR automation: pnpm run pr:describe <pr-id>');
+    } catch (error) {
+      console.warn(`   ⚠️  MCP setup failed: ${error.message}`);
+      console.log('   ⚠️  Continuing without MCP setup...');
+    }
+  }
+
+  /**
+   * Check if MCP scripts are already configured
+   */
+  async checkMCPScripts(): Promise<boolean> {
+    try {
+      const packageJsonPath = path.join(this.cwd, 'package.json');
+      const packageContent = await fs.readFile(packageJsonPath, 'utf8');
+      const packageJson = JSON.parse(packageContent);
+
+      // Check for namespaced scripts pointing to the correct files
+      const hasDescribe =
+        packageJson.scripts?.['pr:describe']?.includes('pr-scribe.js');
+      const hasReview =
+        packageJson.scripts?.['pr:review']?.includes('pr-police.js');
+
+      return !!(hasDescribe && hasReview);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Create PR automation scripts
+   */
+  async createPRAutomationScripts(breezeInfo) {
+    console.log('   📝 Creating PR automation scripts...');
+
+    const scriptsDir = path.join(this.cwd, 'scripts');
+
+    // Read templates
+    const scribeTemplate = await fs.readFile(
+      path.join(this.templatesDir, 'pr-scribe.js.template'),
+      'utf8'
+    );
+
+    const policeTemplate = await fs.readFile(
+      path.join(this.templatesDir, 'pr-police.js.template'),
+      'utf8'
+    );
+
+    // Replace variables
+    const workspace = breezeInfo.workspace || 'BZ';
+    const repoSlug = breezeInfo.repoSlug || 'your-repo';
+
+    const scribeContent = scribeTemplate
+      .replace(/{{workspaceName}}/g, workspace)
+      .replace(/{{repoSlug}}/g, repoSlug);
+
+    const policeContent = policeTemplate
+      .replace(/{{workspaceName}}/g, workspace)
+      .replace(/{{repoSlug}}/g, repoSlug);
+
+    // Write scripts
+    await fs.writeFile(path.join(scriptsDir, 'pr-scribe.js'), scribeContent);
+    await fs.writeFile(path.join(scriptsDir, 'pr-police.js'), policeContent);
+
+    // Make executable
+    await fs.chmod(path.join(scriptsDir, 'pr-scribe.js'), 0o755);
+    await fs.chmod(path.join(scriptsDir, 'pr-police.js'), 0o755);
+
+    console.log('      ✅ scripts/pr-scribe.js');
+    console.log('      ✅ scripts/pr-police.js');
+  }
+
+  /**
+   * Create .env template for MCP
+   */
+  async createMCPEnvTemplate(_breezeInfo) {
+    console.log('   📝 Creating .env template...');
+
+    const envTemplate = await fs.readFile(
+      path.join(this.templatesDir, '.env.breeze.template'),
+      'utf8'
+    );
+
+    const envPath = path.join(this.cwd, '.env.breeze');
+
+    // Check if .env.breeze already exists
+    if ((await this.fileExists(envPath)) && !this.force) {
+      console.log(
+        '      ℹ️  .env.breeze already exists (use --force to overwrite)'
+      );
+      return;
+    }
+
+    await fs.writeFile(envPath, envTemplate);
+    console.log('      ✅ .env.breeze (template)');
+  }
+
+  /**
+   * Add MCP scripts to package.json
+   */
+  async addMCPScripts(_repoAnalysis) {
+    console.log('   📝 Adding MCP scripts to package.json...');
+
+    const packageJsonPath = path.join(this.cwd, 'package.json');
+    const packageContent = await fs.readFile(packageJsonPath, 'utf8');
+    const packageJson = JSON.parse(packageContent);
+
+    // Add scripts if they don't exist
+    packageJson.scripts = packageJson.scripts || {};
+
+    if (!packageJson.scripts['pr:describe']) {
+      packageJson.scripts['pr:describe'] = 'node scripts/pr-scribe.js';
+    }
+
+    if (!packageJson.scripts['pr:review']) {
+      packageJson.scripts['pr:review'] = 'node scripts/pr-police.js';
+    }
+
+    // Save package.json
+    await fs.writeFile(
+      packageJsonPath,
+      JSON.stringify(packageJson, null, 2) + '\n'
+    );
+
+    console.log('      ✅ Added "pr:describe" and "pr:review" scripts');
+  }
+
+  /**
    * Show summary of changes
    */
   showSummary(repoAnalysis) {
+    const tierName = getTierDisplayName(this.setupTier);
+    const tierDesc = getTierDescription(this.setupTier);
+
     console.log('\n📋 Summary of changes:');
     console.log(`   Repository: ${repoAnalysis.name}`);
     console.log(`   Type: ${repoAnalysis.repoType}`);
+    console.log(`   Setup Tier: ${tierName} - ${tierDesc}`);
     console.log(
       `   Enhanced package.json with @juspay/${repoAnalysis.repoName}`
     );
     console.log('   Created/updated documentation files');
     console.log('   Set up GitHub templates and CI/CD workflows');
     console.log('   Configured ESLint, Prettier, and Commitlint');
-    console.log('   Initialized Memory Bank for AI-assisted development');
+
+    if (shouldIncludeMemoryBank(this.setupTier)) {
+      console.log('   Initialized Memory Bank for AI-assisted development');
+    }
+
     if (this.move) {
       console.log('   Moved misplaced files to their correct directories');
     }
+
     console.log('\n🎉 Your repository is now ready for publishing!');
-    console.log('\nNext steps:');
+    console.log('\n💡 What you got:');
+
+    if (this.setupTier === 'essential') {
+      console.log('   ✓ Core documentation (README, CONTRIBUTING, etc.)');
+      console.log('   ✓ Essential configs (.gitignore, .prettierrc, etc.)');
+      console.log('   ✓ Basic GitHub CI workflow');
+    } else if (this.setupTier === 'standard') {
+      console.log('   ✓ Core documentation (README, CONTRIBUTING, etc.)');
+      console.log('   ✓ GitHub templates and CI/CD workflows');
+      console.log('   ✓ Code quality tools (ESLint, Prettier, Husky)');
+      console.log('   ✓ Testing setup and examples');
+      console.log('   ✓ Release automation');
+    } else {
+      console.log('   ✓ Everything in Standard tier');
+      console.log('   ✓ AI workflows & Claude commands');
+      console.log('   ✓ Memory Bank system');
+      console.log('   ✓ Advanced security & workflows');
+    }
+
+    console.log('\n🎯 Next steps:');
     console.log('   1. Review the generated files');
     console.log('   2. Install new dependencies: npm install');
-    console.log('   3. Set up Husky hooks: npm run prepare');
+
+    if (this.setupTier !== 'essential') {
+      console.log('   3. Set up Husky hooks: npm run prepare');
+    }
+
     console.log(
-      '   4. Commit your changes: git add . && git commit -m "feat: organize repository with shelly"'
+      `   ${this.setupTier === 'essential' ? '3' : '4'}. Commit your changes: git add . && git commit -m "feat: organize repository with shelly"`
     );
+
+    if (this.setupTier !== 'complete') {
+      console.log(
+        `\n💡 Upgrade tip: Run "shelly organize --${this.setupTier === 'essential' ? 'standard' : 'complete'}" to add more features`
+      );
+    }
+
     if (this.move) {
       console.log(
         '\n💡 File moving tip: Use --move flag to automatically organize misplaced files'

@@ -1,0 +1,545 @@
+pipeline {
+  agent {
+    label 'vayu'
+  }
+  parameters {
+    booleanParam(defaultValue: true, description: 'checkForSkipCI', name: 'continueBuild')
+    booleanParam(defaultValue: true, description: 'Enable AI Review for this build', name: 'isAIReviewNeeded');
+    booleanParam(defaultValue: true, description: 'Enable AI Description Enhancement for this build', name: 'isAIDescriptionNeeded')
+  }
+  environment {
+    DEP_LABEL = "${sh(script: 'echo -n $JOB_BASE_NAME | tr \'/\' \'_\' | tr \'%2F\' \'_\' ', returnStdout: true)}"
+    AP_BETA = credentials('INFRA_SWITCH_SECRET')
+    // Uncomment after configuring release creds for ap
+    // AP_RELEASE = credentials('ap-release')
+    JIRA = credentials('c3e1fb65-7cf9-4fbd-9a30-93201908e0a2')
+    BITBUCKET = credentials('d491690d-46d9-4ecb-8b6f-fa6781afd9d9')
+    TITAN = credentials('titan-hosted-bitbucket')
+    GIT_AUTHOR_NAME = "Titan"
+    GIT_AUTHOR_EMAIL = "titan.a@juspay.in"
+    GIT_COMMITTER_NAME = "Titan"
+    GIT_COMMITTER_EMAIL = "titan.a@juspay.in"
+    GIT_USERNAME = "Titan"
+    GIT_EMAIL = "titan.a@juspay.in"
+    AWS_REGION = "ap-south-1"
+    S3_BUCKET = "atoms-sdk"
+    S3_AWS_ROLE = "arn:aws:iam::671255721112:role/JenkinsBreeze"
+    CF_DISTRIBUTION_ID = "EHPUNLYKDPJL9"
+    S3_BASE_PATH = "nimble"
+    PRODUCT = "BREEZE"
+    SERVICE = "BREEZE-APP"
+    PNPM_STORE_DIR = "${JENKINS_HOME}/.pnpm-store"
+    PROJECT_NAME = "nimble"
+    GIT_URL = "bitbucket.juspay.net/scm/bz/nimble.git"
+    GCP_BETA_CREDENTIALS = credentials('breeze-uat-secrets') 
+    GCP_RELEASE_CREDENTIALS = credentials('super-checkout-prod-sa') 
+    GCP_BETA_PROJECT_ID = "breeze-uat-453414"
+    GCP_RELEASE_PROJECT_ID = "super-checkout-prod" 
+    GCP_REGION = "asia-south1"
+    GCP_ARTIFACT_REPO = "nimble"
+    GCS_BETA_BUCKET = "atoms-sdk"
+    GCS_RELEASE_BUCKET = "atoms_sdk"
+    GCS_BASE_PATH = "nimble"  
+    GCP_BETA_ASSETS_BASE_URL= "https://sdk.beta.breezesdk.store"
+    GCP_RELEASE_ASSETS_BASE_URL= "https://sdk.breezesdk.store"
+    BITBUCKET_USERNAME = "titan.a@juspay.in"
+    BITBUCKET_TOKEN = credentials("titan-bitbucket-bearer-token")
+    GOOGLE_AI_API_KEY = credentials('GEMINI_API_KEY')
+    GOOGLE_APPLICATION_CREDENTIALS=credentials('VERTEX_COUNT')
+    GOOGLE_VERTEX_PROJECT="dev-ai-eta"
+    VERTEX_MODEL_ID="gemini-2.5-pro"
+    GOOGLE_VERTEX_LOCATION = "us-central1"
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        script {
+          def startTime = System.currentTimeMillis()
+          if (sh(script: "git log -1 --pretty=%B | grep -F -ie '[skip ci]' -e '[ci skip]'", returnStatus: true) == 0) {
+            env.continueBuild = "false"
+          }
+          // Check for [auto-deployment] tag in commit message
+          if (sh(script: "git log -1 --pretty=%B | grep -F -i '[auto-deployment]'", returnStatus: true) == 0) {
+            env.autoDeployment = "true"
+            echo "🚀 Auto-deployment tag detected! Will trigger beta deployment after tests pass."
+          } else {
+            env.autoDeployment = "false"
+          }
+          def endTime = System.currentTimeMillis()
+          echo "Checkout Time: ${(endTime - startTime) / 1000} seconds"
+        }
+      }
+    }
+    // stage('Setup pnpm cache') {
+    //   steps {
+    //       script {
+    //           // Ensure the cache directory exists
+    //           sh "mkdir -p ${env.PNPM_STORE_DIR}"
+    //       }
+    //   }
+    // }
+    stage('Build & Test App') {
+      when {
+        allOf{
+          anyOf {
+            branch 'BZ-*'
+            branch 'bugfix/BZ-*'
+            branch 'feature/BZ-*'
+            branch 'hotfix/BZ-*'
+          }
+          expression {
+              return env.continueBuild != "false"
+          }
+       }
+      }
+      steps {
+        script {
+          echo 'Building and testing the app'
+          def timeData = []
+          def overallStartTime = System.currentTimeMillis()
+          def startTime = System.currentTimeMillis()
+          sh "git checkout beta"
+          def endTime = System.currentTimeMillis()
+          timeData.add(["Checkout beta", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          sh "git checkout ${GIT_BRANCH}"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Checkout branch", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          env.TOTALCOMMITS = sh(
+            returnStdout: true,
+            script: "git rev-list --count beta..HEAD | tr -d '\"' | tr -d '\\n'"
+          ).trim()
+          endTime = System.currentTimeMillis()
+          echo "Total commits on this branch is ${env.TOTALCOMMITS}"
+          timeData.add(["Count commits", (endTime - startTime) / 1000])
+
+          if (env.TOTALCOMMITS != "1") {
+            currentBuild.result = 'ABORTED'
+            error 'Aborting because current branch contains multiple commits!'
+          }
+
+          startTime = System.currentTimeMillis()
+          // To be added once permissions are resolved
+          // sh "pnpm config set store-dir ${env.PNPM_STORE_DIR}"
+          // sh "pnpm install --frozen-lockfile"
+          sh "pnpm config set registry https://registry.npmmirror.com"
+          sh "pnpm install"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Install dependencies", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          sh "pnpm run lint"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Run lint", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          sh "pnpm run check"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Run check", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          echo "Setup env value : ${sh(script: """
+            node scripts/workflow.js "console.log(createAndModifyEnvFile('beta'))"
+          """, returnStdout: true)}"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Time to setup env", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          sh "pnpm run build"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Build", (endTime - startTime) / 1000])
+
+          echo "🚀 Running automated test cases with enhanced logging and real-time output"
+          
+          sh "npx playwright --version"
+          echo "Installing Playwright browser dependencies..."
+          startTime = System.currentTimeMillis()
+          sh "pnpm exec playwright install"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Install Playwright Browsers", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+
+          try {
+              sh "CI=true TEST_ENV=local pnpm run test:local"
+              echo "✅ All Playwright tests passed successfully!"
+              
+              try {
+                sh "node scripts/playwright-failure-analyzer.js"
+              } catch (analyzerError) {
+                  echo "⚠️ Success summary generator failed: ${analyzerError.message}"
+              }
+              
+          } catch (e) {
+              echo "❌ Playwright tests failed. Running failure analyzer..."
+              try {
+                sh "node scripts/playwright-failure-analyzer.js"
+              } catch (analyzerError) {
+                  echo "⚠️ Playwright failure analyzer script failed to run: ${analyzerError.message}"
+              }
+              error("Playwright tests failed: ${e.message}")
+          } finally {
+              echo "📁 Archiving Playwright test results..."
+              try {
+                  archiveArtifacts artifacts: 'test/html/**/*', fingerprint: true, allowEmptyArchive: true
+                  archiveArtifacts artifacts: 'test/json/result-*.json', fingerprint: true, allowEmptyArchive: true
+              } catch (archiveError) {
+                  echo "⚠️ Failed to archive test artifacts: ${archiveError.message}"
+                  currentBuild.result = 'UNSTABLE'
+              }
+          }
+          
+          // TODO: https://playwright.dev/python/docs/ci
+          // Fix install errors : https://jenkins.internal.svc.k8s.jarvis.mum.juspay.net/blue/organizations/jenkins/Nimble/detail/BZ-943-fix-build-failure-errors/7/pipeline
+          startTime = System.currentTimeMillis()
+          echo "Checking if commit message is in proper format \nAccepted format \nBZ-1123: (changeType): Small description \n- Long description"
+          sh "git log -1 --oneline --format=%s | npx --no -- commitlint"
+          endTime = System.currentTimeMillis()
+          timeData.add(["Checking if commit message is in proper format", (endTime - startTime) / 1000])
+
+          // Check if the Dockerfile has changed
+          def dockerfileChange = sh(script: "git diff --name-only beta..HEAD | grep -i 'Dockerfile' || true", returnStdout: true)
+          if (dockerfileChange.length() > 0){
+            startTime = System.currentTimeMillis()
+            echo "Starting image build due to Dockerfile change"
+            echo "Docker Image build : ${sh(script: """
+              node scripts/workflow.js "console.log(dockerImageBuild('asia.gcr.io/jp-k8s-internal/nimble', 'devpush', 'nimble'))"
+            """, returnStdout: true)}"
+            endTime = System.currentTimeMillis()
+            timeData.add(["Docker image build", (endTime - startTime) / 1000])
+          } else {
+            echo "No changes in Dockerfile. Skipping Docker build."
+          }
+
+          def overallEndTime = System.currentTimeMillis()
+          echo "Total time for Build & Test App stage: ${(overallEndTime - overallStartTime) / 1000} seconds"
+
+          echo "Time Data Summary:"
+          echo "| Task                | Time (seconds) |"
+          echo "|---------------------|----------------|"
+          timeData.each { data ->
+            echo "| ${data[0].padRight(21, ' ')}| ${data[1].toString().padLeft(16, ' ')} |"
+          }
+        }
+      }
+    }
+    stage("AI Automation Parallel") {
+      when {
+        expression { shouldRunAIReview() }
+      }
+      parallel {
+        
+        stage("Auto Description") {
+          when {
+            expression { params.isAIDescriptionNeeded }
+          }
+          steps {
+            script {
+              env.FAILED_STAGE = env.STAGE_NAME
+              catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                sh "pnpm describe --workspace BZ --repository nimble --branch ${env.BRANCH_NAME} --verbose"
+              }
+            }
+          }
+        }
+
+        stage("Auto Review") {
+          when {
+            expression { params.isAIReviewNeeded }
+          }
+          steps {
+            script {
+              env.FAILED_STAGE = env.STAGE_NAME
+              catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                sh "pnpm review --workspace BZ --repository nimble --branch ${env.BRANCH_NAME} --verbose"
+              }
+            }
+          }
+        }
+
+      }
+    }
+    stage('Build & Push App - Beta') {
+      when {
+        allOf{
+          anyOf {
+            branch 'beta'
+            expression { return env.autoDeployment == "true" }
+          }
+          expression {
+              return env.continueBuild != "false"
+          }
+        }
+      }
+      steps {
+        script {
+          def timeData = []
+          def overallStartTime = System.currentTimeMillis()
+
+          def startTime = System.currentTimeMillis()
+          sh "pnpm config set registry https://registry.npmmirror.com"
+          sh "pnpm install"
+          def endTime = System.currentTimeMillis()
+          echo "Time to pnpm install: ${(endTime - startTime) / 1000} seconds"
+          timeData.add(["pnpm install", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          echo "Setup env value : ${sh(script: """
+            node scripts/workflow.js "console.log(createAndModifyEnvFile('beta'))"
+          """, returnStdout: true)}"
+          endTime = System.currentTimeMillis()
+          echo "Time to Setup env value: ${(endTime - startTime) / 1000} seconds"
+          timeData.add(["Setup env value", (endTime - startTime) / 1000])
+
+          def overallEndTime = System.currentTimeMillis()
+          echo "Total time for Build & Push App - Beta stage: ${(overallEndTime - overallStartTime) / 1000} seconds"
+
+          echo "Time Data Summary:"
+          echo "| Task                | Time (seconds) |"
+          echo "|---------------------|----------------|"
+          timeData.each { data ->
+            echo "| ${data[0].padRight(21, ' ')}| ${data[1].toString().padLeft(16, ' ')} |"
+          }
+        }
+      }
+      post {
+        success {
+          script {
+            def timeData = []
+            def overallStartTime = System.currentTimeMillis()
+
+            def startTime = System.currentTimeMillis()
+            def CHANGE_ID = 0
+            env.TITAN_USER = URLEncoder.encode(TITAN_USR, "UTF-8")
+            env.TITAN_TOKEN = URLEncoder.encode(TITAN_PSW, "UTF-8")
+            if (env.CHANGE_ID) {
+              CHANGE_ID = env.CHANGE_ID
+            }
+            commonPostSteps(AP_BETA, JIRA_USR, JIRA_PSW, BITBUCKET_USR, BITBUCKET_PSW, env.BUILD_URL, CHANGE_ID, 'BETA', S3_AWS_ROLE, S3_BUCKET, S3_BASE_PATH, 'client', 'build/client', '701342709052', DEP_LABEL, 'arn:aws:iam::527792009125:role/Jenkins', PRODUCT, SERVICE, GIT_URL, GIT_BRANCH, PROJECT_NAME, '623a2760-d788-0d5c-be1e-1dd51a00816c')
+            def endTime = System.currentTimeMillis()
+            echo "Time to Setup env value: ${(endTime - startTime) / 1000} seconds"
+            timeData.add(["Setup env value", (endTime - startTime) / 1000])
+
+            echo "Time Data Summary:"
+            echo "| Task                | Time (seconds) |"
+            echo "|---------------------|----------------|"
+            timeData.each { data ->
+              echo "| ${data[0].padRight(21, ' ')}| ${data[1].toString().padLeft(16, ' ')} |"
+            }
+          }
+        }
+        always {
+          script{
+            try {
+              jiraSendDeploymentInfo environmentId: 'beta', environmentName: 'beta', environmentType: 'staging', site: 'juspay.atlassian.net'
+            } catch(ex) {
+              echo "Error in post buid ${ex}"
+            }
+          }
+        }
+      }
+    }
+    stage('Build & Push App - Beta GCP') {
+      when {
+        allOf{
+          branch 'beta'
+          expression {
+            return env.continueBuild != "false"
+          }
+        }
+      }
+      steps {
+        script {
+          def timeData = []
+          def overallStartTime = System.currentTimeMillis()
+
+          def startTime = System.currentTimeMillis()
+          sh "pnpm config set registry https://registry.npmmirror.com"
+          sh "pnpm install"
+          def endTime = System.currentTimeMillis()
+          echo "Time to pnpm install: ${(endTime - startTime) / 1000} seconds"
+          timeData.add(["pnpm install", (endTime - startTime) / 1000])
+
+          echo "Setting up Git credentials..."
+          env.TITAN_USER = URLEncoder.encode(TITAN_USR, "UTF-8")
+          env.TITAN_TOKEN = URLEncoder.encode(TITAN_PSW, "UTF-8")
+
+          startTime = System.currentTimeMillis()
+          sh(script: """
+            node scripts/workflow.js "(async () => {
+              const result = await gcpBuildAndPush({
+                'environment':'BETA',
+                'basePath':'${GCS_BASE_PATH}',
+                'projectName':'${PROJECT_NAME}',
+                'gcpCredentials':'${GCP_BETA_CREDENTIALS}',
+                'gcpProjectId':'${GCP_BETA_PROJECT_ID}',
+                'gcpRegion':'${GCP_REGION}',
+                'gcpArtifactRepo':'${GCP_ARTIFACT_REPO}',
+                'gcsBucket':'${GCS_BETA_BUCKET}',
+                'extraPath':'client',
+                'sourcePath':'build/client',
+                'gcpAssetsBaseUrl':'${GCP_BETA_ASSETS_BASE_URL}',
+                'gitUrl':'${GIT_URL}'
+              });
+              console.log('GCP Build & Push finished with result:', result);
+            })()"
+          """)
+          endTime = System.currentTimeMillis()
+          timeData.add(["GCP Build & Push", (endTime - startTime) / 1000])
+
+          def overallEndTime = System.currentTimeMillis()
+          echo "Total time for Build & Push App - Beta GCP stage: ${(overallEndTime - overallStartTime) / 1000} seconds"
+
+          echo "Time Data Summary:"
+          echo "| Task                | Time (seconds) |"
+          echo "|---------------------|----------------|"
+          timeData.each { data ->
+            echo "| ${data[0].padRight(21, ' ')}| ${data[1].toString().padLeft(16, ' ')} |"
+          }
+        }
+      }
+    }
+    stage('Build & Push App - Release') {
+      when {
+        allOf{
+          branch 'release'
+        }
+      }
+      steps {
+        sh "pnpm config set registry https://registry.npmmirror.com"
+        sh "pnpm install"
+        echo "Setup env value : ${sh(script: """
+          node scripts/workflow.js "console.log(createAndModifyEnvFile('release'))"
+        """, returnStdout: true)}"
+      }
+      post {
+        success {
+          script {
+            def CHANGE_ID = 0
+            env.TITAN_USER = URLEncoder.encode(TITAN_USR, "UTF-8")
+            env.TITAN_TOKEN = URLEncoder.encode(TITAN_PSW, "UTF-8")
+            if (env.CHANGE_ID) {
+              CHANGE_ID = env.CHANGE_ID
+            }
+            commonPostSteps(AP_BETA, JIRA_USR, JIRA_PSW, BITBUCKET_USR, BITBUCKET_PSW, env.BUILD_URL, CHANGE_ID, 'RELEASE', S3_AWS_ROLE, S3_BUCKET, S3_BASE_PATH, 'client', 'build/client', '671255721112', DEP_LABEL, 'arn:aws:iam::527792009125:role/Jenkins', PRODUCT, SERVICE, GIT_URL, GIT_BRANCH, PROJECT_NAME, '623a2760-d788-0d5c-be1e-1dd51a00816c')
+          }
+        }
+        always {
+          script{
+            try{
+              jiraSendDeploymentInfo environmentId: 'release', environmentName: 'release', environmentType: 'production', site: 'juspay.atlassian.net'
+            } catch(ex) {
+              echo "Error in post buid ${ex}"
+            }
+          }
+        }
+      }
+    }
+    stage('Build & Push App - Release GCP') {
+      when {
+        allOf{
+          branch 'release'
+        }
+      }
+      steps {
+        script {
+          def timeData = []
+          def overallStartTime = System.currentTimeMillis()
+
+          def startTime = System.currentTimeMillis()
+          sh "pnpm config set registry https://registry.npmmirror.com"
+          sh "pnpm install"
+          def endTime = System.currentTimeMillis()
+          echo "Time to pnpm install: ${(endTime - startTime) / 1000} seconds"
+          timeData.add(["pnpm install", (endTime - startTime) / 1000])
+
+          startTime = System.currentTimeMillis()
+          echo "Setup env value : ${sh(script: """
+            node scripts/workflow.js "console.log(createAndModifyEnvFile('release', true))"
+          """, returnStdout: true)}"
+          endTime = System.currentTimeMillis()
+          echo "Time to Setup env value: ${(endTime - startTime) / 1000} seconds"
+          timeData.add(["Setup env value", (endTime - startTime) / 1000])
+
+          echo "Setting up Git credentials..."
+          env.TITAN_USER = URLEncoder.encode(TITAN_USR, "UTF-8")
+          env.TITAN_TOKEN = URLEncoder.encode(TITAN_PSW, "UTF-8")
+
+          startTime = System.currentTimeMillis()
+          sh(script: """
+            node scripts/workflow.js "(async () => {
+              const result = await gcpBuildAndPush({
+                'environment':'RELEASE',
+                'basePath':'${GCS_BASE_PATH}',
+                'projectName':'${PROJECT_NAME}',
+                'gcpCredentials':'${GCP_RELEASE_CREDENTIALS}',
+                'gcpProjectId':'${GCP_RELEASE_PROJECT_ID}',
+                'gcpRegion':'${GCP_REGION}',
+                'gcpArtifactRepo':'${GCP_ARTIFACT_REPO}',
+                'gcsBucket':'${GCS_RELEASE_BUCKET}',
+                'extraPath':'client',
+                'sourcePath':'build/client',
+                'gcpAssetsBaseUrl':'${GCP_RELEASE_ASSETS_BASE_URL}',
+                'gitUrl':'${GIT_URL}'
+              });
+              console.log('GCP Build & Push finished with result:', result);
+            })()"
+          """)
+          endTime = System.currentTimeMillis()
+          timeData.add(["GCP Build & Push", (endTime - startTime) / 1000])
+
+          def overallEndTime = System.currentTimeMillis()
+          echo "Total time for Build & Push App - Release GCP stage: ${(overallEndTime - overallStartTime) / 1000} seconds"
+
+          echo "Time Data Summary:"
+          echo "| Task                | Time (seconds) |"
+          echo "|---------------------|----------------|"
+          timeData.each { data ->
+            echo "| ${data[0].padRight(21, ' ')}| ${data[1].toString().padLeft(16, ' ')} |"
+          }
+        }
+      }
+    }
+  }
+}
+
+def commonPostSteps(apToken, jiraEmail, jiraToken, bitbucketUser, bitbucketToken, buildUrl, prId, environment, awsS3Role, s3bucket, basePath, extraPath, sourcePath, awsAccountId, depLabel, awsEcrRole, product, service, gitUrl, gitBranch, projectName, autoPilotId) {
+  try {
+    def returnValue = sh(script: """
+      node scripts/workflow.js "console.log(triggerWorkflow({
+        'apToken':'${apToken}',
+        'jiraEmail':'${jiraEmail}',
+        'jiraToken':'${jiraToken}',
+        'bitbucketUser':'${bitbucketUser}',
+        'bitbucketToken':'${bitbucketToken}',
+        'buildUrl':'${buildUrl}',
+        'prId': ${prId},
+        'environment':'${environment}',
+        'awsS3Role':'${awsS3Role}',
+        's3bucket':'${s3bucket}',
+        'basePath':'${basePath}',
+        'extraPath':'${extraPath}',
+        'sourcePath':'${sourcePath}',
+        'awsAccountId':'${awsAccountId}',
+        'depLabel':'${depLabel}',
+        'awsEcrRole':'${awsEcrRole}',
+        'product':'${product}',
+        'service':'${service}',
+        'gitUrl':'${gitUrl}',
+        'gitBranch':'${gitBranch}',
+        'projectName':'${projectName}',
+        'autoPilotId':'${autoPilotId}'
+      }))"
+    """, returnStdout: true)
+    echo "Account Trans Value : ${returnValue}"
+  } catch(ex){
+    echo "Error in post build ${ex}"
+  }
+}
+def shouldRunAIReview() {
+    def branchName = env.BRANCH_NAME
+    return branchName != 'beta' && branchName != 'release'
+}
