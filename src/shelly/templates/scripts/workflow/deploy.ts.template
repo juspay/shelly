@@ -1,0 +1,60 @@
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const _exec = promisify(exec);
+
+interface Step {
+  label: string;
+  execute: () => Promise<void>;
+}
+
+async function runStep(step: Step, index: number): Promise<void> {
+  console.log(`\n----------- [ Stage ${index + 1}: ${step.label} ] -----------\n`);
+  await step.execute();
+}
+
+async function sh(command: string, label?: string): Promise<string> {
+  console.log(`  > ${label || command}`);
+  const { stdout, stderr } = await _exec(command);
+  if (stderr) console.warn(stderr);
+  return stdout.trim();
+}
+
+// FILL_IN: Add your deployment steps below.
+// Each step runs in sequence; a thrown error aborts the pipeline.
+// Reference: https://github.com/juspay/cadence/blob/beta/scripts/workflow/deploy.ts
+
+const steps: Step[] = [
+  {
+    label: 'Build',
+    execute: async () => {
+      // FILL_IN: replace with your build command
+      await sh('pnpm run build', 'Build application');
+    },
+  },
+  {
+    label: 'Test',
+    execute: async () => {
+      // FILL_IN: replace with your test command
+      await sh('pnpm run test', 'Run test suite');
+    },
+  },
+  {
+    label: 'Deploy',
+    execute: async () => {
+      // FILL_IN: replace with your deploy command
+      // e.g. push Docker image, deploy to GCP, call Titan, etc.
+      console.log('FILL_IN: deployment not yet configured');
+    },
+  },
+];
+
+(async () => {
+  for (let i = 0; i < steps.length; i++) {
+    await runStep(steps[i], i);
+  }
+  console.log('\n✅ Deployment pipeline completed successfully');
+})().catch((error) => {
+  console.error('\n❌ Deployment pipeline failed:', error.message);
+  process.exit(1);
+});

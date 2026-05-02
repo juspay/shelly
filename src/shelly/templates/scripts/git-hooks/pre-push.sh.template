@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Validates commit messages for all commits being pushed.
+# Git passes: <local-ref> <local-sha> <remote-ref> <remote-sha> via stdin.
+BRANCH_NAME=$(git branch | grep '*' | sed 's/* //')
+
+if [[ $BRANCH_NAME != *"no branch"* ]]; then
+  while read -r local_ref local_sha remote_ref remote_sha; do
+    if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+      npx --no -- commitlint --last
+    else
+      npx --no -- commitlint --from "$remote_sha" --to "$local_sha"
+    fi
+  done
+fi
+
+finish() {
+  result=$?
+  exit ${result}
+}
+trap finish EXIT ERR
