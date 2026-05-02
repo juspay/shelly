@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Removes .DS_Store files before each commit.
+find . -type f -name '.DS_Store' -exec rm {} +

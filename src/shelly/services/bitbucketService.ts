@@ -32,24 +32,22 @@ export class BitbucketService {
   client: any; // Using any due to bitbucket package type limitations
   workspace: string;
 
-  constructor(username?: string, appPassword?: string, workspace?: string) {
+  constructor(username?: string, appPassword?: string, workspace?: string, token?: string) {
+    const bbToken = token || process.env.BITBUCKET_TOKEN || process.env.BITBUCKET_ACCESS_TOKEN;
     const bbUsername = username || process.env.BITBUCKET_USERNAME;
     const bbAppPassword = appPassword || process.env.BITBUCKET_APP_PASSWORD;
     const bbWorkspace = workspace || process.env.BITBUCKET_WORKSPACE;
 
-    if (!bbUsername || !bbAppPassword) {
+    if (!bbToken && (!bbUsername || !bbAppPassword)) {
       throw new Error(
-        'BitBucket credentials required. Please set BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD environment variables.\n\n' +
-          'To create an App Password:\n' +
-          '1. Go to: https://bitbucket.org/account/settings/app-passwords/\n' +
-          '2. Click "Create app password"\n' +
-          '3. Name: "shelly-cli"\n' +
-          '4. Permissions: Repository (Read, Write, Admin), Pull Requests (Read, Write)\n' +
-          '5. Copy the generated password\n\n' +
-          'Then set environment variables:\n' +
+        'BitBucket credentials required.\n\n' +
+          'Option 1 — Bearer Token (recommended):\n' +
+          '  export BITBUCKET_TOKEN=<your-bearer-token>\n\n' +
+          'Option 2 — App Password:\n' +
           '  export BITBUCKET_USERNAME=<your-email@juspay.in>\n' +
-          '  export BITBUCKET_APP_PASSWORD=<your-token-here>\n' +
-          '  export BITBUCKET_WORKSPACE=<your-workspace> (optional, will auto-detect from git remote)'
+          '  export BITBUCKET_APP_PASSWORD=<your-app-password>\n\n' +
+          'To create a Bearer token: bitbucket.org → Settings → Personal access tokens\n' +
+          'To create an App Password: bitbucket.org → Settings → App passwords'
       );
     }
 
@@ -65,11 +63,20 @@ export class BitbucketService {
     this.workspace = bbWorkspace;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.client = new (Bitbucket as any)({
-      auth: {
-        username: bbUsername,
-        password: bbAppPassword,
-      },
+      auth: bbToken ? { token: bbToken } : { username: bbUsername, password: bbAppPassword },
     });
+  }
+
+  static fromToken(token: string, workspace: string): BitbucketService {
+    return new BitbucketService(undefined, undefined, workspace, token);
+  }
+
+  static fromAppPassword(username: string, appPassword: string, workspace: string): BitbucketService {
+    return new BitbucketService(username, appPassword, workspace);
+  }
+
+  static isDataCenterHost(host: string): boolean {
+    return host !== 'bitbucket.org';
   }
 
   /**
@@ -78,7 +85,7 @@ export class BitbucketService {
   static async detectRepositoryFromGit(cwd = process.cwd()) {
     try {
       const gitConfig = await BitbucketService.parseGitConfigStatic(cwd);
-      const { workspace, repoSlug } = BitbucketService.parseRemoteUrlStatic(
+      const { host, workspace, repoSlug } = BitbucketService.parseRemoteUrlStatic(
         gitConfig.remote?.origin?.url
       );
 
@@ -88,7 +95,7 @@ export class BitbucketService {
         );
       }
 
-      return { workspace, repoSlug };
+      return { host, workspace, repoSlug };
     } catch (error) {
       throw new Error(`Failed to detect repository from git: ${error.message}`);
     }
@@ -149,25 +156,29 @@ export class BitbucketService {
   /**
    * Static version of parseRemoteUrl for use without instance
    */
-  static parseRemoteUrlStatic(url) {
+  static parseRemoteUrlStatic(url: string): { host: string; workspace: string; repoSlug: string } {
     if (!url) {
       throw new Error('No remote URL found');
     }
 
-    // Handle HTTPS URLs: https://bitbucket.org/workspace/repo.git or https://bitbucket.juspay.net/workspace/repo.git
-    const httpsMatch = url.match(
-      /https:\/\/(?:bitbucket\.org|bitbucket\.juspay\.net)\/([^/]+)\/([^/]+?)(?:\.git)?$/
-    );
-    if (httpsMatch) {
-      return { workspace: httpsMatch[1], repoSlug: httpsMatch[2] };
+    // Handle ssh:// URLs: ssh://git@ssh.bitbucket.juspay.net/workspace/repo.git
+    // Strip leading "ssh." from hostname — that prefix is SSH-only, the API lives on the bare host
+    const sshProtoMatch = url.match(/ssh:\/\/git@([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+    if (sshProtoMatch) {
+      const host = sshProtoMatch[1].replace(/^ssh\./, '');
+      return { host, workspace: sshProtoMatch[2], repoSlug: sshProtoMatch[3] };
     }
 
-    // Handle SSH URLs: git@bitbucket.org:workspace/repo.git or git@bitbucket.juspay.net:workspace/repo.git
-    const sshMatch = url.match(
-      /git@(?:bitbucket\.org|bitbucket\.juspay\.net):([^/]+)\/([^/]+?)(?:\.git)?$/
-    );
+    // Handle HTTPS URLs: https://bitbucket.org/workspace/repo.git or https://host/workspace/repo.git
+    const httpsMatch = url.match(/https?:\/\/([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+    if (httpsMatch) {
+      return { host: httpsMatch[1], workspace: httpsMatch[2], repoSlug: httpsMatch[3] };
+    }
+
+    // Handle SCP-style SSH URLs: git@bitbucket.org:workspace/repo.git or git@host:workspace/repo.git
+    const sshMatch = url.match(/git@([^:]+):([^/]+)\/([^/]+?)(?:\.git)?$/);
     if (sshMatch) {
-      return { workspace: sshMatch[1], repoSlug: sshMatch[2] };
+      return { host: sshMatch[1], workspace: sshMatch[2], repoSlug: sshMatch[3] };
     }
 
     throw new Error(`Unsupported BitBucket remote URL format: ${url}`);
@@ -251,28 +262,8 @@ export class BitbucketService {
   /**
    * Parse BitBucket remote URL to extract workspace and repository slug
    */
-  parseRemoteUrl(url) {
-    if (!url) {
-      throw new Error('No remote URL found');
-    }
-
-    // Handle HTTPS URLs: https://bitbucket.org/workspace/repo.git or https://bitbucket.juspay.net/workspace/repo.git
-    const httpsMatch = url.match(
-      /https:\/\/(?:bitbucket\.org|bitbucket\.juspay\.net)\/([^/]+)\/([^/]+?)(?:\.git)?$/
-    );
-    if (httpsMatch) {
-      return { workspace: httpsMatch[1], repoSlug: httpsMatch[2] };
-    }
-
-    // Handle SSH URLs: git@bitbucket.org:workspace/repo.git or git@bitbucket.juspay.net:workspace/repo.git
-    const sshMatch = url.match(
-      /git@(?:bitbucket\.org|bitbucket\.juspay\.net):([^/]+)\/([^/]+?)(?:\.git)?$/
-    );
-    if (sshMatch) {
-      return { workspace: sshMatch[1], repoSlug: sshMatch[2] };
-    }
-
-    throw new Error(`Unsupported BitBucket remote URL format: ${url}`);
+  parseRemoteUrl(url: string) {
+    return BitbucketService.parseRemoteUrlStatic(url);
   }
 
   /**
@@ -613,12 +604,142 @@ export class BitbucketService {
   /**
    * Check if a path exists
    */
-  async checkPath(filePath) {
+  async checkPath(filePath: string) {
     try {
       await fs.access(filePath);
       return true;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Check whether a branch exists in the repository
+   */
+  async branchExists(workspace: string, repoSlug: string, branchName: string): Promise<boolean> {
+    try {
+      await this.client.repositories.getBranch({
+        workspace,
+        repo_slug: repoSlug,
+        name: branchName,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Create a new branch from a start-point branch or commit
+   */
+  async createBranch(
+    workspace: string,
+    repoSlug: string,
+    branchName: string,
+    startPoint: string
+  ): Promise<void> {
+    // Get the commit hash of the start point
+    const refResp = await this.client.repositories.getBranch({
+      workspace,
+      repo_slug: repoSlug,
+      name: startPoint,
+    });
+    const hash: string = refResp.data?.target?.hash;
+    if (!hash) throw new Error(`Could not resolve commit hash for branch: ${startPoint}`);
+
+    await this.client.repositories.createBranch({
+      workspace,
+      repo_slug: repoSlug,
+      _body: { name: branchName, target: { hash } },
+    });
+  }
+
+  /**
+   * Set the default (main) branch of the repository
+   */
+  async setDefaultBranch(workspace: string, repoSlug: string, branchName: string): Promise<void> {
+    await this.client.repositories.update({
+      workspace,
+      repo_slug: repoSlug,
+      _body: { mainbranch: { name: branchName } },
+    });
+  }
+
+  /**
+   * Create a pull request. On 409 (duplicate), returns the existing PR marked with existing: true.
+   * If the existing PR targets a different destination branch it is declined and a new one is opened.
+   */
+  async createPullRequest(
+    workspace: string,
+    repoSlug: string,
+    options: {
+      title: string;
+      sourceBranch: string;
+      destBranch: string;
+      description?: string;
+    }
+  ) {
+    const body = {
+      title: options.title,
+      description: options.description || '',
+      source: { branch: { name: options.sourceBranch } },
+      destination: { branch: { name: options.destBranch } },
+    };
+
+    try {
+      const resp = await this.client.pullrequests.create({
+        workspace,
+        repo_slug: repoSlug,
+        _body: body,
+      });
+      return resp.data;
+    } catch (error) {
+      const msg: string = error?.message || '';
+      const status: number = error?.status ?? 0;
+
+      if (status !== 409 && !msg.includes('409')) {
+        throw error;
+      }
+
+      // 409 — a PR from this source branch already exists.
+      // Find it and check its destination branch.
+      try {
+        const listResp = await this.client.pullrequests.list({
+          workspace,
+          repo_slug: repoSlug,
+          q: `source.branch.name="${options.sourceBranch}" AND state="OPEN"`,
+        });
+        const existing = listResp.data?.values?.[0];
+
+        if (!existing) {
+          // Can't find it — surface original error
+          throw error;
+        }
+
+        const existingDest: string = existing.destination?.branch?.name ?? '';
+
+        if (existingDest !== options.destBranch) {
+          // Wrong destination — decline and recreate
+          await this.client.pullrequests.decline({
+            workspace,
+            repo_slug: repoSlug,
+            pull_request_id: existing.id,
+          });
+
+          const newResp = await this.client.pullrequests.create({
+            workspace,
+            repo_slug: repoSlug,
+            _body: body,
+          });
+          return newResp.data;
+        }
+
+        // Same destination — return existing PR with marker
+        return { ...existing, existing: true };
+      } catch (innerError) {
+        if (innerError === error) throw error;
+        throw innerError;
+      }
     }
   }
 }
