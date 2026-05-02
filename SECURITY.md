@@ -39,22 +39,22 @@ To help us triage and respond to your report quickly, please include:
 
 We are committed to responding to security reports promptly:
 
-| Action | Timeline |
-| ------ | -------- |
-| Initial Acknowledgment | Within 24 hours |
-| Initial Assessment | Within 72 hours |
-| Status Update | Every 5-7 days until resolved |
+| Action                 | Timeline                      |
+| ---------------------- | ----------------------------- |
+| Initial Acknowledgment | Within 24 hours               |
+| Initial Assessment     | Within 72 hours               |
+| Status Update          | Every 5-7 days until resolved |
 
 ### Fix Timeline by Severity
 
 | Severity | Target Resolution Time |
 | -------- | ---------------------- |
-| Critical | 24-48 hours |
-| High | 7 days |
-| Medium | 30 days |
-| Low | 90 days |
+| Critical | 24-48 hours            |
+| High     | 7 days                 |
+| Medium   | 30 days                |
+| Low      | 90 days                |
 
-*Note: These timelines are targets. Actual resolution time may vary based on complexity.*
+_Note: These timelines are targets. Actual resolution time may vary based on complexity._
 
 ## Security Best Practices
 
@@ -127,4 +127,4 @@ This security policy is inspired by industry best practices and the collaborativ
 
 ---
 
-*This security policy was last updated on the date of the latest commit to this file.*
+_This security policy was last updated on the date of the latest commit to this file._

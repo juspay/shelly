@@ -75,7 +75,7 @@ const SECRET_PATTERNS = [
     name: 'AWS Secret Access Key',
     // Require AWS context - look for secret key near aws/AWS keywords or in assignment
     pattern:
-      /(?:aws|AWS|secret|SECRET|access|ACCESS)[_-]?(?:secret|SECRET|access|ACCESS|key|KEY)?[_-]?(?:key|KEY|id|ID)?[\s]*[=:]["']?([A-Za-z0-9/+=]{40})["']?/g,
+      /(?:aws|AWS|secret|SECRET|access|ACCESS)[_\-]?(?:secret|SECRET|access|ACCESS|key|KEY)?[_\-]?(?:key|KEY|id|ID)?[\s]*[=:]["']?([A-Za-z0-9/+=]{40})["']?/g,
     severity: 'high',
     description: 'AWS Secret Access Key detected',
   },

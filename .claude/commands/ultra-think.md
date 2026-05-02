@@ -83,6 +83,7 @@ Deep analysis and problem solving mode
 
 9. **Provide Structured Recommendations**
    Present findings in a clear structure:
+
    ```
    ## Problem Analysis
    - Core challenge

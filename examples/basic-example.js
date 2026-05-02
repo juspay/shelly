@@ -1,6 +1,6 @@
 /**
  * Basic Example for @juspay/shelly
- * 
+ *
  * This example demonstrates the core functionality of @juspay/shelly.
  */
 
