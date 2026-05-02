@@ -64,7 +64,10 @@ class QualityMetricsReporter {
         if (eslintError.stdout) {
           eslintResult = eslintError.stdout;
         } else {
-          this.log('⚠️  ESLint execution failed, using default metrics', 'yellow');
+          this.log(
+            '⚠️  ESLint execution failed, using default metrics',
+            'yellow'
+          );
           return {
             errorCount: 0,
             warningCount: 0,
@@ -107,7 +110,10 @@ class QualityMetricsReporter {
           .map(([rule, count]) => ({ rule, count })),
       };
 
-      this.log(`✅ ESLint: ${errorCount} errors, ${warningCount} warnings`, 'green');
+      this.log(
+        `✅ ESLint: ${errorCount} errors, ${warningCount} warnings`,
+        'green'
+      );
     } catch (error) {
       this.log('⚠️ ESLint metrics collection failed', 'yellow');
       this.metrics.eslint = { error: 'ESLint execution failed' };
@@ -127,13 +133,21 @@ class QualityMetricsReporter {
 
       // Parse TypeScript diagnostics
       const lines = tscResult.split('\n');
-      const diagnosticsStart = lines.findIndex((line) => line.includes('Files:'));
+      const diagnosticsStart = lines.findIndex((line) =>
+        line.includes('Files:')
+      );
 
       if (diagnosticsStart !== -1) {
         const diagnostics = lines.slice(diagnosticsStart);
         const fileCount = this.extractNumberFromLine(diagnostics, 'Files:');
-        const lineCount = this.extractNumberFromLine(diagnostics, 'Lines of Library code:');
-        const identifierCount = this.extractNumberFromLine(diagnostics, 'Identifiers:');
+        const lineCount = this.extractNumberFromLine(
+          diagnostics,
+          'Lines of Library code:'
+        );
+        const identifierCount = this.extractNumberFromLine(
+          diagnostics,
+          'Identifiers:'
+        );
         const symbolCount = this.extractNumberFromLine(diagnostics, 'Symbols:');
         const typeCount = this.extractNumberFromLine(diagnostics, 'Types:');
 
@@ -185,7 +199,10 @@ class QualityMetricsReporter {
           totalLines += lines;
           totalFiles++;
 
-          fileSizes.push({ file: path.relative(this.projectRoot, file), lines });
+          fileSizes.push({
+            file: path.relative(this.projectRoot, file),
+            lines,
+          });
 
           if (lines > 300) largeFiles++;
 
@@ -209,7 +226,10 @@ class QualityMetricsReporter {
         largestFiles: fileSizes.slice(0, 10),
       };
 
-      this.log(`✅ Analyzed ${totalFiles} files, ${totalLines} total lines`, 'green');
+      this.log(
+        `✅ Analyzed ${totalFiles} files, ${totalLines} total lines`,
+        'green'
+      );
     } catch (error) {
       this.log('⚠️ Complexity analysis failed', 'yellow');
       this.metrics.complexity = { error: 'Analysis failed' };
@@ -252,10 +272,17 @@ class QualityMetricsReporter {
         vulnerabilities,
         warnings,
         secretsFound,
-        securityScore: this.calculateSecurityScore(vulnerabilities, warnings, secretsFound),
+        securityScore: this.calculateSecurityScore(
+          vulnerabilities,
+          warnings,
+          secretsFound
+        ),
       };
 
-      this.log(`✅ Security: ${vulnerabilities} vulns, ${warnings} warnings`, 'green');
+      this.log(
+        `✅ Security: ${vulnerabilities} vulns, ${warnings} warnings`,
+        'green'
+      );
     } catch (error) {
       this.log('⚠️ Security metrics collection failed', 'yellow');
       this.metrics.security = { error: 'Security check failed' };
@@ -276,10 +303,13 @@ class QualityMetricsReporter {
 
     try {
       // Try to run tests with coverage
-      const coverageResult = execSync('npm run test:run --coverage --reporter=json', {
-        encoding: 'utf8',
-        cwd: this.projectRoot,
-      });
+      const coverageResult = execSync(
+        'npm run test:run --coverage --reporter=json',
+        {
+          encoding: 'utf8',
+          cwd: this.projectRoot,
+        }
+      );
 
       // This would parse coverage results if available
       this.metrics.coverage = {
@@ -302,7 +332,14 @@ class QualityMetricsReporter {
 
   getSourceFiles() {
     const extensions = ['.ts', '.tsx', '.js', '.jsx'];
-    const ignoreDirs = ['node_modules', '.git', 'dist', 'build', '.svelte-kit', 'coverage'];
+    const ignoreDirs = [
+      'node_modules',
+      '.git',
+      'dist',
+      'build',
+      '.svelte-kit',
+      'coverage',
+    ];
     const files = [];
 
     const walk = (dir) => {
@@ -459,7 +496,8 @@ class QualityMetricsReporter {
     console.log('='.repeat(60));
 
     // Overall Quality Score
-    const scoreColor = qualityScore >= 80 ? 'green' : qualityScore >= 60 ? 'yellow' : 'red';
+    const scoreColor =
+      qualityScore >= 80 ? 'green' : qualityScore >= 60 ? 'yellow' : 'red';
     console.log(
       `\n${colors.bright}🎯 OVERALL QUALITY SCORE: ${colors[scoreColor]}${qualityScore}/100${colors.reset}`
     );
@@ -468,15 +506,23 @@ class QualityMetricsReporter {
     if (this.metrics.eslint.errors !== undefined) {
       console.log(`\n${colors.blue}📋 ESLint Analysis:${colors.reset}`);
       console.log(`   Files Analyzed: ${this.metrics.eslint.totalFiles}`);
-      console.log(`   Files with Issues: ${this.metrics.eslint.filesWithIssues}`);
-      console.log(`   Errors: ${colors.red}${this.metrics.eslint.errors}${colors.reset}`);
-      console.log(`   Warnings: ${colors.yellow}${this.metrics.eslint.warnings}${colors.reset}`);
+      console.log(
+        `   Files with Issues: ${this.metrics.eslint.filesWithIssues}`
+      );
+      console.log(
+        `   Errors: ${colors.red}${this.metrics.eslint.errors}${colors.reset}`
+      );
+      console.log(
+        `   Warnings: ${colors.yellow}${this.metrics.eslint.warnings}${colors.reset}`
+      );
 
       if (this.metrics.eslint.topViolations?.length > 0) {
         console.log(`   Top Rule Violations:`);
-        this.metrics.eslint.topViolations.slice(0, 5).forEach(({ rule, count }) => {
-          console.log(`     • ${rule}: ${count}`);
-        });
+        this.metrics.eslint.topViolations
+          .slice(0, 5)
+          .forEach(({ rule, count }) => {
+            console.log(`     • ${rule}: ${count}`);
+          });
       }
     }
 
@@ -487,17 +533,27 @@ class QualityMetricsReporter {
         `   Compilation: ${this.metrics.typescript.compilationSuccessful ? colors.green + '✅ Success' : colors.red + '❌ Failed'}${colors.reset}`
       );
       console.log(`   Files: ${this.metrics.typescript.files}`);
-      console.log(`   Lines of Code: ${this.metrics.typescript.linesOfCode?.toLocaleString()}`);
-      console.log(`   Identifiers: ${this.metrics.typescript.identifiers?.toLocaleString()}`);
-      console.log(`   Types: ${this.metrics.typescript.types?.toLocaleString()}`);
+      console.log(
+        `   Lines of Code: ${this.metrics.typescript.linesOfCode?.toLocaleString()}`
+      );
+      console.log(
+        `   Identifiers: ${this.metrics.typescript.identifiers?.toLocaleString()}`
+      );
+      console.log(
+        `   Types: ${this.metrics.typescript.types?.toLocaleString()}`
+      );
     }
 
     // Complexity Metrics
     if (this.metrics.complexity.totalFiles !== undefined) {
       console.log(`\n${colors.blue}🧮 Code Complexity:${colors.reset}`);
       console.log(`   Total Files: ${this.metrics.complexity.totalFiles}`);
-      console.log(`   Total Lines: ${this.metrics.complexity.totalLines?.toLocaleString()}`);
-      console.log(`   Avg Lines/File: ${this.metrics.complexity.averageLinesPerFile}`);
+      console.log(
+        `   Total Lines: ${this.metrics.complexity.totalLines?.toLocaleString()}`
+      );
+      console.log(
+        `   Avg Lines/File: ${this.metrics.complexity.averageLinesPerFile}`
+      );
       console.log(
         `   Large Files (>300 lines): ${colors.yellow}${this.metrics.complexity.largeFiles}${colors.reset}`
       );
@@ -507,9 +563,11 @@ class QualityMetricsReporter {
 
       if (this.metrics.complexity.largestFiles?.length > 0) {
         console.log(`   Largest Files:`);
-        this.metrics.complexity.largestFiles.slice(0, 5).forEach(({ file, lines }) => {
-          console.log(`     • ${file}: ${lines} lines`);
-        });
+        this.metrics.complexity.largestFiles
+          .slice(0, 5)
+          .forEach(({ file, lines }) => {
+            console.log(`     • ${file}: ${lines} lines`);
+          });
       }
     }
 
@@ -525,7 +583,9 @@ class QualityMetricsReporter {
       console.log(
         `   Potential Secrets: ${this.metrics.security.secretsFound > 0 ? colors.yellow : colors.green}${this.metrics.security.secretsFound}${colors.reset}`
       );
-      console.log(`   Security Score: ${this.metrics.security.securityScore}/100`);
+      console.log(
+        `   Security Score: ${this.metrics.security.securityScore}/100`
+      );
     }
 
     // Coverage Metrics
@@ -535,7 +595,9 @@ class QualityMetricsReporter {
       console.log(`   Branches: ${this.metrics.coverage.branches}%`);
       console.log(`   Functions: ${this.metrics.coverage.functions}%`);
     } else {
-      console.log(`   ${colors.yellow}Coverage data not available${colors.reset}`);
+      console.log(
+        `   ${colors.yellow}Coverage data not available${colors.reset}`
+      );
       console.log(`   ${this.metrics.coverage.message}`);
     }
 
@@ -546,19 +608,27 @@ class QualityMetricsReporter {
       console.log(`   • Fix ${this.metrics.eslint.errors} ESLint errors`);
     }
     if (this.metrics.complexity.largeFiles > 5) {
-      console.log(`   • Consider refactoring ${this.metrics.complexity.largeFiles} large files`);
+      console.log(
+        `   • Consider refactoring ${this.metrics.complexity.largeFiles} large files`
+      );
     }
     if (this.metrics.security.vulnerabilities > 0) {
-      console.log(`   • Address ${this.metrics.security.vulnerabilities} security vulnerabilities`);
+      console.log(
+        `   • Address ${this.metrics.security.vulnerabilities} security vulnerabilities`
+      );
     }
     if (!this.metrics.coverage.available) {
       console.log(`   • Set up test coverage reporting`);
     }
     if (qualityScore < 80) {
-      console.log(`   • Focus on improving code quality (current score: ${qualityScore}/100)`);
+      console.log(
+        `   • Focus on improving code quality (current score: ${qualityScore}/100)`
+      );
     }
 
-    console.log(`\n${colors.cyan}📊 Quality metrics collection completed!${colors.reset}`);
+    console.log(
+      `\n${colors.cyan}📊 Quality metrics collection completed!${colors.reset}`
+    );
 
     // Save metrics to file for CI/CD use
     const metricsFile = path.join(this.projectRoot, 'quality-metrics.json');
@@ -584,7 +654,9 @@ class QualityMetricsReporter {
 if (require.main === module) {
   const reporter = new QualityMetricsReporter();
   reporter.run().catch((error) => {
-    console.error(`${colors.red}Quality metrics collection crashed: ${error.message}${colors.reset}`);
+    console.error(
+      `${colors.red}Quality metrics collection crashed: ${error.message}${colors.reset}`
+    );
     process.exit(1);
   });
 }

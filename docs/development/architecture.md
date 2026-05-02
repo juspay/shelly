@@ -26,13 +26,13 @@ graph TD
 
 Key services:
 
-| Service | File | Purpose |
-|---------|------|---------|
-| History | `services/historyService.ts` | Shell history retrieval |
-| Command | `services/commandService.ts` | Command execution |
+| Service  | File                          | Purpose                         |
+| -------- | ----------------------------- | ------------------------------- |
+| History  | `services/historyService.ts`  | Shell history retrieval         |
+| Command  | `services/commandService.ts`  | Command execution               |
 | Analysis | `services/analysisService.ts` | AI error analysis via Neurolink |
-| Shell | `services/shellService.ts` | Multi-shell support |
-| Rules | `rules/` | Pattern-based corrections |
+| Shell    | `services/shellService.ts`    | Multi-shell support             |
+| Rules    | `rules/`                      | Pattern-based corrections       |
 
 ### Repository Management Mode (`src/shelly/cli.ts`)
 
@@ -42,12 +42,12 @@ Key services:
 
 Key components:
 
-| Component | File | Purpose |
-|-----------|------|---------|
-| Organize | `shelly/commands/organize.ts` | Repository scaffolding |
-| Memory | `shelly/commands/memory.ts` | Memory Bank management |
-| GitHub | `shelly/commands/githubSetup.ts` | GitHub configuration |
-| Templates | `shelly/templates/` | Project scaffolding templates |
+| Component | File                             | Purpose                       |
+| --------- | -------------------------------- | ----------------------------- |
+| Organize  | `shelly/commands/organize.ts`    | Repository scaffolding        |
+| Memory    | `shelly/commands/memory.ts`      | Memory Bank management        |
+| GitHub    | `shelly/commands/githubSetup.ts` | GitHub configuration          |
+| Templates | `shelly/templates/`              | Project scaffolding templates |
 
 ## Service Layer
 
