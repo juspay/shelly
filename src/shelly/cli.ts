@@ -10,6 +10,12 @@ import { dirname } from 'path';
 import fs from 'fs/promises';
 import path from 'path';
 import { aiConfigService } from '../services/aiConfigService.js';
+import {
+  isValidTier,
+  getTierDescription,
+  SetupTier,
+} from './config/setupTiers.js';
+import inquirer from 'inquirer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,17 +55,86 @@ async function setupCLI() {
     .option('-m, --move', 'move misplaced files to their correct directories')
     .option('--github-action', 'include action.yml for GitHub Action projects')
     .option(
-      '--ci <system>',
-      'CI/CD system to use (github or jenkins)',
-      'github'
-    )
-    .option('--skip-mcp', 'skip Breeze AI & MCP setup (PR automation)')
-    .option(
       '-d, --directory <path>',
       'target directory (defaults to current directory)'
     )
+    .option(
+      '--setup <tier>',
+      'setup complexity tier: essential, standard, or complete (default: standard)'
+    )
+    .option('--essential', 'use essential tier - basic setup (~20 files)')
+    .option('--standard', 'use standard tier - production-ready (~50 files)')
+    .option('--complete', 'use complete tier - enterprise + AI (~100+ files)')
+    .option(
+      '--platform <platform>',
+      'platform to use: github or bitbucket (auto-detected if not specified)'
+    )
     .action(async (options) => {
       try {
+        // Determine setup tier
+        let setupTier: SetupTier = 'standard'; // default
+
+        if (options.essential) {
+          setupTier = 'essential';
+        } else if (options.standard) {
+          setupTier = 'standard';
+        } else if (options.complete) {
+          setupTier = 'complete';
+        } else if (options.setup) {
+          if (isValidTier(options.setup)) {
+            setupTier = options.setup;
+          } else {
+            console.error(`❌ Invalid tier: ${options.setup}`);
+            console.error('   Valid tiers: essential, standard, complete');
+            process.exit(1);
+          }
+        } else {
+          // Env-var override (e.g. set in CI or .env)
+          const envTier = process.env.SHELLY_DEFAULT_TIER;
+          if (envTier && isValidTier(envTier)) {
+            setupTier = envTier as SetupTier;
+          } else if (!process.stdout.isTTY) {
+            // Non-interactive (CI, piped output) — use standard silently
+            setupTier = 'standard';
+          } else {
+            // Interactive: prompt the user
+            const { tier } = await inquirer.prompt([
+              {
+                type: 'list',
+                name: 'tier',
+                message: 'Choose your repository setup level:',
+                choices: [
+                  {
+                    name: getTierDescription('essential'),
+                    value: 'essential',
+                  },
+                  {
+                    name: getTierDescription('standard') + ' [Recommended]',
+                    value: 'standard',
+                  },
+                  {
+                    name: getTierDescription('complete'),
+                    value: 'complete',
+                  },
+                ],
+                default: 'standard',
+              },
+            ]);
+            setupTier = tier;
+          }
+        }
+
+        // Validate --platform before it reaches OrganizeCommand
+        const VALID_PLATFORMS = ['github', 'bitbucket'] as const;
+        if (
+          options.platform !== undefined &&
+          !VALID_PLATFORMS.includes(options.platform)
+        ) {
+          console.error(`❌ Invalid platform: ${options.platform}`);
+          console.error('   Valid platforms: github, bitbucket');
+          process.exit(1);
+        }
+
         // Handle current working directory access safely
         let targetDirectory;
         if (options.directory) {
@@ -95,6 +170,8 @@ async function setupCLI() {
           ciSystem: options.ci,
           skipMcp: options.skipMcp,
           cwd: targetDirectory,
+          setupTier: setupTier,
+          platform: options.platform,
         });
 
         await organizeCommand.execute();

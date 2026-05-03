@@ -1,145 +1,69 @@
-# Project Brief: Shelly - AI-Powered Development Assistant
+# Project Brief: @juspay/shelly
 
-**Core Requirements:**
+## 1. Core Mission
 
-### 🔍 **Error Analysis & Debugging**
+@juspay/shelly is an intelligent CLI assistant that analyzes your command-line history to provide smart, AI-powered suggestions for failed commands. Shelly helps you debug and fix errors without leaving your terminal, boosting productivity with advanced repository organization, GitHub/Bitbucket setup, and AI-assisted development features.
 
-- Provide AI-powered suggestions for failed command-line commands
-- Help users debug and fix errors without leaving the terminal
-- Analyze command-line history to understand user context
-- Support multiple shells (bash, zsh, tcsh) with seamless integration
+### Primary Goals
 
-### 🏗️ **Repository Organization & Management**
+- Deliver high-quality, maintainable code
+- Provide excellent user experience
+- Follow modern development best practices
+- Ensure comprehensive testing and documentation
 
-- Transform any project into a publication-ready repository
-- Generate complete project scaffolding with industry best practices
-- Automate GitHub integration (templates, workflows, issue templates)
-- Configure advanced GitHub repository settings (pull request policies, branch protection)
-- Setup GitHub Actions workflow permissions and approval settings
-- Automated GitHub Pages configuration with documentation structure
-- Enhance package.json with @juspay/ scoping and metadata optimization
-- Intelligent file organization and cleanup capabilities
+## 2. Key Features
 
-### 🧠 **AI-Assisted Development Context**
+### Core Functionality
 
-- Maintain persistent project context through Memory Bank system
-- Provide structured project documentation for AI assistants
-- Generate comprehensive project knowledge base using Neurolink
-- Enable seamless context continuity across development sessions
-- Support team collaboration through shared project understanding
+- **Error Analysis**: AI-powered analysis of failed shell commands with actionable fix suggestions
+- **Repository Organization**: Three-tier scaffolding system (essential / standard / complete)
+- **Platform Support**: GitHub Actions and Bitbucket Pipelines / Jenkins CI integration
+- **Memory Bank**: AI context management for assisted development workflows
 
-**Strategic Goals:**
+## 3. Target Users
 
-### **Primary Objectives**
+- **Developers**: Need reliable CLI tooling for error debugging and project scaffolding
+- **DevOps Engineers**: Require automated repository setup across GitHub and Bitbucket
+- **Contributors**: Want clear contribution guidelines and a well-organized codebase
 
-- **Developer Productivity**: Reduce time spent on debugging, project setup, and context switching
-- **AI Integration**: Seamless integration with AI development assistants (Cline, etc.)
-- **Project Quality**: Ensure repositories meet publication and enterprise standards
-- **Knowledge Management**: Persistent project context and decision tracking
+## 4. Success Criteria
 
-### **Transformation Goals**
+- Code coverage above 80%
+- Comprehensive documentation
+- Active community engagement
+- Regular releases and updates
 
-- **From Simple Tool to Platform**: Evolution from error analysis to comprehensive development assistant
-- **AI-First Approach**: Deep integration with modern AI development workflows
-- **Enterprise Ready**: Production-ready project organization and documentation
-- **Community Adoption**: Developer-friendly tool that scales from individual to team use
+## 5. Project Scope
 
-**Enhanced Objectives:**
+### In Scope
 
-### **Technical Excellence**
+- AI-powered shell error analysis and command suggestions
+- Repository scaffolding and organization (essential / standard / complete tiers)
+- GitHub and Bitbucket platform setup automation
+- Memory Bank generation and management
+- CI/CD pipeline templates and configuration
 
-- Dual CLI architecture supporting both error analysis and project management
-- Advanced AI content generation using Google Vertex AI and Neurolink
-- Intelligent project analysis and enhancement capabilities
-- Robust shell integration across multiple environments
+### Out of Scope
 
-### **User Experience**
+- Features outside core mission
+- Platform-specific optimizations (initial release)
+- Advanced analytics (future release)
 
-- Intuitive command structure for both beginners and power users
-- Comprehensive documentation and quick-start guides
-- Smart defaults with extensive customization options
-- Seamless integration with existing development workflows
+## 6. Technical Requirements
 
-### **AI Assistant Integration**
+### Technology Stack
 
-- Native Cline integration through .clinerules generation
-- Memory Bank system providing rich project context
-- Structured documentation for optimal AI understanding
-- Continuous context evolution and maintenance
+- **Language**: TypeScript (compiled to ESM JavaScript)
+- **Runtime**: Node.js 18+
+- **AI Integration**: @juspay/neurolink (Google Vertex AI)
+- **Key Dependencies**: Commander.js, Inquirer.js, node-pty
 
-**Expanded Project Scope:**
+### Quality Standards
 
-### **Core Features**
+- Code coverage: 80%+
+- Documentation: Complete API docs
+- Testing: Unit, integration, and e2e tests
 
-- **Error Analysis Engine**: Multi-shell command analysis with AI-powered suggestions
-- **Repository Organizer**: Complete project scaffolding and enhancement system
-- **Memory Bank System**: AI-assisted development context management
-- **GitHub Integration**: Automated templates, workflows, and project setup
-- **Advanced GitHub Configuration**: Repository settings, branch protection, and Actions security
+---
 
-### **Advanced Capabilities**
-
-- **Project Initialization**: Create new projects with complete structure
-- **File Organization**: Smart file placement and cleanup with `--move` option
-- **Configuration Management**: ESLint, Prettier, Commitlint, semantic-release setup
-- **AI Content Generation**: Neurolink-powered documentation and project analysis
-
-### **Platform Support**
-
-- **Operating Systems**: macOS and Linux with full feature support
-- **Shell Environments**: bash, zsh, tcsh with native integration
-- **Project Types**: Node.js, TypeScript, React, CLI tools, and more
-- **AI Services**: Google AI Studio (free) and Vertex AI (enterprise)
-
-**Success Metrics:**
-
-### **Adoption & Usage**
-
-- **Download Growth**: Target 10k+ monthly downloads within 6 months
-- **Community Engagement**: Active GitHub stars, issues, and contributions
-- **Enterprise Adoption**: Usage by development teams at scale
-- **AI Assistant Integration**: Widespread Cline and AI tool integration
-
-### **Technical Performance**
-
-- **Error Analysis Accuracy**: >90% helpful suggestion rate
-- **Repository Organization**: 100% success rate for standard project types
-- **Memory Bank Completeness**: Full context generation for supported projects
-- **Code Quality**: >80% test coverage, consistent build success
-
-### **Developer Experience**
-
-- **Setup Time Reduction**: <5 minutes from install to productive use
-- **Context Switch Reduction**: Seamless AI assistant handoffs
-- **Project Setup Acceleration**: <2 minutes for complete project scaffolding
-- **Documentation Quality**: Self-sufficient onboarding experience
-
-### **Business Impact**
-
-- **Development Velocity**: Measurable productivity improvements
-- **Project Quality**: Higher repository organization standards
-- **Knowledge Retention**: Reduced context loss during team transitions
-- **AI Workflow Integration**: Enhanced AI-assisted development adoption
-
-**Innovation Areas:**
-
-### **AI Integration**
-
-- Advanced Neurolink content generation
-- Context-aware project analysis
-- Intelligent file organization
-- Automated documentation maintenance
-
-### **Developer Workflow**
-
-- Seamless shell integration
-- Project lifecycle management
-- Team collaboration features
-- Enterprise deployment patterns
-
-### **Ecosystem Integration**
-
-- GitHub platform optimization
-- CI/CD pipeline integration
-- Package management enhancement
-- Development tool compatibility
+_Last Updated: 2026-05-12_

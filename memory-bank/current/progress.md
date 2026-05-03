@@ -285,10 +285,19 @@ Shelly has successfully evolved from a simple CLI error analysis tool into a com
 ✅ **Extensibility**: Clear architecture for community contributions  
 ✅ **Support**: Multiple channels for user assistance and feedback
 
-**Recent Milestone: 🔄 TYPESCRIPT MIGRATION COMPLETE (Oct 28, 2025)**
+### ✅ **Three-Tier Setup System + Bitbucket Platform Support (Apr 27, 2026)**
 
-Complete migration from JavaScript to TypeScript with enhanced build system. All source files converted, build process automated, and documentation updated.
+- **Three-Tier Scaffolding**: `essential` (~20 files), `standard` (~50 files), `complete` (~100+ files) via `--essential/--standard/--complete` flags
+- **Single Source of Truth**: `fileTiers.ts` owns all file→tier assignments; `setupTiers.ts` owns directories + feature flags only
+- **Platform Auto-Detection**: Detects GitHub vs Bitbucket from git remote URL; interactive prompt for scratch projects
+- **Bitbucket/Jenkins CI**: Generates `Jenkinsfile`, `scripts/git-hooks/*.sh`, `.husky/` proxy hooks, `commitlint.config.cjs` with BZ-ticket format
+- **Platform-Aware Templates**: `mkdocs.yml`, `.releaserc.json`, `package.json` URLs all use Bitbucket URLs when platform=bitbucket
+- **PR Automation for All Bitbucket Projects**: pr-police + pr-scribe available for any Bitbucket project (not just Breeze workspace)
+- **Neurolink upgraded to v9.59.3** (latest); React added as optional peer dependency
+- **Release pipeline fixed**: MkDocs broken links resolved, npm audit criticals cleared
+
+**Recent Milestone: 🔄 THREE-TIER SYSTEM + BITBUCKET SUPPORT COMPLETE (Apr 27, 2026)**
 
 **Overall Project Status: 🎉 READY FOR PUBLICATION AND COMMUNITY RELEASE**
 
-Shelly has successfully achieved its transformation goals, including full TypeScript migration, and is prepared for wide community adoption as a comprehensive AI-powered development assistant with enhanced type safety and developer experience.
+Shelly has successfully achieved its transformation goals, including full TypeScript migration, three-tier scaffolding system, and Bitbucket platform support.

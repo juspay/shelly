@@ -63,14 +63,27 @@ export class BreezeDetector {
         encoding: 'utf8',
       }).trim();
 
-      // Parse Bitbucket URL patterns:
-      // SSH: git@bitbucket.org:workspace/repo.git
-      // SSH (Juspay): git@bitbucket.juspay.net:workspace/repo.git
-      // HTTPS: https://bitbucket.org/workspace/repo.git
-      const sshMatch = remoteUrl.match(/git@[^:]+:([^/]+)\/([^/.]+)/);
-      const httpsMatch = remoteUrl.match(/https?:\/\/[^/]+\/([^/]+)\/([^/.]+)/);
+      // Parse Bitbucket URL patterns (Bitbucket domains only):
+      // SSH proto: ssh://git@ssh.bitbucket.juspay.net/workspace/repo.git
+      // SCP SSH:   git@bitbucket.org:workspace/repo.git
+      // HTTPS:     https://bitbucket.org/workspace/repo.git
+      //            https://bitbucket.juspay.net/scm/workspace/repo.git
+      const BB_DOMAIN = /bitbucket\.[a-zA-Z0-9.-]+/;
+      const sshProtoMatch = remoteUrl.match(
+        new RegExp(
+          `ssh:\\/\\/[^@]+@ssh\\.${BB_DOMAIN.source}\\/([^/]+)\\/([^/.]+)`
+        )
+      );
+      const sshMatch = remoteUrl.match(
+        new RegExp(`git@${BB_DOMAIN.source}:([^/]+)\\/([^/.]+)`)
+      );
+      const httpsMatch = remoteUrl.match(
+        new RegExp(
+          `https?:\\/\\/${BB_DOMAIN.source}\\/(?:scm\\/)?([^/]+)\\/([^/.]+)`
+        )
+      );
 
-      const match = sshMatch || httpsMatch;
+      const match = sshProtoMatch || sshMatch || httpsMatch;
       if (match) {
         return {
           workspace: match[1],
