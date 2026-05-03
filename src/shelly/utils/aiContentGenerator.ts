@@ -1,6 +1,7 @@
 import { generateText, type TextGenerationOptions } from '@juspay/neurolink';
 import fs from 'fs';
 import path from 'path';
+import { BitbucketService } from '../services/bitbucketService.js';
 import { aiConfigService } from '../../services/aiConfigService.js';
 
 interface PackageExport {
@@ -153,8 +154,38 @@ Start the response directly with the # title line.`;
    * @param {string} workingDir - Working directory for the project
    * @returns {Object} Enhanced package.json
    */
-  async enhancePackageJson(currentPackage, repoName, workingDir) {
+  async enhancePackageJson(
+    currentPackage,
+    repoName,
+    workingDir,
+    platform = 'github'
+  ) {
     const enhanced = { ...currentPackage };
+
+    // Detect Bitbucket workspace and host from git remote for URL generation
+    let bitbucketWorkspace = 'juspay';
+    let bitbucketProjectKey = 'BZ';
+    let bitbucketHost = 'bitbucket.juspay.net';
+    if (platform === 'bitbucket') {
+      try {
+        const gitConfigPath = path.join(workingDir, '.git', 'config');
+        const gitConfigContent = fs.readFileSync(gitConfigPath, 'utf8');
+        const urlMatch = gitConfigContent.match(/url\s*=\s*(.+)/);
+        if (urlMatch) {
+          const rawUrl = urlMatch[1].trim();
+          const { workspace } = BitbucketService.parseRemoteUrlStatic(rawUrl);
+          bitbucketWorkspace = workspace.replace(/^~/, '').toLowerCase();
+          bitbucketProjectKey = workspace.replace(/^~/, '').toUpperCase();
+          const hostMatch = rawUrl.match(
+            /(?:https?:\/\/|git@)(bitbucket\.[^/:]+)/
+          );
+          if (hostMatch) bitbucketHost = hostMatch[1];
+        }
+      } catch (_e) {
+        // no git config or unrecognised remote, use Juspay defaults
+      }
+    }
+    const isBitbucketCloud = bitbucketHost === 'bitbucket.org';
 
     // Update name to @juspay/ format if it matches pattern
     if (repoName && !enhanced.name.startsWith('@juspay/')) {
@@ -194,18 +225,33 @@ Start the response directly with the # title line.`;
     if (!enhanced.repository) {
       enhanced.repository = {
         type: 'git',
-        url: `git+https://github.com/juspay/${repoName}.git`,
+        url:
+          platform === 'bitbucket'
+            ? isBitbucketCloud
+              ? `git+https://${bitbucketHost}/${bitbucketWorkspace}/${repoName}.git`
+              : `git+https://${bitbucketHost}/scm/${bitbucketWorkspace}/${repoName}.git`
+            : `git+https://github.com/juspay/${repoName}.git`,
       };
     }
 
     if (!enhanced.bugs) {
       enhanced.bugs = {
-        url: `https://github.com/juspay/${repoName}/issues`,
+        url:
+          platform === 'bitbucket'
+            ? isBitbucketCloud
+              ? `https://${bitbucketHost}/${bitbucketWorkspace}/${repoName}/issues`
+              : `https://${bitbucketHost}/projects/${bitbucketProjectKey}/repos/${repoName}/issues`
+            : `https://github.com/juspay/${repoName}/issues`,
       };
     }
 
     if (!enhanced.homepage) {
-      enhanced.homepage = `https://github.com/juspay/${repoName}#readme`;
+      enhanced.homepage =
+        platform === 'bitbucket'
+          ? isBitbucketCloud
+            ? `https://${bitbucketHost}/${bitbucketWorkspace}/${repoName}`
+            : `https://${bitbucketHost}/projects/${bitbucketProjectKey}/repos/${repoName}/browse`
+          : `https://github.com/juspay/${repoName}#readme`;
     }
 
     // Add engines requirement
@@ -250,12 +296,12 @@ Start the response directly with the # title line.`;
     // Ensure essential dev dependencies
     enhanced.devDependencies = enhanced.devDependencies || {};
 
-    const essentialDevDeps = {
+    const essentialDevDeps: Record<string, string> = {
       'semantic-release': '^22.0.0',
       '@semantic-release/changelog': '^6.0.3',
       '@semantic-release/commit-analyzer': '^11.0.0',
       '@semantic-release/git': '^10.0.1',
-      '@semantic-release/github': '^9.0.0',
+      ...(platform !== 'bitbucket' && { '@semantic-release/github': '^9.0.0' }),
       '@semantic-release/npm': '^11.0.0',
       '@semantic-release/release-notes-generator': '^12.0.0',
       '@types/node': '^20.0.0',
@@ -305,8 +351,10 @@ Start the response directly with the # title line.`;
       'docs:build':
         enhanced.scripts?.['docs:build'] || 'mkdocs build --strict --clean',
       'docs:serve': enhanced.scripts?.['docs:serve'] || 'mkdocs serve',
-      'docs:gh-deploy':
-        enhanced.scripts?.['docs:gh-deploy'] || 'mkdocs gh-deploy --force',
+      ...(platform !== 'bitbucket' && {
+        'docs:gh-deploy':
+          enhanced.scripts?.['docs:gh-deploy'] || 'mkdocs gh-deploy --force',
+      }),
 
       // Validation
       validate:

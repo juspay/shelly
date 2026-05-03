@@ -399,8 +399,8 @@ sh "pnpm exec playwright install --with-deps"
 ## 📚 Related Documentation
 
 - [BitBucket Integration](./BITBUCKET_INTEGRATION.md)
-- [Breeze Workflow Guide](./BREEZE_WORKFLOW.md)
-- [AI Automation Setup](./AI_AUTOMATION.md)
+- [Getting Started](./GETTING_STARTED.md)
+- [Troubleshooting](./TROUBLESHOOTING.md)
 
 ## 🎯 Quick Start Checklist
 

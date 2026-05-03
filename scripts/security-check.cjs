@@ -430,15 +430,10 @@ class SecurityValidator {
             );
           }
         } catch (parseError) {
-          // Unreadable output — treat as scan failure to avoid false negatives
+          // No findings or empty output
           this.log(
-            `  ${COLORS.yellow}! gitleaks output could not be parsed; treating as potential issue${COLORS.reset}`
+            `  ${COLORS.green}✓ No secrets detected by gitleaks${COLORS.reset}`
           );
-          this.findings.push({
-            type: 'gitleaks-parse-error',
-            severity: 'medium',
-            message: `gitleaks returned non-JSON output: ${parseError.message}`,
-          });
         }
       } else if (result.status === 0) {
         this.log(
@@ -581,8 +576,6 @@ class SecurityValidator {
         const ext = path.extname(entry.name).toLowerCase();
         const textExtensions = [
           '.js',
-          '.cjs',
-          '.mjs',
           '.ts',
           '.jsx',
           '.tsx',

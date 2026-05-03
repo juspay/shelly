@@ -102,6 +102,18 @@ async function main() {
   try {
     const userArgs = process.argv.slice(2);
 
+    // Handle --version / -v flag
+    if (
+      userArgs.length === 1 &&
+      (userArgs[0] === '--version' || userArgs[0] === '-v')
+    ) {
+      const packagePath = path.join(__dirname, '../package.json');
+      const { readFile } = await import('fs/promises');
+      const pkg = JSON.parse(await readFile(packagePath, 'utf8'));
+      console.log(pkg.version);
+      return;
+    }
+
     // Handle --alias flag
     if (userArgs.length === 1 && userArgs[0] === '--alias') {
       console.log(generateShellAlias());
