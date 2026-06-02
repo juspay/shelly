@@ -32,8 +32,16 @@ export class BitbucketService {
   client: any; // Using any due to bitbucket package type limitations
   workspace: string;
 
-  constructor(username?: string, appPassword?: string, workspace?: string, token?: string) {
-    const bbToken = token || process.env.BITBUCKET_TOKEN || process.env.BITBUCKET_ACCESS_TOKEN;
+  constructor(
+    username?: string,
+    appPassword?: string,
+    workspace?: string,
+    token?: string
+  ) {
+    const bbToken =
+      token ||
+      process.env.BITBUCKET_TOKEN ||
+      process.env.BITBUCKET_ACCESS_TOKEN;
     const bbUsername = username || process.env.BITBUCKET_USERNAME;
     const bbAppPassword = appPassword || process.env.BITBUCKET_APP_PASSWORD;
     const bbWorkspace = workspace || process.env.BITBUCKET_WORKSPACE;
@@ -63,7 +71,9 @@ export class BitbucketService {
     this.workspace = bbWorkspace;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.client = new (Bitbucket as any)({
-      auth: bbToken ? { token: bbToken } : { username: bbUsername, password: bbAppPassword },
+      auth: bbToken
+        ? { token: bbToken }
+        : { username: bbUsername, password: bbAppPassword },
     });
   }
 
@@ -71,7 +81,11 @@ export class BitbucketService {
     return new BitbucketService(undefined, undefined, workspace, token);
   }
 
-  static fromAppPassword(username: string, appPassword: string, workspace: string): BitbucketService {
+  static fromAppPassword(
+    username: string,
+    appPassword: string,
+    workspace: string
+  ): BitbucketService {
     return new BitbucketService(username, appPassword, workspace);
   }
 
@@ -85,9 +99,8 @@ export class BitbucketService {
   static async detectRepositoryFromGit(cwd = process.cwd()) {
     try {
       const gitConfig = await BitbucketService.parseGitConfigStatic(cwd);
-      const { host, workspace, repoSlug } = BitbucketService.parseRemoteUrlStatic(
-        gitConfig.remote?.origin?.url
-      );
+      const { host, workspace, repoSlug } =
+        BitbucketService.parseRemoteUrlStatic(gitConfig.remote?.origin?.url);
 
       if (!workspace || !repoSlug) {
         throw new Error(
@@ -156,29 +169,45 @@ export class BitbucketService {
   /**
    * Static version of parseRemoteUrl for use without instance
    */
-  static parseRemoteUrlStatic(url: string): { host: string; workspace: string; repoSlug: string } {
+  static parseRemoteUrlStatic(url: string): {
+    host: string;
+    workspace: string;
+    repoSlug: string;
+  } {
     if (!url) {
       throw new Error('No remote URL found');
     }
 
     // Handle ssh:// URLs: ssh://git@ssh.bitbucket.juspay.net/workspace/repo.git
     // Strip leading "ssh." from hostname — that prefix is SSH-only, the API lives on the bare host
-    const sshProtoMatch = url.match(/ssh:\/\/git@([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+    const sshProtoMatch = url.match(
+      /ssh:\/\/git@([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?$/
+    );
     if (sshProtoMatch) {
       const host = sshProtoMatch[1].replace(/^ssh\./, '');
       return { host, workspace: sshProtoMatch[2], repoSlug: sshProtoMatch[3] };
     }
 
     // Handle HTTPS URLs: https://bitbucket.org/workspace/repo.git or https://host/workspace/repo.git
-    const httpsMatch = url.match(/https?:\/\/([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+    const httpsMatch = url.match(
+      /https?:\/\/([^/]+)\/([^/]+)\/([^/]+?)(?:\.git)?$/
+    );
     if (httpsMatch) {
-      return { host: httpsMatch[1], workspace: httpsMatch[2], repoSlug: httpsMatch[3] };
+      return {
+        host: httpsMatch[1],
+        workspace: httpsMatch[2],
+        repoSlug: httpsMatch[3],
+      };
     }
 
     // Handle SCP-style SSH URLs: git@bitbucket.org:workspace/repo.git or git@host:workspace/repo.git
     const sshMatch = url.match(/git@([^:]+):([^/]+)\/([^/]+?)(?:\.git)?$/);
     if (sshMatch) {
-      return { host: sshMatch[1], workspace: sshMatch[2], repoSlug: sshMatch[3] };
+      return {
+        host: sshMatch[1],
+        workspace: sshMatch[2],
+        repoSlug: sshMatch[3],
+      };
     }
 
     throw new Error(`Unsupported BitBucket remote URL format: ${url}`);
@@ -616,7 +645,11 @@ export class BitbucketService {
   /**
    * Check whether a branch exists in the repository
    */
-  async branchExists(workspace: string, repoSlug: string, branchName: string): Promise<boolean> {
+  async branchExists(
+    workspace: string,
+    repoSlug: string,
+    branchName: string
+  ): Promise<boolean> {
     try {
       await this.client.repositories.getBranch({
         workspace,
@@ -645,7 +678,10 @@ export class BitbucketService {
       name: startPoint,
     });
     const hash: string = refResp.data?.target?.hash;
-    if (!hash) throw new Error(`Could not resolve commit hash for branch: ${startPoint}`);
+    if (!hash)
+      throw new Error(
+        `Could not resolve commit hash for branch: ${startPoint}`
+      );
 
     await this.client.repositories.createBranch({
       workspace,
@@ -657,7 +693,11 @@ export class BitbucketService {
   /**
    * Set the default (main) branch of the repository
    */
-  async setDefaultBranch(workspace: string, repoSlug: string, branchName: string): Promise<void> {
+  async setDefaultBranch(
+    workspace: string,
+    repoSlug: string,
+    branchName: string
+  ): Promise<void> {
     await this.client.repositories.update({
       workspace,
       repo_slug: repoSlug,
