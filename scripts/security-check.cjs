@@ -497,7 +497,8 @@ class SecurityValidator {
                 matchLine.includes('// nosec') ||
                 matchLine.includes('process.env') ||
                 matchLine.includes('mask:')
-              ) return;
+              )
+                return;
 
               secretsFound++;
               this.results.secrets.push({
