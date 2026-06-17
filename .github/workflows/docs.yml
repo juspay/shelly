@@ -292,7 +292,7 @@ jobs:
           echo "✅ Documentation site built successfully"
 
       - name: 📤 Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         if: github.ref == 'refs/heads/release' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           path: ./docs-build
